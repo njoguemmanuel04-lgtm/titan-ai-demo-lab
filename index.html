@@ -264,7 +264,7 @@ footer {
 <main>
 
 <div class="notice">
-  <strong>DERIV API CONNECTION:</strong> Input your Deriv App ID and API Token below. Credentials will be saved permanently in your browser storage upon connecting.
+  <strong>DERIV API CONNECTION:</strong> Use App ID <strong>1089</strong> and your Deriv API Token below. Credentials will be saved automatically in your browser storage.
 </div>
 
 <!-- CREDENTIALS CONFIG CARD -->
@@ -273,7 +273,7 @@ footer {
   <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
     <div class="field" style="margin:0;">
       <label class="label" for="appId">App ID</label>
-      <input id="appId" type="text" placeholder="e.g. 34Gk...">
+      <input id="appId" type="text" value="1089" placeholder="1089">
     </div>
     <div class="field" style="margin:0; grid-column: span 2;">
       <label class="label" for="apiToken">API Token</label>
@@ -532,7 +532,7 @@ function clearMemory() {
   if (confirm("Clear saved App ID and API Token from browser storage?")) {
     localStorage.removeItem('titan_deriv_appid');
     localStorage.removeItem('titan_deriv_token');
-    $("appId").value = "";
+    $("appId").value = "1089";
     $("apiToken").value = "";
     log("Saved credentials cleared from browser memory.");
     speak("Credentials cleared.");
