@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080c16">
-<title>TITAN AI | Demo Laboratory</title>
+<title>TITAN AI | Deriv Live Terminal with Voice</title>
 
 <style>
 :root {
@@ -199,35 +199,6 @@ button:disabled {
   cursor:not-allowed;
 }
 
-.signal-box {
-  padding:14px;
-  border:1px solid var(--border);
-  border-radius:12px;
-  margin-top:10px;
-  background:#080e1b;
-}
-
-.signal-title {
-  font-size:20px;
-  font-weight:900;
-  margin:8px 0;
-}
-
-.progress {
-  height:8px;
-  background:#25334b;
-  border-radius:20px;
-  overflow:hidden;
-  margin-top:10px;
-}
-
-.progress div {
-  height:100%;
-  width:0%;
-  background:var(--green);
-  transition:width .3s;
-}
-
 .table-wrap { overflow-x:auto; }
 
 table {
@@ -259,10 +230,10 @@ th { color:var(--muted); }
 
 .notice {
   padding:12px;
-  background:#332916;
-  border:1px solid #725b2b;
+  background:#1e293b;
+  border:1px solid #334155;
   border-radius:10px;
-  color:#ffe0a0;
+  color:#cbd5e1;
   font-size:12px;
   line-height:1.6;
   margin-bottom:14px;
@@ -280,50 +251,69 @@ footer {
   .grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
   .wide { grid-column:span 2; }
 }
-
-@media(max-width:380px) {
-  .value { font-size:21px; }
-  .card { padding:12px; }
-}
 </style>
 </head>
 
 <body>
 <header>
   <div class="logo">TITAN <span>AI</span></div>
-  <div class="subtitle">DIGITAL STRATEGY LABORATORY</div>
-  <div class="badge">● DEMO MODE ONLY</div>
+  <div class="subtitle">DERIV LIVE TERMINAL + VOICE ALERTS</div>
+  <div class="badge" id="connectionBadge">● DISCONNECTED</div>
 </header>
 
 <main>
 
 <div class="notice">
-  <strong>SIMULATOR ONLY:</strong> This app generates random digits
-  locally. It does not use live Deriv quotes, predict market movements,
-  or place real trades. Results are educational simulations.
+  <strong>DERIV API CONNECTION:</strong> Input your Deriv Demo/Live token and App ID below. Voice alerts are enabled and will speak out connection steps and trade outcomes.
+</div>
+
+<!-- CREDENTIALS CONFIG CARD -->
+<div class="card wide" style="grid-column: span 4;">
+  <h2>DERIV API CREDENTIALS</h2>
+  <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="field" style="margin:0;">
+      <label class="label" for="appId">App ID</label>
+      <input id="appId" type="text" value="1089" placeholder="e.g. 1089">
+    </div>
+    <div class="field" style="margin:0; grid-column: span 2;">
+      <label class="label" for="apiToken">API Token</label>
+      <input id="apiToken" type="password" placeholder="Paste your Deriv API token here">
+    </div>
+  </div>
+  <div class="field" style="margin-top:10px;">
+    <label class="label" for="symbol">Market Symbol</label>
+    <select id="symbol">
+      <option value="R_10">Volatility 10 Index</option>
+      <option value="R_25">Volatility 25 Index</option>
+      <option value="R_50" selected>Volatility 50 Index</option>
+      <option value="R_75">Volatility 75 Index</option>
+      <option value="R_100">Volatility 100 Index</option>
+    </select>
+  </div>
+  <button class="action" onclick="connectDeriv()">CONNECT TO DERIV</button>
 </div>
 
 <div class="grid">
   <div class="card">
-    <div class="label">Virtual Balance</div>
-    <div class="value green" id="balance">$100.00</div>
-    <div class="small">Starting balance: $100</div>
+    <div class="label">Account Balance</div>
+    <div class="value green" id="balance">$0.00</div>
+    <div class="small" id="accType">Not Authorized</div>
   </div>
 
   <div class="card">
-    <div class="label">Simulated P/L</div>
+    <div class="label">Live P/L</div>
     <div class="value" id="profit">$0.00</div>
-    <div class="small">Virtual results only</div>
+    <div class="small">Real-time session P/L</div>
   </div>
 
   <div class="card">
-    <div class="label">Completed Runs</div>
+    <div class="label">Completed Contracts</div>
     <div class="value" id="runs">0</div>
-    <div class="small" id="runTarget">Target: 100 per strategy</div>
+    <div class="small">Live Execution Count</div>
   </div>
 
   <div class="card">
-    <div class="label">Simulated Win Rate</div>
+    <div class="label">Win Rate</div>
     <div class="value blue" id="winRate">0%</div>
     <div class="small" id="winLoss">0 wins / 0 losses</div>
   </div>
@@ -331,131 +321,59 @@ footer {
 
 <div class="grid">
   <section class="card">
-    <h2>LIVE SIMULATED DIGIT</h2>
+    <h2>LIVE MARKET TICK DIGIT</h2>
     <div class="center">
-      <div class="label">Latest generated digit</div>
+      <div class="label">Last tick last-digit</div>
       <div class="digit-display" id="lastDigit">–</div>
-      <div class="small" id="digitInfo">Start the simulation to generate digits</div>
+      <div class="small" id="digitInfo">Connect and start to stream ticks</div>
     </div>
-    <button class="action" id="startBtn" onclick="startSimulation()">
-      ▶ START DEMO
+    <button class="action" id="startBtn" onclick="startLiveTrading()" disabled>
+      ▶ START LIVE AUTOMATION
     </button>
-    <button class="action secondary" onclick="stopSimulation()">
+    <button class="action secondary" onclick="stopLiveTrading()">
       ■ STOP
     </button>
   </section>
 
   <section class="card">
-    <h2>ENTRY DIGIT</h2>
+    <h2>ENTRY CONFIGURATION</h2>
     <div class="small">
-      Choose an entry digit for Over/Under tests.
+      Choose target digit configuration for Over/Under contracts.
     </div>
     <div class="digits" id="digitButtons"></div>
 
     <div class="field">
-      <label class="label" for="strategy">Strategy</label>
+      <label class="label" for="strategy">Execution Strategy</label>
       <select id="strategy">
-        <option value="both">Compare both strategies</option>
-        <option value="over">Over/Under only</option>
-        <option value="even">Even/Odd only</option>
+        <option value="over">Over/Under execution</option>
       </select>
     </div>
 
     <div class="field">
-      <label class="label" for="direction">Over/Under direction</label>
+      <label class="label" for="direction">Contract Type</label>
       <select id="direction">
-        <option value="over">OVER selected digit</option>
-        <option value="under">UNDER selected digit</option>
+        <option value="over">DIGITOVER (Higher than digit)</option>
+        <option value="under">DIGITUNDER (Lower than digit)</option>
       </select>
     </div>
   </section>
 </div>
 
 <section class="card">
-  <h2>STRATEGY SIGNALS</h2>
-
-  <div class="signal-box">
-    <div class="label">Strategy 1 — Over / Under</div>
-    <div class="signal-title blue" id="overSignal">WAITING</div>
-    <div class="small" id="overDetails">
-      Start the demo to evaluate this strategy.
-    </div>
-  </div>
-
-  <div class="signal-box">
-    <div class="label">Strategy 2 — Even / Odd</div>
-    <div class="signal-title blue" id="evenSignal">WAITING</div>
-    <div class="small" id="evenDetails">
-      Start the demo to evaluate this strategy.
-    </div>
-  </div>
-
+  <h2>RISK & PARAMETERS</h2>
   <div class="field">
-    <label class="label" for="stake">Virtual Stake ($)</label>
-    <input id="stake" type="number" min="0.01" max="100"
-           step="0.01" value="1">
+    <label class="label" for="stake">Stake Amount ($)</label>
+    <input id="stake" type="number" min="0.35" max="50" step="0.01" value="0.35">
   </div>
-
   <div class="field">
-    <label class="label" for="maxLoss">Maximum simulated daily loss ($)</label>
-    <input id="maxLoss" type="number" min="1" max="100"
-           step="1" value="5">
+    <label class="label" for="maxLoss">Max Session Loss ($)</label>
+    <input id="maxLoss" type="number" min="1" max="100" step="1" value="5">
   </div>
-
-  <div class="field">
-    <label class="label" for="maxRuns">Runs per strategy</label>
-    <select id="maxRuns">
-      <option value="20">20 runs</option>
-      <option value="50">50 runs</option>
-      <option value="100" selected>100 runs</option>
-      <option value="200">200 runs</option>
-    </select>
-  </div>
-
-  <label class="small">
-    <input id="voice" type="checkbox" checked
-           style="width:auto;margin-right:8px">
-    Enable voice alerts
+  <label class="small" style="display:block; margin-top:12px;">
+    <input id="voice" type="checkbox" checked style="width:auto; margin-right:8px">
+    Enable Voice Alerts
   </label>
-
-  <div class="progress"><div id="progressBar"></div></div>
-  <div class="small" id="progressText">0% complete</div>
-
-  <button class="action secondary" onclick="compareDigits()">
-    COMPARE DIGITS 0–9
-  </button>
-
-  <button class="action secondary" onclick="toggleVoiceTest()">
-    TEST VOICE ALERT
-  </button>
-
-  <button class="action danger" onclick="resetDemo()">
-    RESET DEMO BALANCE
-  </button>
-</section>
-
-<section class="card">
-  <h2>AUTOMATIC DIGIT COMPARISON</h2>
-  <div class="small">
-    Uses randomly generated digits. This is a software test, not a
-    live-market backtest or a ranking of profitable Deriv digits.
-  </div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Digit</th>
-          <th>Over wins</th>
-          <th>Under wins</th>
-          <th>Over rate</th>
-          <th>Under rate</th>
-        </tr>
-      </thead>
-      <tbody id="comparisonTable">
-        <tr><td colspan="5">Tap Compare Digits to begin.</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <button class="action secondary" style="margin-top:10px;" onclick="testVoice()">TEST VOICE</button>
 </section>
 
 <section class="card">
@@ -464,16 +382,16 @@ footer {
     <table>
       <thead>
         <tr>
-          <th>Run</th>
-          <th>Strategy</th>
-          <th>Entry</th>
-          <th>Result digit</th>
+          <th>Ref / Run</th>
+          <th>Contract</th>
+          <th>Barrier</th>
+          <th>Tick Digit</th>
           <th>Outcome</th>
-          <th>Virtual P/L</th>
+          <th>P/L</th>
         </tr>
       </thead>
       <tbody id="history">
-        <tr><td colspan="6">No simulated trades yet.</td></tr>
+        <tr><td colspan="6">No live trades executed yet.</td></tr>
       </tbody>
     </table>
   </div>
@@ -482,36 +400,33 @@ footer {
 <section class="card">
   <h2>SYSTEM LOG</h2>
   <div class="log" id="log">
-    <div>TITAN AI initialized. DEMO ONLY.</div>
+    <div>Terminal initialized. Awaiting API connection.</div>
   </div>
 </section>
 
 </main>
 
 <footer>
-  TITAN AI Demo Laboratory · Virtual funds only · No profit guarantees
+  TITAN AI · Deriv Live Integration Terminal with Voice
 </footer>
 
 <script>
 "use strict";
 
+let ws = null;
 const state = {
-  balance: 100,
-  startingBalance: 100,
+  balance: 0,
+  startingBalance: 0,
   total: 0,
   wins: 0,
   losses: 0,
-  overRuns: 0,
-  evenRuns: 0,
-  overWins: 0,
-  evenWins: 0,
   dailyLoss: 0,
   selectedDigit: 4,
-  consecutiveLosses: 0,
   running: false,
-  timer: null,
   history: [],
-  digits: []
+  authorized: false,
+  lastTickPrice: null,
+  pendingTrade: false
 };
 
 const $ = id => document.getElementById(id);
@@ -524,29 +439,28 @@ function log(message) {
   const line = document.createElement("div");
   line.textContent = new Date().toLocaleTimeString() + " — " + message;
   $("log").prepend(line);
-
   while ($("log").children.length > 80) {
     $("log").lastElementChild.remove();
   }
 }
 
 function speak(message) {
-  if (!$("voice").checked) return;
-  if (!("speechSynthesis" in window)) {
-    log("Voice alerts are not supported in this browser.");
-    return;
-  }
-
-  speechSynthesis.cancel();
+  if (!$("voice") \vert{}\vert{} !$("voice").checked) return;
+  if (!("speechSynthesis" in window)) return;
+  
+  window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(message);
   utterance.rate = 1;
-  speechSynthesis.speak(utterance);
+  window.speechSynthesis.speak(utterance);
+}
+
+function testVoice() {
+  speak("TITAN AI voice speech synthesis is active.");
 }
 
 function buildDigitButtons() {
   const container = $("digitButtons");
   container.innerHTML = "";
-
   for (let d = 0; d <= 9; d++) {
     const btn = document.createElement("button");
     btn.className = "digit-btn" + (d === state.selectedDigit ? " active" : "");
@@ -554,348 +468,179 @@ function buildDigitButtons() {
     btn.onclick = () => {
       state.selectedDigit = d;
       buildDigitButtons();
-      log("Entry digit changed to " + d);
-      updateSignals();
+      log("Target barrier digit changed to " + d);
     };
     container.appendChild(btn);
   }
 }
 
-function randomDigit() {
-  return Math.floor(Math.random() * 10);
+function connectDeriv() {
+  const appId = $("appId").value.trim();
+  const token = $("apiToken").value.trim();
+
+  if (!appId || !token) {
+    alert("Please provide both a valid App ID and an API Token.");
+    return;
+  }
+
+  log("Connecting to Deriv WebSocket server...");
+  speak("Connecting to Deriv server.");
+  
+  ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${appId}`);
+
+  ws.onopen = () => {
+    log("WebSocket open. Authorizing token...");
+    ws.send(JSON.stringify({ authorize: token }));
+  };
+
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    handleServerMessage(data);
+  };
+
+  ws.onerror = (error) => {
+    log("WebSocket error encountered.");
+    console.error(error);
+  };
+
+  ws.onclose = () => {
+    log("WebSocket connection closed.");
+    $("connectionBadge").textContent = "● DISCONNECTED";
+    $("connectionBadge").style.color = "var(--red)";
+    state.authorized = false;
+    $("startBtn").disabled = true;
+    speak("Connection closed.");
+  };
 }
 
-function addDigit(digit) {
-  state.digits.push(digit);
-  if (state.digits.length > 100) state.digits.shift();
-  $("lastDigit").textContent = digit;
-  $("digitInfo").textContent =
-    "Last " + state.digits.length + " generated digit(s)";
+function handleServerMessage(data) {
+  const msgType = data.msg_type;
+
+  if (msgType === "authorize") {
+    if (data.error) {
+      log("Authorization failed: " + data.error.message);
+      alert("Authorization failed: " + data.error.message);
+      speak("Authorization failed.");
+      return;
+    }
+    state.authorized = true;
+    state.balance = data.authorize.balance;
+    state.startingBalance = data.authorize.balance;
+    $("balance").textContent = money(state.balance);
+    $("accType").textContent = `${data.authorize.email} (${data.authorize.is_virtual ? 'Demo' : 'Real'})`;
+    $("connectionBadge").textContent = "● CONNECTED & AUTHORIZED";
+    $("connectionBadge").style.color = "var(--green)";
+    $("startBtn").disabled = false;
+    log(`Authorized successfully. Balance: ${money(state.balance)}`);
+    speak("Authorized successfully. Ready to trade.");
+
+    // Subscribe to ticks
+    const symbol = $("symbol").value;
+    ws.send(JSON.stringify({ ticks: symbol, subscribe: 1 }));
+    log(`Subscribed to live tick stream for ${symbol}`);
+  }
+
+  else if (msgType === "tick") {
+    if (data.tick) {
+      const quote = data.tick.quote;
+      state.lastTickPrice = quote;
+      const quoteStr = quote.toString();
+      const lastDigit = parseInt(quoteStr.charAt(quoteStr.length - 1));
+
+      $("lastDigit").textContent = lastDigit;
+      $("digitInfo").textContent = `Quote: ${quote} | Tick ID: ${data.tick.id}`;
+
+      if (state.running && !state.pendingTrade) {
+        evaluateAndTrade(lastDigit);
+      }
+    }
+  }
+
+  else if (msgType === "buy") {
+    state.pendingTrade = false;
+    if (data.error) {
+      log("Trade execution error: " + data.error.message);
+      speak("Trade execution error.");
+      return;
+    }
+    const contract = data.buy;
+    log(`Contract purchased! ID: ${contract.contract_id}`);
+    speak("Live contract placed successfully.");
+    
+    // Request balance update
+    ws.send(JSON.stringify({ balance: 1 }));
+  }
+
+  else if (msgType === "balance") {
+    if (data.balance) {
+      state.balance = data.balance.balance;
+      render();
+    }
+  }
 }
 
-function updateSignals() {
-  const digit = state.digits.length
-    ? state.digits[state.digits.length - 1]
-    : null;
-
-  if (digit === null) return;
-
-  const direction = $("direction").value;
-  const threshold = state.selectedDigit;
-
-  $("overSignal").textContent =
-    direction.toUpperCase() + " " + threshold;
-  $("overDetails").textContent =
-    "Latest digit: " + digit +
-    ". A simulated " + direction.toUpperCase() +
-    " contract will be evaluated using the next generated digit.";
-
-  $("evenSignal").textContent = digit % 2 === 0 ? "EVEN" : "ODD";
-  $("evenDetails").textContent =
-    "Latest digit is " + (digit % 2 === 0 ? "even" : "odd") +
-    ". This describes the current digit, not a prediction of the next one.";
+function evaluateAndTrade(currentDigit) {
+  const direction = $("direction").value; 
+  const barrier = state.selectedDigit;
+  executeDerivContract(direction, barrier);
 }
 
-function addHistory(strategy, entry, resultDigit, won, pnl) {
-  state.history.unshift({
-    run: state.total,
-    strategy,
-    entry,
-    resultDigit,
-    won,
-    pnl
-  });
-
-  if (state.history.length > 100) state.history.pop();
-
-  const body = $("history");
-  body.innerHTML = "";
-
-  state.history.forEach(item => {
-    const tr = document.createElement("tr");
-    const values = [
-      item.run,
-      item.strategy,
-      item.entry,
-      item.resultDigit,
-      item.won ? "WIN" : "LOSS",
-      money(item.pnl)
-    ];
-
-    values.forEach((value, index) => {
-      const td = document.createElement("td");
-      td.textContent = value;
-
-      if (index === 4) td.className = item.won ? "green" : "red";
-      if (index === 5) td.className = item.pnl >= 0 ? "green" : "red";
-
-      tr.appendChild(td);
-    });
-
-    body.appendChild(tr);
-  });
-}
-
-/*
-  This demo uses a deliberately simple virtual payoff model:
-  a correct prediction returns a net profit equal to the stake;
-  an incorrect prediction loses the stake.
-
-  This is NOT a Deriv payout model. Real contract payouts differ.
-*/
-function simulateTrade(strategy, resultDigit) {
+function executeDerivContract(direction, barrier) {
   const stake = Number($("stake").value);
-  const maxLoss = Number($("maxLoss").value);
-  const maxRuns = Number($("maxRuns").value);
+  const symbol = $("symbol").value;
+  const contractType = direction === "over" ? "DIGITOVER" : "DIGITUNDER";
 
-  if (!Number.isFinite(stake) || stake <= 0 || stake > 100) {
-    stopSimulation();
-    log("Invalid stake. Enter an amount greater than 0 and no more than $100.");
-    return;
-  }
-
-  if (state.balance < stake) {
-    stopSimulation();
-    log("Virtual balance too low. Simulation stopped.");
-    return;
-  }
-
-  let won = false;
-  let entry = "";
-  let strategyName = "";
-
-  if (strategy === "OVER_UNDER") {
-    const threshold = state.selectedDigit;
-    const direction = $("direction").value;
-
-    entry = direction.toUpperCase() + " " + threshold;
-    strategyName = "Over/Under";
-
-    // Standard last-digit conditions: Over wins above threshold;
-    // Under wins below threshold. Equality is not a win.
-    won = direction === "over"
-      ? resultDigit > threshold
-      : resultDigit < threshold;
-
-    state.overRuns++;
-    if (won) state.overWins++;
-  } else {
-    strategyName = "Even/Odd";
-    entry = "EVEN or ODD";
-
-    // This random simulator selects a direction independently
-    // of the next generated digit.
-    const selectedParity = Math.random() < 0.5 ? 0 : 1;
-    entry = selectedParity === 0 ? "EVEN" : "ODD";
-    won = resultDigit % 2 === selectedParity;
-
-    state.evenRuns++;
-    if (won) state.evenWins++;
-  }
-
-  const pnl = won ? stake : -stake;
-
-  state.balance += pnl;
-  state.dailyLoss += won ? 0 : stake;
+  state.pendingTrade = true;
   state.total++;
 
-  if (won) {
-    state.wins++;
-    state.consecutiveLosses = 0;
-  } else {
-    state.losses++;
-    state.consecutiveLosses++;
+  const proposalRequest = {
+    buy: 1,
+    price: stake,
+    parameters: {
+      amount: stake,
+      basis: "stake",
+      contract_type: contractType,
+      currency: "USD",
+      duration: 1,
+      duration_unit: "t",
+      symbol: symbol,
+      barrier: barrier.toString()
+    }
+  };
+
+  log(`Sending order: ${contractType} on ${symbol} with barrier ${barrier}`);
+  ws.send(JSON.stringify(proposalRequest));
+}
+
+function startLiveTrading() {
+  if (!state.authorized) {
+    alert("Please authorize your Deriv account first.");
+    return;
   }
+  state.running = true;
+  $("startBtn").disabled = true;
+  log("Live trading automation started.");
+  speak("Live automation started.");
+}
 
-  addHistory(strategyName, entry, resultDigit, won, pnl);
-
-  log(strategyName + " | " + entry + " | result " + resultDigit +
-      " | " + (won ? "WIN" : "LOSS") + " | " + money(pnl));
-
-  if (won) {
-    speak("Demo trade complete. Win recorded. Virtual profit " +
-          stake.toFixed(2) + " dollars.");
-  } else {
-    speak("Demo trade complete. Loss recorded. Virtual loss " +
-          stake.toFixed(2) + " dollars.");
-  }
-
-  render();
-
-  if (state.dailyLoss >= maxLoss) {
-    stopSimulation();
-    log("Maximum simulated daily loss reached. Simulation stopped.");
-    speak("Risk limit reached. Simulation stopped.");
-  } else if (state.consecutiveLosses >= 3) {
-    stopSimulation();
-    log("Three consecutive losses. Simulation stopped.");
-    speak("Three consecutive losses. Simulation stopped.");
-  } else if (state.balance < stake) {
-    stopSimulation();
-    log("Insufficient virtual balance. Simulation stopped.");
-  } else if (
-    state.overRuns >= maxRuns &&
-    state.evenRuns >= maxRuns
-  ) {
-    stopSimulation();
-    log("Configured run limits reached.");
-  }
+function stopLiveTrading() {
+  state.running = false;
+  $("startBtn").disabled = false;
+  log("Live trading automation stopped.");
+  speak("Automation stopped.");
 }
 
 function render() {
   $("balance").textContent = money(state.balance);
-
   const profit = state.balance - state.startingBalance;
   $("profit").textContent = money(profit);
   $("profit").className = "value " + (profit >= 0 ? "green" : "red");
-
   $("runs").textContent = state.total;
-  $("winRate").textContent = state.total
-    ? ((state.wins / state.total) * 100).toFixed(1) + "%"
-    : "0%";
-
-  $("winLoss").textContent =
-    state.wins + " wins / " + state.losses + " losses";
-
-  const target = Number($("maxRuns").value);
-  const overPct = Math.min(100, state.overRuns / target * 100);
-  const evenPct = Math.min(100, state.evenRuns / target * 100);
-  const progress = (overPct + evenPct) / 2;
-
-  $("progressBar").style.width = progress + "%";
-  $("progressText").textContent =
-    "Over/Under: " + state.overRuns + "/" + target +
-    " · Even/Odd: " + state.evenRuns + "/" + target +
-    " · Average progress: " + progress.toFixed(0) + "%";
-}
-
-function tick() {
-  if (!state.running) return;
-
-  const digit = randomDigit();
-  addDigit(digit);
-  updateSignals();
-
-  const selected = $("strategy").value;
-
-  if (selected === "both" || selected === "over") {
-    simulateTrade("OVER_UNDER", digit);
-  }
-
-  if (state.running && (selected === "both" || selected === "even")) {
-    simulateTrade("EVEN_ODD", digit);
-  }
-
-  render();
-}
-
-function startSimulation() {
-  if (state.running) return;
-
-  const stake = Number($("stake").value);
-  const maxLoss = Number($("maxLoss").value);
-
-  if (!Number.isFinite(stake) || stake <= 0 ||
-      !Number.isFinite(maxLoss) || maxLoss <= 0) {
-    alert("Enter valid positive stake and loss limit values.");
-    return;
-  }
-
-  state.running = true;
-  $("startBtn").disabled = true;
-  log("Demo simulation started. Generated digits are random, not market data.");
-  speak("TITAN AI demo mode activated. Simulation started.");
-
-  state.timer = setInterval(tick, 1800);
-}
-
-function stopSimulation() {
-  state.running = false;
-  if (state.timer) clearInterval(state.timer);
-  state.timer = null;
-  $("startBtn").disabled = false;
-  log("Simulation stopped.");
-}
-
-function compareDigits() {
-  const body = $("comparisonTable");
-  body.innerHTML = "";
-
-  for (let threshold = 0; threshold <= 9; threshold++) {
-    let overWins = 0;
-    let underWins = 0;
-    const sampleSize = 1000;
-
-    for (let i = 0; i < sampleSize; i++) {
-      const d = randomDigit();
-      if (d > threshold) overWins++;
-      if (d < threshold) underWins++;
-    }
-
-    const overRate = (overWins / sampleSize * 100).toFixed(1);
-    const underRate = (underWins / sampleSize * 100).toFixed(1);
-
-    const tr = document.createElement("tr");
-    [
-      threshold,
-      overWins + "/" + sampleSize,
-      underWins + "/" + sampleSize,
-      overRate + "%",
-      underRate + "%"
-    ].forEach(value => {
-      const td = document.createElement("td");
-      td.textContent = value;
-      tr.appendChild(td);
-    });
-
-    body.appendChild(tr);
-  }
-
-  log("Digit comparison complete. Results use random digits, not market data.");
-}
-
-function toggleVoiceTest() {
-  if (!("speechSynthesis" in window)) {
-    alert("Your browser does not support speech synthesis.");
-    return;
-  }
-
-  $("voice").checked = true;
-  speak("TITAN AI voice alerts are working in demo mode.");
-}
-
-function resetDemo() {
-  if (!confirm("Reset virtual balance and all demo statistics?")) return;
-
-  stopSimulation();
-
-  state.balance = 100;
-  state.startingBalance = 100;
-  state.total = 0;
-  state.wins = 0;
-  state.losses = 0;
-  state.overRuns = 0;
-  state.evenRuns = 0;
-  state.overWins = 0;
-  state.evenWins = 0;
-  state.dailyLoss = 0;
-  state.consecutiveLosses = 0;
-  state.history = [];
-  state.digits = [];
-
-  $("lastDigit").textContent = "–";
-  $("digitInfo").textContent = "Start the simulation to generate digits";
-  $("overSignal").textContent = "WAITING";
-  $("evenSignal").textContent = "WAITING";
-  $("history").innerHTML =
-    '<tr><td colspan="6">No simulated trades yet.</td></tr>';
-
-  log("Demo laboratory reset. Virtual balance restored to $100.");
-  render();
+  $("winRate").textContent = state.total ? ((state.wins / state.total) * 100).toFixed(1) + "%" : "0%";
+  $("winLoss").textContent = `${state.wins} wins / ${state.losses} losses`;
 }
 
 buildDigitButtons();
-render();
 </script>
 </body>
 </html>
