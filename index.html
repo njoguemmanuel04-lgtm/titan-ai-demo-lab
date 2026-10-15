@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | Elite Deriv Trading Terminal</title>
+<title>TITAN AI | Multi-Volatility Scanner Terminal</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -78,8 +78,6 @@ header {
   box-shadow: 0 0 25px var(--green-glow);
   transition: all 0.3s ease;
 }
-
-/* Feature 3: Moving Scanner Cursor Line */
 .scanline {
   position: absolute;
   top: 0;
@@ -93,7 +91,6 @@ header {
   0% { left: -50%; }
   100% { left: 100%; }
 }
-
 .digit-btn {
   background: #030712;
   border: 1px solid var(--border);
@@ -109,8 +106,6 @@ header {
   border-color: var(--green);
   color: var(--green);
 }
-
-/* Feature 1 & 2: Dynamic Hot / Cool Styling */
 .stat-box-hot {
   border-color: var(--red) !important;
   background: rgba(255, 71, 87, 0.12) !important;
@@ -121,7 +116,6 @@ header {
   background: rgba(56, 189, 248, 0.12) !important;
   box-shadow: 0 0 12px var(--ice-glow) !important;
 }
-
 input, select {
   width: 100%;
   background: #030712;
@@ -150,20 +144,10 @@ input:focus, select:focus {
 <main class="max-w-4xl mx-auto px-4 mt-5">
   <!-- CREDENTIALS CARD -->
   <div class="card">
-    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold">🔐 Deriv API Credentials & Market</h2>
+    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold">🔐 Deriv API Credentials</h2>
     <div class="mb-3">
       <label class="text-[10px] uppercase tracking-wider text-slate-400">Personal Access Token (PAT)</label>
       <input id="apiToken" type="password" placeholder="Paste your token here">
-    </div>
-    <div class="mb-3">
-      <label class="text-[10px] uppercase tracking-wider text-slate-400">Volatility Index Market</label>
-      <select id="symbol">
-        <option value="R_10">Volatility 10 Index</option>
-        <option value="R_25">Volatility 25 Index</option>
-        <option value="R_50" selected>Volatility 50 Index</option>
-        <option value="R_75">Volatility 75 Index</option>
-        <option value="R_100">Volatility 100 Index</option>
-      </select>
     </div>
     <div class="flex gap-2 mt-3">
       <button onclick="connectDeriv()" id="connectBtn" class="w-full bg-[#24e59a] text-[#030712] font-extrabold py-3 rounded-xl text-xs tracking-wider shadow-lg shadow-emerald-500/20 hover:brightness-110 cursor-pointer">
@@ -195,19 +179,42 @@ input:focus, select:focus {
     </div>
   </div>
 
-  <!-- LIVE TICK STREAM & HOT/COOL STATS PANEL -->
+  <!-- LIVE SCANNER MATRIX -->
+  <div class="card">
+    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between items-center">
+      <span>📡 Multi-Volatility Live Market Scanner</span>
+      <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
+    </h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="border-b border-slate-800 text-[10px] text-slate-400 uppercase">
+            <th class="p-2">Market</th>
+            <th class="p-2">Last Tick</th>
+            <th class="p-2">Digit</th>
+            <th class="p-2">Even %</th>
+            <th class="p-2">Odd %</th>
+            <th class="p-2">Top Signal</th>
+          </tr>
+        </thead>
+        <tbody id="scannerTable" class="divide-y divide-slate-800/50 font-mono">
+          <!-- Populated dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LIVE TICK STREAM & ENTRY PARAMETERS -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="card text-center flex flex-col justify-between">
-      <!-- Feature 3: Laser Scanline Cursor -->
       <div class="scanline"></div>
-
       <div>
-        <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📊 Live Tick Stream</h2>
-        <div class="text-[10px] uppercase text-slate-400">Last Tick Digit</div>
+        <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📊 Active Focus Stream</h2>
+        <div class="text-[10px] uppercase text-slate-400" id="activeMarketLabel">Symbol: R_50</div>
         <div class="digit-box" id="lastDigit">–</div>
         <div class="text-xs text-cyan-400 mb-4" id="digitInfo">Awaiting connection...</div>
 
-        <!-- STATS PANEL (Hot Red / Ice Blue Digits) -->
+        <!-- STATS PANEL -->
         <div class="text-left mt-2">
           <div class="flex justify-between items-center text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">
             <span>Digit Stats (Last 100 Ticks)</span>
@@ -219,7 +226,7 @@ input:focus, select:focus {
 
       <div class="space-y-2 mt-4">
         <button onclick="startTrading()" id="startBtn" class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider cursor-pointer disabled:opacity-40" disabled>
-          ▶ START AUTOMATION
+          ▶ START MULTI-SCAN & TRADE
         </button>
         <button onclick="stopTrading()" class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2 rounded-xl text-xs cursor-pointer">
           ■ STOP AUTOMATION
@@ -232,8 +239,9 @@ input:focus, select:focus {
       <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Entry Parameters & Risk</h2>
       
       <div class="mb-3">
-        <label class="text-[10px] uppercase tracking-wider text-slate-400">Contract Type</label>
+        <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
         <select id="direction" onchange="toggleBarrier()">
+          <option value="SCANNER">Auto-Select Highest Confidence Market</option>
           <option value="DIGITOVER">DIGITOVER (Higher than digit)</option>
           <option value="DIGITUNDER">DIGITUNDER (Lower than digit)</option>
           <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
@@ -285,8 +293,15 @@ input:focus, select:focus {
 
 <script>
 let ws = null;
-let historyDigits = [];
-let counts = Array(10).fill(0);
+const symbols = ["R_10", "R_25", "R_50", "R_75", "R_100"];
+let marketData = {};
+
+symbols.forEach(s => {
+  marketData[s] = { history: [], counts: Array(10).fill(0), lastQuote: "-", lastDigit: "-" };
+});
+
+let activeSymbol = "R_50";
+
 let state = {
   balance: 0,
   startingBalance: 0,
@@ -310,6 +325,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (savedToken) $("apiToken").value = savedToken;
   buildDigitButtons();
   buildStatsGrid();
+  renderScannerTable();
 });
 
 function log(msg) {
@@ -341,23 +357,23 @@ function buildDigitButtons() {
   }
 }
 
-// Features 1 & 2: Dynamic Hot Red and Cool Ice Blue calculations
 function buildStatsGrid() {
   const container = $("statsGrid");
   container.innerHTML = "";
-  const total = historyDigits.length || 1;
+  const data = marketData[activeSymbol];
+  const total = data.history.length || 1;
 
-  const maxCount = Math.max(...counts);
-  const minCount = Math.min(...counts);
+  const maxCount = Math.max(...data.counts);
+  const minCount = Math.min(...data.counts);
 
   for (let d = 0; d <= 9; d++) {
-    const count = counts[d];
+    const count = data.counts[d];
     const pct = ((count / total) * 100).toFixed(0);
 
     let classHighlight = "";
     let textStyle = "text-emerald-400";
 
-    if (historyDigits.length >= 10) {
+    if (data.history.length >= 10) {
       if (count === maxCount && maxCount > minCount) {
         classHighlight = "stat-box-hot";
         textStyle = "text-rose-400 font-extrabold";
@@ -374,9 +390,43 @@ function buildStatsGrid() {
   }
 }
 
+function renderScannerTable() {
+  const tbody = $("scannerTable");
+  tbody.innerHTML = "";
+
+  symbols.forEach(sym => {
+    const data = marketData[sym];
+    const total = data.history.length || 1;
+    
+    let evenCount = 0;
+    data.history.forEach(d => { if(d % 2 === 0) evenCount++; });
+    const evenPct = Math.round((evenCount / total) * 100);
+    const oddPct = 100 - evenPct;
+
+    let bestType = "NEUTRAL";
+    let bestConf = 50;
+
+    if (evenPct >= 65) { bestType = "DIGITEVEN"; bestConf = evenPct; }
+    else if (oddPct >= 65) { bestType = "DIGITODD"; bestConf = oddPct; }
+
+    const tr = document.createElement("tr");
+    tr.className = "hover:bg-slate-800/30 cursor-pointer";
+    tr.onclick = () => { activeSymbol = sym; buildStatsGrid(); };
+    tr.innerHTML = `
+      <td class="p-2 font-bold ${sym === activeSymbol ? 'text-emerald-400' : 'text-slate-300'}">${sym}</td>
+      <td class="p-2 text-slate-400">${data.lastQuote}</td>
+      <td class="p-2 text-yellow-400 font-bold">${data.lastDigit}</td>
+      <td class="p-2 text-emerald-400">${evenPct}%</td>
+      <td class="p-2 text-cyan-400">${oddPct}%</td>
+      <td class="p-2"><span class="px-2 py-0.5 rounded text-[9px] font-bold ${bestConf >= 65 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">${bestType} (${bestConf}%)</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
 function toggleBarrier() {
   const type = $("direction").value;
-  const isEvenOdd = type === "DIGITEVEN" || type === "DIGITODD";
+  const isEvenOdd = type === "DIGITEVEN" || type === "DIGITODD" || type === "SCANNER";
   $("barrierContainer").style.opacity = isEvenOdd ? "0.3" : "1";
   $("barrierContainer").style.pointerEvents = isEvenOdd ? "none" : "auto";
 }
@@ -429,9 +479,13 @@ function connectWebSocket(wsUrl) {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("Authenticated WebSocket stream opened.");
-    const symbol = $("symbol").value;
-    ws.send(JSON.stringify({ ticks: symbol, subscribe: 1 }));
+    log("Authenticated WebSocket stream opened. Subscribing to all volatility markets...");
+    $("scannerStatus").textContent = "Scanner Active";
+    
+    // Subscribe to ALL volatility indices
+    symbols.forEach(sym => {
+      ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
+    });
     ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
   };
 
@@ -444,19 +498,29 @@ function connectWebSocket(wsUrl) {
     }
 
     if (data.msg_type === "tick" && data.tick) {
+      const sym = data.tick.symbol;
       const quote = data.tick.quote.toString();
       const digit = parseInt(quote.slice(-1));
       
-      $("lastDigit").textContent = digit;
-      $("digitInfo").textContent = `Quote: ${quote} | Symbol: ${$("symbol").value}`;
-
-      historyDigits.push(digit);
-      counts[digit]++;
-      if (historyDigits.length > 100) {
-        let removed = historyDigits.shift();
-        counts[removed]--;
+      if (marketData[sym]) {
+        marketData[sym].lastQuote = quote;
+        marketData[sym].lastDigit = digit;
+        marketData[sym].history.push(digit);
+        marketData[sym].counts[digit]++;
+        if (marketData[sym].history.length > 100) {
+          let removed = marketData[sym].history.shift();
+          marketData[sym].counts[removed]--;
+        }
       }
-      buildStatsGrid();
+
+      if (sym === activeSymbol) {
+        $("lastDigit").textContent = digit;
+        $("digitInfo").textContent = `Quote: ${quote} | Symbol: ${sym}`;
+        $("activeMarketLabel").textContent = `Symbol: ${sym}`;
+        buildStatsGrid();
+      }
+
+      renderScannerTable();
 
       if (state.running && !state.awaitingResult && !state.pendingBuy) {
         executeTrade();
@@ -526,8 +590,8 @@ function connectWebSocket(wsUrl) {
         }
         else if (state.consecutiveLosses >= maxLossStreak) {
           state.running = false;
-          log(`🚨 Circuit Breaker Triggered: ${state.consecutiveLosses} consecutive losses reached. Automation halted to protect bankroll.`);
-          speak("Circuit breaker triggered. Automation stopped.");
+          log(`🚨 Circuit Breaker Triggered: ${state.consecutiveLosses} consecutive losses reached.`);
+          speak("Circuit breaker triggered.");
         }
 
         state.awaitingResult = false;
@@ -546,9 +610,40 @@ function connectWebSocket(wsUrl) {
   };
 }
 
+function getBestMarketOpportunity() {
+  let best = { symbol: activeSymbol, type: "DIGITEVEN", conf: 0 };
+
+  symbols.forEach(sym => {
+    const data = marketData[sym];
+    const total = data.history.length || 1;
+    let evenCount = 0;
+    data.history.forEach(d => { if(d % 2 === 0) evenCount++; });
+    const evenPct = Math.round((evenCount / total) * 100);
+    const oddPct = 100 - evenPct;
+
+    if (evenPct > best.conf && evenPct >= 65) {
+      best = { symbol: sym, type: "DIGITEVEN", conf: evenPct };
+    }
+    if (oddPct > best.conf && oddPct >= 65) {
+      best = { symbol: sym, type: "DIGITODD", conf: oddPct };
+    }
+  });
+
+  return best;
+}
+
 function executeTrade() {
-  const symbol = $("symbol").value;
-  const contractType = $("direction").value;
+  let contractType = $("direction").value;
+  let targetSymbol = activeSymbol;
+
+  if (contractType === "SCANNER") {
+    let opp = getBestMarketOpportunity();
+    if (opp.conf < 65) return; // Wait for high probability setup
+    targetSymbol = opp.symbol;
+    contractType = opp.type;
+    log(`🎯 Scanner selected top market: ${targetSymbol} (${contractType} ${opp.conf}%)`);
+  }
+
   const stake = Number(state.nextStake.toFixed(2));
   const isEvenOdd = contractType === "DIGITEVEN" || contractType === "DIGITODD";
 
@@ -560,16 +655,16 @@ function executeTrade() {
     basis: "stake",
     contract_type: contractType,
     currency: "USD",
-    underlying_symbol: symbol,
+    underlying_symbol: targetSymbol,
     duration: 1,
     duration_unit: "t"
   };
 
   if (!isEvenOdd) {
     req.barrier = state.selectedDigit.toString();
-    log(`Executing ${contractType} with barrier ${state.selectedDigit} | Stake: $${stake}`);
+    log(`Executing ${contractType} on ${targetSymbol} with barrier ${state.selectedDigit} | Stake: $${stake}`);
   } else {
-    log(`Executing ${contractType} | Stake: $${stake}`);
+    log(`Executing ${contractType} on ${targetSymbol} | Stake: $${stake}`);
   }
 
   ws.send(JSON.stringify(req));
@@ -579,7 +674,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Automation started.");
+  log("Multi-market automation started.");
   speak("Automation started.");
 }
 
