@@ -243,7 +243,7 @@ input:focus, select:focus {
       <div class="mb-3">
         <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
         <select id="direction" onchange="toggleBarrier()">
-          <option value="SCANNER">Auto-Select Highest Confidence Market & Signal</option>
+          <option value="SCANNER">Auto-Select Highest Confidence Market (&gt;= 65%)</option>
           <option value="DIGITOVER">DIGITOVER (Higher than digit)</option>
           <option value="DIGITUNDER">DIGITUNDER (Lower than digit)</option>
           <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
@@ -628,7 +628,7 @@ function connectWebSocket(wsUrl) {
 }
 
 function getBestMarketOpportunity() {
-  let best = { symbol: activeSymbol, type: "DIGITEVEN", conf: 0, barrier: state.selectedDigit };
+  let best = { symbol: null, type: null, conf: 0, barrier: null };
   const barrier = state.selectedDigit;
 
   symbols.forEach(sym => {
@@ -649,6 +649,7 @@ function getBestMarketOpportunity() {
     const overPct = Math.round((overCount / total) * 100);
     const underPct = Math.round((underCount / total) * 100);
 
+    // STRICT FILTER: Only accept >= 65% confidence setups
     if (evenPct > best.conf && evenPct >= 65) {
       best = { symbol: sym, type: "DIGITEVEN", conf: evenPct, barrier: null };
     }
@@ -674,11 +675,22 @@ function executeTrade() {
 
   if (strategy === "SCANNER") {
     let opp = getBestMarketOpportunity();
-    if (opp.conf < 65) return;
+    
+    // Strict block if confidence is below 65%
+    if (!opp.symbol || opp.conf < 65) {
+      $("scannerStatus").textContent = "Scanning... (Waiting for >= 65% Signal)";
+      $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
+      return;
+    }
+
     targetSymbol = opp.symbol;
     contractType = opp.type;
     if (opp.barrier !== null) barrier = opp.barrier.toString();
-    log(`🎯 Scanner selected: ${targetSymbol} (${contractType} ${opp.conf}%)`);
+
+    $("scannerStatus").textContent = `Signal Found: ${targetSymbol} (${contractType} ${opp.conf}%)`;
+    $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
+
+    log(`🎯 Scanner triggered trade on ${targetSymbol} — Strategy: ${contractType} (${opp.conf}% Confidence)`);
   }
 
   const stake = Number(state.nextStake.toFixed(2));
@@ -711,7 +723,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Multi-market scanner automation started.");
+  log("Multi-market scanner automation started with strict >= 65% filter.");
   speak("Automation started.");
 }
 
