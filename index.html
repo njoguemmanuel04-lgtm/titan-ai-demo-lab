@@ -192,8 +192,10 @@ input:focus, select:focus {
             <th class="p-2">Market</th>
             <th class="p-2">Last Tick</th>
             <th class="p-2">Digit</th>
-            <th class="p-2">Even %</th>
-            <th class="p-2">Odd %</th>
+            <th class="p-2">Even%</th>
+            <th class="p-2">Odd%</th>
+            <th class="p-2">Over%</th>
+            <th class="p-2">Under%</th>
             <th class="p-2">Top Signal</th>
           </tr>
         </thead>
@@ -241,7 +243,7 @@ input:focus, select:focus {
       <div class="mb-3">
         <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
         <select id="direction" onchange="toggleBarrier()">
-          <option value="SCANNER">Auto-Select Highest Confidence Market</option>
+          <option value="SCANNER">Auto-Select Highest Confidence Market & Signal</option>
           <option value="DIGITOVER">DIGITOVER (Higher than digit)</option>
           <option value="DIGITUNDER">DIGITUNDER (Lower than digit)</option>
           <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
@@ -250,7 +252,7 @@ input:focus, select:focus {
       </div>
 
       <div id="barrierContainer">
-        <label class="text-[10px] uppercase tracking-wider text-slate-400">Target Barrier Digit</label>
+        <label class="text-[10px] uppercase tracking-wider text-slate-400">Target Barrier Digit (For Over/Under)</label>
         <div class="grid grid-cols-5 gap-2 my-2" id="digitButtons"></div>
       </div>
 
@@ -351,6 +353,7 @@ function buildDigitButtons() {
     btn.onclick = () => {
       state.selectedDigit = d;
       buildDigitButtons();
+      renderScannerTable();
       log("Target barrier set to " + d);
     };
     container.appendChild(btn);
@@ -393,21 +396,34 @@ function buildStatsGrid() {
 function renderScannerTable() {
   const tbody = $("scannerTable");
   tbody.innerHTML = "";
+  const barrier = state.selectedDigit;
 
   symbols.forEach(sym => {
     const data = marketData[sym];
     const total = data.history.length || 1;
     
     let evenCount = 0;
-    data.history.forEach(d => { if(d % 2 === 0) evenCount++; });
+    let overCount = 0;
+    let underCount = 0;
+
+    data.history.forEach(d => {
+      if (d % 2 === 0) evenCount++;
+      if (d > barrier) overCount++;
+      if (d < barrier) underCount++;
+    });
+
     const evenPct = Math.round((evenCount / total) * 100);
     const oddPct = 100 - evenPct;
+    const overPct = Math.round((overCount / total) * 100);
+    const underPct = Math.round((underCount / total) * 100);
 
     let bestType = "NEUTRAL";
     let bestConf = 50;
 
-    if (evenPct >= 65) { bestType = "DIGITEVEN"; bestConf = evenPct; }
-    else if (oddPct >= 65) { bestType = "DIGITODD"; bestConf = oddPct; }
+    if (evenPct >= 65) { bestType = "EVEN"; bestConf = evenPct; }
+    else if (oddPct >= 65) { bestType = "ODD"; bestConf = oddPct; }
+    else if (overPct >= 65) { bestType = `OVER ${barrier}`; bestConf = overPct; }
+    else if (underPct >= 65) { bestType = `UNDER ${barrier}`; bestConf = underPct; }
 
     const tr = document.createElement("tr");
     tr.className = "hover:bg-slate-800/30 cursor-pointer";
@@ -418,6 +434,8 @@ function renderScannerTable() {
       <td class="p-2 text-yellow-400 font-bold">${data.lastDigit}</td>
       <td class="p-2 text-emerald-400">${evenPct}%</td>
       <td class="p-2 text-cyan-400">${oddPct}%</td>
+      <td class="p-2 text-yellow-400">${overPct}%</td>
+      <td class="p-2 text-purple-400">${underPct}%</td>
       <td class="p-2"><span class="px-2 py-0.5 rounded text-[9px] font-bold ${bestConf >= 65 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">${bestType} (${bestConf}%)</span></td>
     `;
     tbody.appendChild(tr);
@@ -426,7 +444,7 @@ function renderScannerTable() {
 
 function toggleBarrier() {
   const type = $("direction").value;
-  const isEvenOdd = type === "DIGITEVEN" || type === "DIGITODD" || type === "SCANNER";
+  const isEvenOdd = type === "DIGITEVEN" || type === "DIGITODD";
   $("barrierContainer").style.opacity = isEvenOdd ? "0.3" : "1";
   $("barrierContainer").style.pointerEvents = isEvenOdd ? "none" : "auto";
 }
@@ -482,7 +500,6 @@ function connectWebSocket(wsUrl) {
     log("Authenticated WebSocket stream opened. Subscribing to all volatility markets...");
     $("scannerStatus").textContent = "Scanner Active";
     
-    // Subscribe to ALL volatility indices
     symbols.forEach(sym => {
       ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
     });
@@ -611,21 +628,38 @@ function connectWebSocket(wsUrl) {
 }
 
 function getBestMarketOpportunity() {
-  let best = { symbol: activeSymbol, type: "DIGITEVEN", conf: 0 };
+  let best = { symbol: activeSymbol, type: "DIGITEVEN", conf: 0, barrier: state.selectedDigit };
+  const barrier = state.selectedDigit;
 
   symbols.forEach(sym => {
     const data = marketData[sym];
     const total = data.history.length || 1;
     let evenCount = 0;
-    data.history.forEach(d => { if(d % 2 === 0) evenCount++; });
+    let overCount = 0;
+    let underCount = 0;
+
+    data.history.forEach(d => {
+      if (d % 2 === 0) evenCount++;
+      if (d > barrier) overCount++;
+      if (d < barrier) underCount++;
+    });
+
     const evenPct = Math.round((evenCount / total) * 100);
     const oddPct = 100 - evenPct;
+    const overPct = Math.round((overCount / total) * 100);
+    const underPct = Math.round((underCount / total) * 100);
 
     if (evenPct > best.conf && evenPct >= 65) {
-      best = { symbol: sym, type: "DIGITEVEN", conf: evenPct };
+      best = { symbol: sym, type: "DIGITEVEN", conf: evenPct, barrier: null };
     }
     if (oddPct > best.conf && oddPct >= 65) {
-      best = { symbol: sym, type: "DIGITODD", conf: oddPct };
+      best = { symbol: sym, type: "DIGITODD", conf: oddPct, barrier: null };
+    }
+    if (overPct > best.conf && overPct >= 65) {
+      best = { symbol: sym, type: "DIGITOVER", conf: overPct, barrier: barrier };
+    }
+    if (underPct > best.conf && underPct >= 65) {
+      best = { symbol: sym, type: "DIGITUNDER", conf: underPct, barrier: barrier };
     }
   });
 
@@ -633,15 +667,18 @@ function getBestMarketOpportunity() {
 }
 
 function executeTrade() {
-  let contractType = $("direction").value;
+  let strategy = $("direction").value;
   let targetSymbol = activeSymbol;
+  let contractType = strategy;
+  let barrier = state.selectedDigit.toString();
 
-  if (contractType === "SCANNER") {
+  if (strategy === "SCANNER") {
     let opp = getBestMarketOpportunity();
-    if (opp.conf < 65) return; // Wait for high probability setup
+    if (opp.conf < 65) return;
     targetSymbol = opp.symbol;
     contractType = opp.type;
-    log(`🎯 Scanner selected top market: ${targetSymbol} (${contractType} ${opp.conf}%)`);
+    if (opp.barrier !== null) barrier = opp.barrier.toString();
+    log(`🎯 Scanner selected: ${targetSymbol} (${contractType} ${opp.conf}%)`);
   }
 
   const stake = Number(state.nextStake.toFixed(2));
@@ -661,8 +698,8 @@ function executeTrade() {
   };
 
   if (!isEvenOdd) {
-    req.barrier = state.selectedDigit.toString();
-    log(`Executing ${contractType} on ${targetSymbol} with barrier ${state.selectedDigit} | Stake: $${stake}`);
+    req.barrier = barrier;
+    log(`Executing ${contractType} on ${targetSymbol} (Barrier: ${barrier}) | Stake: $${stake}`);
   } else {
     log(`Executing ${contractType} on ${targetSymbol} | Stake: $${stake}`);
   }
@@ -674,7 +711,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Multi-market automation started.");
+  log("Multi-market scanner automation started.");
   speak("Automation started.");
 }
 
