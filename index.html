@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | Multi-Volatility Scanner Terminal</title>
+<title>TITAN AI | Hybrid Recovery Terminal</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -578,15 +578,15 @@ function connectWebSocket(wsUrl) {
 
         if (p > 0) {
           state.wins++;
-          state.consecutiveLosses = 0;
+          state.consecutiveLosses = 0; // Streak cleared! Resets to primary strategy.
           state.nextStake = Number($("stake").value) || 0.35;
-          log(`WIN! +$${p.toFixed(2)}`);
+          log(`WIN! +$${p.toFixed(2)} — Recovery successful.`);
           speak("Win.");
         } else {
           state.losses++;
           state.consecutiveLosses++;
           state.nextStake *= Number($("martingale").value) || 2.1;
-          log(`LOSS! -$${Math.abs(p).toFixed(2)} (Streak: ${state.consecutiveLosses})`);
+          log(`LOSS! -$${Math.abs(p).toFixed(2)} (Streak: ${state.consecutiveLosses}) — Switching to Even/Odd recovery step.`);
           speak("Loss.");
         }
 
@@ -649,7 +649,6 @@ function getBestMarketOpportunity() {
     const overPct = Math.round((overCount / total) * 100);
     const underPct = Math.round((underCount / total) * 100);
 
-    // STRICT FILTER: Only accept >= 65% confidence setups
     if (evenPct > best.conf && evenPct >= 65) {
       best = { symbol: sym, type: "DIGITEVEN", conf: evenPct, barrier: null };
     }
@@ -673,24 +672,31 @@ function executeTrade() {
   let contractType = strategy;
   let barrier = state.selectedDigit.toString();
 
-  if (strategy === "SCANNER") {
-    let opp = getBestMarketOpportunity();
-    
-    // Strict block if confidence is below 65%
-    if (!opp.symbol || opp.conf < 65) {
-      $("scannerStatus").textContent = "Scanning... (Waiting for >= 65% Signal)";
-      $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
-      return;
+  // HYBRID RECOVERY ENGINE: If previous contract lost, recover using Even/Odd
+  if (state.consecutiveLosses > 0) {
+    contractType = (state.consecutiveLosses % 2 === 1) ? "DIGITEVEN" : "DIGITODD";
+    log(`🔄 HYBRID RECOVERY MODE (Streak: ${state.consecutiveLosses}) — Executing ${contractType} on ${targetSymbol}`);
+  } 
+  else {
+    // STANDARD / SCANNER MODE
+    if (strategy === "SCANNER") {
+      let opp = getBestMarketOpportunity();
+      
+      if (!opp.symbol || opp.conf < 65) {
+        $("scannerStatus").textContent = "Scanning... (Waiting for >= 65% Signal)";
+        $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
+        return;
+      }
+
+      targetSymbol = opp.symbol;
+      contractType = opp.type;
+      if (opp.barrier !== null) barrier = opp.barrier.toString();
+
+      $("scannerStatus").textContent = `Signal Found: ${targetSymbol} (${contractType} ${opp.conf}%)`;
+      $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
+
+      log(`🎯 Scanner triggered trade on ${targetSymbol} — Strategy: ${contractType} (${opp.conf}% Confidence)`);
     }
-
-    targetSymbol = opp.symbol;
-    contractType = opp.type;
-    if (opp.barrier !== null) barrier = opp.barrier.toString();
-
-    $("scannerStatus").textContent = `Signal Found: ${targetSymbol} (${contractType} ${opp.conf}%)`;
-    $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
-
-    log(`🎯 Scanner triggered trade on ${targetSymbol} — Strategy: ${contractType} (${opp.conf}% Confidence)`);
   }
 
   const stake = Number(state.nextStake.toFixed(2));
@@ -723,7 +729,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Multi-market scanner automation started with strict >= 65% filter.");
+  log("Multi-market scanner automation started with Hybrid Recovery.");
   speak("Automation started.");
 }
 
