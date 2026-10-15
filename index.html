@@ -161,7 +161,7 @@ input:focus, select:focus {
     </div>
   </div>
 
-  <!-- LIVE TICK STREAM & DIGIT GRID -->
+  <!-- LIVE TICK STREAM & STATS PANEL -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="card text-center flex flex-col justify-between">
       <div>
@@ -169,8 +169,15 @@ input:focus, select:focus {
         <div class="text-[10px] uppercase text-slate-400">Last Tick Digit</div>
         <div class="digit-box" id="lastDigit">–</div>
         <div class="text-xs text-cyan-400 mb-4" id="digitInfo">Awaiting connection...</div>
+
+        <!-- STATS PANEL (Feature 2) -->
+        <div class="text-left mt-2">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Digit Frequency Stats (Last 100 Ticks)</div>
+          <div class="grid grid-cols-5 gap-1.5" id="statsGrid"></div>
+        </div>
       </div>
-      <div class="space-y-2">
+
+      <div class="space-y-2 mt-4">
         <button onclick="startTrading()" id="startBtn" class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider cursor-pointer disabled:opacity-40" disabled>
           ▶ START AUTOMATION
         </button>
@@ -180,17 +187,23 @@ input:focus, select:focus {
       </div>
     </div>
 
+    <!-- ENTRY PARAMETERS & RISK CONTROLS -->
     <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Entry Parameters</h2>
-      <label class="text-[10px] uppercase tracking-wider text-slate-400">Target Barrier Digit</label>
-      <div class="grid grid-cols-5 gap-2 my-2" id="digitButtons"></div>
-
-      <div class="mt-3">
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Entry Parameters & Risk</h2>
+      
+      <div class="mb-3">
         <label class="text-[10px] uppercase tracking-wider text-slate-400">Contract Type</label>
-        <select id="direction">
+        <select id="direction" onchange="toggleBarrier()">
           <option value="DIGITOVER">DIGITOVER (Higher than digit)</option>
           <option value="DIGITUNDER">DIGITUNDER (Lower than digit)</option>
+          <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
+          <option value="DIGITODD">DIGITODD (Odd digit)</option>
         </select>
+      </div>
+
+      <div id="barrierContainer">
+        <label class="text-[10px] uppercase tracking-wider text-slate-400">Target Barrier Digit</label>
+        <div class="grid grid-cols-5 gap-2 my-2" id="digitButtons"></div>
       </div>
 
       <div class="grid grid-cols-2 gap-2 mt-3">
@@ -199,12 +212,12 @@ input:focus, select:focus {
           <input id="stake" type="number" value="0.35" step="0.01">
         </div>
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Martingale</label>
+          <label class="text-[10px] uppercase tracking-wider text-slate-400">Martingale Multiplier</label>
           <input id="martingale" type="number" value="2.1" step="0.1">
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-2 mt-3">
+      <div class="grid grid-cols-3 gap-2 mt-3">
         <div>
           <label class="text-[10px] uppercase tracking-wider text-emerald-400">Take Profit ($)</label>
           <input id="tp" type="number" value="10" class="border-emerald-500/50">
@@ -212,6 +225,10 @@ input:focus, select:focus {
         <div>
           <label class="text-[10px] uppercase tracking-wider text-rose-400">Stop Loss ($)</label>
           <input id="sl" type="number" value="20" class="border-rose-500/50">
+        </div>
+        <div>
+          <label class="text-[10px] uppercase tracking-wider text-yellow-400">Max Loss Streak</label>
+          <input id="maxLossStreak" type="number" value="4" class="border-yellow-500/50">
         </div>
       </div>
     </div>
@@ -236,6 +253,7 @@ let state = {
   total: 0,
   wins: 0,
   losses: 0,
+  consecutiveLosses: 0, // Feature 1 Tracker
   selectedDigit: 4,
   running: false,
   pendingBuy: false,
@@ -251,6 +269,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const savedToken = localStorage.getItem('titan_deriv_token');
   if (savedToken) $("apiToken").value = savedToken;
   buildDigitButtons();
+  buildStatsGrid();
 });
 
 function log(msg) {
@@ -280,6 +299,27 @@ function buildDigitButtons() {
     };
     container.appendChild(btn);
   }
+}
+
+// Feature 2: Stats Grid Renderer
+function buildStatsGrid() {
+  const container = $("statsGrid");
+  container.innerHTML = "";
+  const total = historyDigits.length || 1;
+  for (let d = 0; d <= 9; d++) {
+    const pct = ((counts[d] / total) * 100).toFixed(0);
+    const box = document.createElement("div");
+    box.className = "bg-[#030712] border border-slate-800 rounded-lg p-1.5 text-center text-[10px]";
+    box.innerHTML = `<span class="text-slate-400 font-bold">${d}:</span> <span class="text-emerald-400 font-mono">${pct}%</span>`;
+    container.appendChild(box);
+  }
+}
+
+function toggleBarrier() {
+  const type = $("direction").value;
+  const isEvenOdd = type === "DIGITEVEN" || type === "DIGITODD";
+  $("barrierContainer").style.opacity = isEvenOdd ? "0.3" : "1";
+  $("barrierContainer").style.pointerEvents = isEvenOdd ? "none" : "auto";
 }
 
 async function connectDeriv() {
@@ -357,6 +397,7 @@ function connectWebSocket(wsUrl) {
         let removed = historyDigits.shift();
         counts[removed]--;
       }
+      buildStatsGrid();
 
       if (state.running && !state.awaitingResult && !state.pendingBuy) {
         executeTrade();
@@ -393,15 +434,19 @@ function connectWebSocket(wsUrl) {
         state.profit += p;
         state.total++;
 
+        let maxLossStreak = Number($("maxLossStreak").value) || 4;
+
         if (p > 0) {
           state.wins++;
+          state.consecutiveLosses = 0; // Reset streak on win
           state.nextStake = Number($("stake").value) || 0.35;
           log(`WIN! +$${p.toFixed(2)}`);
           speak("Win.");
         } else {
           state.losses++;
+          state.consecutiveLosses++; // Increment streak on loss
           state.nextStake *= Number($("martingale").value) || 2.1;
-          log(`LOSS! -$${Math.abs(p).toFixed(2)}`);
+          log(`LOSS! -$${Math.abs(p).toFixed(2)} (Streak: ${state.consecutiveLosses})`);
           speak("Loss.");
         }
 
@@ -415,10 +460,16 @@ function connectWebSocket(wsUrl) {
           log(`🎯 Take Profit reached ($${state.profit.toFixed(2)}). Stopped.`);
           speak("Take profit reached.");
         }
-        if (state.profit <= -sl) {
+        else if (state.profit <= -sl) {
           state.running = false;
           log(`🛑 Stop Loss hit ($${state.profit.toFixed(2)}). Stopped.`);
           speak("Stop loss hit.");
+        }
+        // Feature 1: Circuit breaker check
+        else if (state.consecutiveLosses >= maxLossStreak) {
+          state.running = false;
+          log(`🚨 Circuit Breaker Triggered: ${state.consecutiveLosses} consecutive losses reached. Automation halted to protect bankroll.`);
+          speak("Circuit breaker triggered. Automation stopped.");
         }
 
         state.awaitingResult = false;
@@ -441,11 +492,11 @@ function executeTrade() {
   const symbol = $("symbol").value;
   const contractType = $("direction").value;
   const stake = Number(state.nextStake.toFixed(2));
+  const isEvenOdd = contractType === "DIGITEVEN" || contractType === "DIGITODD";
 
   state.pendingBuy = true;
-  log(`Executing ${contractType} on ${symbol} with barrier ${state.selectedDigit} | Stake: $${stake}`);
-
-  ws.send(JSON.stringify({
+  
+  let req = {
     proposal: 1,
     amount: stake,
     basis: "stake",
@@ -453,14 +504,23 @@ function executeTrade() {
     currency: "USD",
     underlying_symbol: symbol,
     duration: 1,
-    duration_unit: "t",
-    barrier: state.selectedDigit.toString()
-  }));
+    duration_unit: "t"
+  };
+
+  if (!isEvenOdd) {
+    req.barrier = state.selectedDigit.toString();
+    log(`Executing ${contractType} with barrier ${state.selectedDigit} | Stake: $${stake}`);
+  } else {
+    log(`Executing ${contractType} | Stake: $${stake}`);
+  }
+
+  ws.send(JSON.stringify(req));
 }
 
 function startTrading() {
   if (!ws) return;
   state.running = true;
+  state.consecutiveLosses = 0;
   log("Automation started.");
   speak("Automation started.");
 }
