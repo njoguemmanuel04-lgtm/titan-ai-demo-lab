@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080c16">
+<title>TITAN AI | Demo Laboratory</title>
+
+<style>
+:root {
+  --bg:#080c16;
+  --panel:#111827;
+  --panel2:#0d1422;
+  --border:#25334b;
+  --text:#edf4ff;
+  --muted:#91a2bd;
+  --green:#24e59a;
+  --red:#ff5576;
+  --blue:#54b7ff;
+  --yellow:#ffd166;
+}
+
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  background:radial-gradient(circle at top,#172441 0%,var(--bg) 45%);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+  min-height:100vh;
+}
+
+header {
+  padding:22px 16px;
+  text-align:center;
+  border-bottom:1px solid var(--border);
+  background:#090e1bee;
+  position:sticky;
+  top:0;
+  z-index:5;
+}
+
+.logo {
+  font-size:26px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+
+.logo span { color:var(--green); }
+
+.subtitle {
+  font-size:11px;
+  color:var(--muted);
+  margin-top:6px;
+  letter-spacing:2px;
+}
+
+.badge {
+  display:inline-block;
+  margin-top:12px;
+  border:1px solid #24e59a66;
+  color:var(--green);
+  padding:6px 12px;
+  border-radius:30px;
+  font-size:11px;
+  font-weight:bold;
+}
+
+main {
+  max-width:1100px;
+  margin:auto;
+  padding:16px;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+.card {
+  background:linear-gradient(145deg,var(--panel),var(--panel2));
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  min-width:0;
+  margin-bottom:12px;
+}
+
+.card h2 {
+  font-size:14px;
+  margin:0 0 14px;
+}
+
+.label {
+  color:var(--muted);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+
+.value {
+  font-size:25px;
+  font-weight:bold;
+  margin-top:8px;
+  overflow-wrap:anywhere;
+}
+
+.green { color:var(--green); }
+.red { color:var(--red); }
+.blue { color:var(--blue); }
+.yellow { color:var(--yellow); }
+
+.small {
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.6;
+}
+
+.digit-display {
+  width:94px;
+  height:94px;
+  display:grid;
+  place-items:center;
+  margin:12px auto;
+  border:2px solid var(--green);
+  border-radius:22px;
+  font-size:54px;
+  font-weight:900;
+  box-shadow:0 0 25px #24e59a22;
+}
+
+.center { text-align:center; }
+
+.digits {
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+  margin-top:12px;
+}
+
+.digit-btn {
+  border:1px solid var(--border);
+  background:#0a1120;
+  color:var(--text);
+  padding:13px 4px;
+  border-radius:10px;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.digit-btn.active {
+  background:#24e59a20;
+  border-color:var(--green);
+  color:var(--green);
+}
+
+select,input {
+  width:100%;
+  background:#080e1b;
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px;
+  margin-top:7px;
+  outline:none;
+}
+
+.field { margin:12px 0; }
+
+button.action {
+  width:100%;
+  padding:14px;
+  border:0;
+  border-radius:10px;
+  background:var(--green);
+  color:#06120d;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+  margin-top:8px;
+}
+
+button.secondary {
+  background:#1b2a42;
+  color:var(--text);
+  border:1px solid var(--border);
+}
+
+button.danger {
+  background:#351724;
+  color:#ff8da4;
+  border:1px solid #7a2940;
+}
+
+button:disabled {
+  opacity:.4;
+  cursor:not-allowed;
+}
+
+.signal-box {
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin-top:10px;
+  background:#080e1b;
+}
+
+.signal-title {
+  font-size:20px;
+  font-weight:900;
+  margin:8px 0;
+}
+
+.progress {
+  height:8px;
+  background:#25334b;
+  border-radius:20px;
+  overflow:hidden;
+  margin-top:10px;
+}
+
+.progress div {
+  height:100%;
+  width:0%;
+  background:var(--green);
+  transition:width .3s;
+}
+
+.table-wrap { overflow-x:auto; }
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+  min-width:440px;
+}
+
+th,td {
+  padding:11px 8px;
+  text-align:left;
+  border-bottom:1px solid var(--border);
+}
+
+th { color:var(--muted); }
+
+.log {
+  max-height:220px;
+  overflow:auto;
+  font-size:12px;
+  line-height:1.7;
+}
+
+.log div {
+  padding:6px 0;
+  border-bottom:1px solid #25334b55;
+}
+
+.notice {
+  padding:12px;
+  background:#332916;
+  border:1px solid #725b2b;
+  border-radius:10px;
+  color:#ffe0a0;
+  font-size:12px;
+  line-height:1.6;
+  margin-bottom:14px;
+}
+
+footer {
+  text-align:center;
+  color:var(--muted);
+  font-size:11px;
+  padding:24px;
+}
+
+@media(min-width:760px) {
+  main { padding:24px; }
+  .grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .wide { grid-column:span 2; }
+}
+
+@media(max-width:380px) {
+  .value { font-size:21px; }
+  .card { padding:12px; }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="logo">TITAN <span>AI</span></div>
+  <div class="subtitle">DIGITAL STRATEGY LABORATORY</div>
+  <div class="badge">● DEMO MODE ONLY</div>
+</header>
+
+<main>
+
+<div class="notice">
+  <strong>SIMULATOR ONLY:</strong> This app generates random digits
+  locally. It does not use live Deriv quotes, predict market movements,
+  or place real trades. Results are educational simulations.
+</div>
+
+<div class="grid">
+  <div class="card">
+    <div class="label">Virtual Balance</div>
+    <div class="value green" id="balance">$100.00</div>
+    <div class="small">Starting balance: $100</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Simulated P/L</div>
+    <div class="value" id="profit">$0.00</div>
+    <div class="small">Virtual results only</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Completed Runs</div>
+    <div class="value" id="runs">0</div>
+    <div class="small" id="runTarget">Target: 100 per strategy</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Simulated Win Rate</div>
+    <div class="value blue" id="winRate">0%</div>
+    <div class="small" id="winLoss">0 wins / 0 losses</div>
+  </div>
+</div>
+
+<div class="grid">
+  <section class="card">
+    <h2>LIVE SIMULATED DIGIT</h2>
+    <div class="center">
+      <div class="label">Latest generated digit</div>
+      <div class="digit-display" id="lastDigit">–</div>
+      <div class="small" id="digitInfo">Start the simulation to generate digits</div>
+    </div>
+    <button class="action" id="startBtn" onclick="startSimulation()">
+      ▶ START DEMO
+    </button>
+    <button class="action secondary" onclick="stopSimulation()">
+      ■ STOP
+    </button>
+  </section>
+
+  <section class="card">
+    <h2>ENTRY DIGIT</h2>
+    <div class="small">
+      Choose an entry digit for Over/Under tests.
+    </div>
+    <div class="digits" id="digitButtons"></div>
+
+    <div class="field">
+      <label class="label" for="strategy">Strategy</label>
+      <select id="strategy">
+        <option value="both">Compare both strategies</option>
+        <option value="over">Over/Under only</option>
+        <option value="even">Even/Odd only</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="label" for="direction">Over/Under direction</label>
+      <select id="direction">
+        <option value="over">OVER selected digit</option>
+        <option value="under">UNDER selected digit</option>
+      </select>
+    </div>
+  </section>
+</div>
+
+<section class="card">
+  <h2>STRATEGY SIGNALS</h2>
+
+  <div class="signal-box">
+    <div class="label">Strategy 1 — Over / Under</div>
+    <div class="signal-title blue" id="overSignal">WAITING</div>
+    <div class="small" id="overDetails">
+      Start the demo to evaluate this strategy.
+    </div>
+  </div>
+
+  <div class="signal-box">
+    <div class="label">Strategy 2 — Even / Odd</div>
+    <div class="signal-title blue" id="evenSignal">WAITING</div>
+    <div class="small" id="evenDetails">
+      Start the demo to evaluate this strategy.
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="label" for="stake">Virtual Stake ($)</label>
+    <input id="stake" type="number" min="0.01" max="100"
+           step="0.01" value="1">
+  </div>
+
+  <div class="field">
+    <label class="label" for="maxLoss">Maximum simulated daily loss ($)</label>
+    <input id="maxLoss" type="number" min="1" max="100"
+           step="1" value="5">
+  </div>
+
+  <div class="field">
+    <label class="label" for="maxRuns">Runs per strategy</label>
+    <select id="maxRuns">
+      <option value="20">20 runs</option>
+      <option value="50">50 runs</option>
+      <option value="100" selected>100 runs</option>
+      <option value="200">200 runs</option>
+    </select>
+  </div>
+
+  <label class="small">
+    <input id="voice" type="checkbox" checked
+           style="width:auto;margin-right:8px">
+    Enable voice alerts
+  </label>
+
+  <div class="progress"><div id="progressBar"></div></div>
+  <div class="small" id="progressText">0% complete</div>
+
+  <button class="action secondary" onclick="compareDigits()">
+    COMPARE DIGITS 0–9
+  </button>
+
+  <button class="action secondary" onclick="toggleVoiceTest()">
+    TEST VOICE ALERT
+  </button>
+
+  <button class="action danger" onclick="resetDemo()">
+    RESET DEMO BALANCE
+  </button>
+</section>
+
+<section class="card">
+  <h2>AUTOMATIC DIGIT COMPARISON</h2>
+  <div class="small">
+    Uses randomly generated digits. This is a software test, not a
+    live-market backtest or a ranking of profitable Deriv digits.
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Digit</th>
+          <th>Over wins</th>
+          <th>Under wins</th>
+          <th>Over rate</th>
+          <th>Under rate</th>
+        </tr>
+      </thead>
+      <tbody id="comparisonTable">
+        <tr><td colspan="5">Tap Compare Digits to begin.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2>TRADE HISTORY</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th>Strategy</th>
+          <th>Entry</th>
+          <th>Result digit</th>
+          <th>Outcome</th>
+          <th>Virtual P/L</th>
+        </tr>
+      </thead>
+      <tbody id="history">
+        <tr><td colspan="6">No simulated trades yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2>SYSTEM LOG</h2>
+  <div class="log" id="log">
+    <div>TITAN AI initialized. DEMO ONLY.</div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  TITAN AI Demo Laboratory · Virtual funds only · No profit guarantees
+</footer>
+
+<script>
+"use strict";
+
+const state = {
+  balance: 100,
+  startingBalance: 100,
+  total: 0,
+  wins: 0,
+  losses: 0,
+  overRuns: 0,
+  evenRuns: 0,
+  overWins: 0,
+  evenWins: 0,
+  dailyLoss: 0,
+  selectedDigit: 4,
+  consecutiveLosses: 0,
+  running: false,
+  timer: null,
+  history: [],
+  digits: []
+};
+
+const $ = id => document.getElementById(id);
+
+function money(n) {
+  return (n < 0 ? "-$" : "$") + Math.abs(n).toFixed(2);
+}
+
+function log(message) {
+  const line = document.createElement("div");
+  line.textContent = new Date().toLocaleTimeString() + " — " + message;
+  $("log").prepend(line);
+
+  while ($("log").children.length > 80) {
+    $("log").lastElementChild.remove();
+  }
+}
+
+function speak(message) {
+  if (!$("voice").checked) return;
+  if (!("speechSynthesis" in window)) {
+    log("Voice alerts are not supported in this browser.");
+    return;
+  }
+
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(message);
+  utterance.rate = 1;
+  speechSynthesis.speak(utterance);
+}
+
+function buildDigitButtons() {
+  const container = $("digitButtons");
+  container.innerHTML = "";
+
+  for (let d = 0; d <= 9; d++) {
+    const btn = document.createElement("button");
+    btn.className = "digit-btn" + (d === state.selectedDigit ? " active" : "");
+    btn.textContent = d;
+    btn.onclick = () => {
+      state.selectedDigit = d;
+      buildDigitButtons();
+      log("Entry digit changed to " + d);
+      updateSignals();
+    };
+    container.appendChild(btn);
+  }
+}
+
+function randomDigit() {
+  return Math.floor(Math.random() * 10);
+}
+
+function addDigit(digit) {
+  state.digits.push(digit);
+  if (state.digits.length > 100) state.digits.shift();
+  $("lastDigit").textContent = digit;
+  $("digitInfo").textContent =
+    "Last " + state.digits.length + " generated digit(s)";
+}
+
+function updateSignals() {
+  const digit = state.digits.length
+    ? state.digits[state.digits.length - 1]
+    : null;
+
+  if (digit === null) return;
+
+  const direction = $("direction").value;
+  const threshold = state.selectedDigit;
+
+  $("overSignal").textContent =
+    direction.toUpperCase() + " " + threshold;
+  $("overDetails").textContent =
+    "Latest digit: " + digit +
+    ". A simulated " + direction.toUpperCase() +
+    " contract will be evaluated using the next generated digit.";
+
+  $("evenSignal").textContent = digit % 2 === 0 ? "EVEN" : "ODD";
+  $("evenDetails").textContent =
+    "Latest digit is " + (digit % 2 === 0 ? "even" : "odd") +
+    ". This describes the current digit, not a prediction of the next one.";
+}
+
+function addHistory(strategy, entry, resultDigit, won, pnl) {
+  state.history.unshift({
+    run: state.total,
+    strategy,
+    entry,
+    resultDigit,
+    won,
+    pnl
+  });
+
+  if (state.history.length > 100) state.history.pop();
+
+  const body = $("history");
+  body.innerHTML = "";
+
+  state.history.forEach(item => {
+    const tr = document.createElement("tr");
+    const values = [
+      item.run,
+      item.strategy,
+      item.entry,
+      item.resultDigit,
+      item.won ? "WIN" : "LOSS",
+      money(item.pnl)
+    ];
+
+    values.forEach((value, index) => {
+      const td = document.createElement("td");
+      td.textContent = value;
+
+      if (index === 4) td.className = item.won ? "green" : "red";
+      if (index === 5) td.className = item.pnl >= 0 ? "green" : "red";
+
+      tr.appendChild(td);
+    });
+
+    body.appendChild(tr);
+  });
+}
+
+/*
+  This demo uses a deliberately simple virtual payoff model:
+  a correct prediction returns a net profit equal to the stake;
+  an incorrect prediction loses the stake.
+
+  This is NOT a Deriv payout model. Real contract payouts differ.
+*/
+function simulateTrade(strategy, resultDigit) {
+  const stake = Number($("stake").value);
+  const maxLoss = Number($("maxLoss").value);
+  const maxRuns = Number($("maxRuns").value);
+
+  if (!Number.isFinite(stake) || stake <= 0 || stake > 100) {
+    stopSimulation();
+    log("Invalid stake. Enter an amount greater than 0 and no more than $100.");
+    return;
+  }
+
+  if (state.balance < stake) {
+    stopSimulation();
+    log("Virtual balance too low. Simulation stopped.");
+    return;
+  }
+
+  let won = false;
+  let entry = "";
+  let strategyName = "";
+
+  if (strategy === "OVER_UNDER") {
+    const threshold = state.selectedDigit;
+    const direction = $("direction").value;
+
+    entry = direction.toUpperCase() + " " + threshold;
+    strategyName = "Over/Under";
+
+    // Standard last-digit conditions: Over wins above threshold;
+    // Under wins below threshold. Equality is not a win.
+    won = direction === "over"
+      ? resultDigit > threshold
+      : resultDigit < threshold;
+
+    state.overRuns++;
+    if (won) state.overWins++;
+  } else {
+    strategyName = "Even/Odd";
+    entry = "EVEN or ODD";
+
+    // This random simulator selects a direction independently
+    // of the next generated digit.
+    const selectedParity = Math.random() < 0.5 ? 0 : 1;
+    entry = selectedParity === 0 ? "EVEN" : "ODD";
+    won = resultDigit % 2 === selectedParity;
+
+    state.evenRuns++;
+    if (won) state.evenWins++;
+  }
+
+  const pnl = won ? stake : -stake;
+
+  state.balance += pnl;
+  state.dailyLoss += won ? 0 : stake;
+  state.total++;
+
+  if (won) {
+    state.wins++;
+    state.consecutiveLosses = 0;
+  } else {
+    state.losses++;
+    state.consecutiveLosses++;
+  }
+
+  addHistory(strategyName, entry, resultDigit, won, pnl);
+
+  log(strategyName + " | " + entry + " | result " + resultDigit +
+      " | " + (won ? "WIN" : "LOSS") + " | " + money(pnl));
+
+  if (won) {
+    speak("Demo trade complete. Win recorded. Virtual profit " +
+          stake.toFixed(2) + " dollars.");
+  } else {
+    speak("Demo trade complete. Loss recorded. Virtual loss " +
+          stake.toFixed(2) + " dollars.");
+  }
+
+  render();
+
+  if (state.dailyLoss >= maxLoss) {
+    stopSimulation();
+    log("Maximum simulated daily loss reached. Simulation stopped.");
+    speak("Risk limit reached. Simulation stopped.");
+  } else if (state.consecutiveLosses >= 3) {
+    stopSimulation();
+    log("Three consecutive losses. Simulation stopped.");
+    speak("Three consecutive losses. Simulation stopped.");
+  } else if (state.balance < stake) {
+    stopSimulation();
+    log("Insufficient virtual balance. Simulation stopped.");
+  } else if (
+    state.overRuns >= maxRuns &&
+    state.evenRuns >= maxRuns
+  ) {
+    stopSimulation();
+    log("Configured run limits reached.");
+  }
+}
+
+function render() {
+  $("balance").textContent = money(state.balance);
+
+  const profit = state.balance - state.startingBalance;
+  $("profit").textContent = money(profit);
+  $("profit").className = "value " + (profit >= 0 ? "green" : "red");
+
+  $("runs").textContent = state.total;
+  $("winRate").textContent = state.total
+    ? ((state.wins / state.total) * 100).toFixed(1) + "%"
+    : "0%";
+
+  $("winLoss").textContent =
+    state.wins + " wins / " + state.losses + " losses";
+
+  const target = Number($("maxRuns").value);
+  const overPct = Math.min(100, state.overRuns / target * 100);
+  const evenPct = Math.min(100, state.evenRuns / target * 100);
+  const progress = (overPct + evenPct) / 2;
+
+  $("progressBar").style.width = progress + "%";
+  $("progressText").textContent =
+    "Over/Under: " + state.overRuns + "/" + target +
+    " · Even/Odd: " + state.evenRuns + "/" + target +
+    " · Average progress: " + progress.toFixed(0) + "%";
+}
+
+function tick() {
+  if (!state.running) return;
+
+  const digit = randomDigit();
+  addDigit(digit);
+  updateSignals();
+
+  const selected = $("strategy").value;
+
+  if (selected === "both" || selected === "over") {
+    simulateTrade("OVER_UNDER", digit);
+  }
+
+  if (state.running && (selected === "both" || selected === "even")) {
+    simulateTrade("EVEN_ODD", digit);
+  }
+
+  render();
+}
+
+function startSimulation() {
+  if (state.running) return;
+
+  const stake = Number($("stake").value);
+  const maxLoss = Number($("maxLoss").value);
+
+  if (!Number.isFinite(stake) || stake <= 0 ||
+      !Number.isFinite(maxLoss) || maxLoss <= 0) {
+    alert("Enter valid positive stake and loss limit values.");
+    return;
+  }
+
+  state.running = true;
+  $("startBtn").disabled = true;
+  log("Demo simulation started. Generated digits are random, not market data.");
+  speak("TITAN AI demo mode activated. Simulation started.");
+
+  state.timer = setInterval(tick, 1800);
+}
+
+function stopSimulation() {
+  state.running = false;
+  if (state.timer) clearInterval(state.timer);
+  state.timer = null;
+  $("startBtn").disabled = false;
+  log("Simulation stopped.");
+}
+
+function compareDigits() {
+  const body = $("comparisonTable");
+  body.innerHTML = "";
+
+  for (let threshold = 0; threshold <= 9; threshold++) {
+    let overWins = 0;
+    let underWins = 0;
+    const sampleSize = 1000;
+
+    for (let i = 0; i < sampleSize; i++) {
+      const d = randomDigit();
+      if (d > threshold) overWins++;
+      if (d < threshold) underWins++;
+    }
+
+    const overRate = (overWins / sampleSize * 100).toFixed(1);
+    const underRate = (underWins / sampleSize * 100).toFixed(1);
+
+    const tr = document.createElement("tr");
+    [
+      threshold,
+      overWins + "/" + sampleSize,
+      underWins + "/" + sampleSize,
+      overRate + "%",
+      underRate + "%"
+    ].forEach(value => {
+      const td = document.createElement("td");
+      td.textContent = value;
+      tr.appendChild(td);
+    });
+
+    body.appendChild(tr);
+  }
+
+  log("Digit comparison complete. Results use random digits, not market data.");
+}
+
+function toggleVoiceTest() {
+  if (!("speechSynthesis" in window)) {
+    alert("Your browser does not support speech synthesis.");
+    return;
+  }
+
+  $("voice").checked = true;
+  speak("TITAN AI voice alerts are working in demo mode.");
+}
+
+function resetDemo() {
+  if (!confirm("Reset virtual balance and all demo statistics?")) return;
+
+  stopSimulation();
+
+  state.balance = 100;
+  state.startingBalance = 100;
+  state.total = 0;
+  state.wins = 0;
+  state.losses = 0;
+  state.overRuns = 0;
+  state.evenRuns = 0;
+  state.overWins = 0;
+  state.evenWins = 0;
+  state.dailyLoss = 0;
+  state.consecutiveLosses = 0;
+  state.history = [];
+  state.digits = [];
+
+  $("lastDigit").textContent = "–";
+  $("digitInfo").textContent = "Start the simulation to generate digits";
+  $("overSignal").textContent = "WAITING";
+  $("evenSignal").textContent = "WAITING";
+  $("history").innerHTML =
+    '<tr><td colspan="6">No simulated trades yet.</td></tr>';
+
+  log("Demo laboratory reset. Virtual balance restored to $100.");
+  render();
+}
+
+buildDigitButtons();
+render();
+</script>
+</body>
+</html>
