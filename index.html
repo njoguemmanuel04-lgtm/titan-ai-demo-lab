@@ -3,16 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#030712">
 <title>TITAN AI | Elite Deriv Trading Terminal</title>
-
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
   --bg: #030712;
   --panel: #0f172a;
-  --panel-glow: rgba(36, 229, 154, 0.03);
   --border: #1e293b;
-  --border-focus: #334155;
   --text: #f8fafc;
   --muted: #94a3b8;
   --green: #24e59a;
@@ -21,18 +18,14 @@
   --blue: #38bdf8;
   --yellow: #facc15;
 }
-
-* { box-sizing: border-box; }
-
 body {
-  margin: 0;
   background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg) 60%);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
+  margin: 0;
   padding-bottom: 40px;
 }
-
 header {
   padding: 20px;
   text-align: center;
@@ -43,7 +36,6 @@ header {
   top: 0;
   z-index: 10;
 }
-
 .logo {
   font-size: 24px;
   font-weight: 900;
@@ -52,143 +44,20 @@ header {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-
-.badge {
-  display: inline-block;
-  margin-top: 8px;
-  border: 1px solid rgba(36, 229, 154, 0.3);
-  background: rgba(36, 229, 154, 0.05);
-  color: var(--green);
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-main {
-  max-width: 1000px;
-  margin: 20px auto;
-  padding: 0 16px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media(min-width: 768px) {
-  .grid-2 { grid-template-columns: repeat(2, 1fr); }
-  .grid-4 { grid-template-columns: repeat(4, 1fr); }
-}
-
 .card {
   background: linear-gradient(135deg, var(--panel), #0b0f19);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  margin-bottom: 16px;
 }
-
-.card h2 {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--muted);
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .metric-card {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 16px;
 }
-
-.metric-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--muted);
-}
-
-.metric-value {
-  font-size: 22px;
-  font-weight: 800;
-  margin-top: 6px;
-}
-
-.green { color: var(--green); }
-.red { color: var(--red); }
-.blue { color: var(--blue); }
-
-input, select {
-  width: 100%;
-  background: #030712;
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 14px;
-  font-size: 13px;
-  margin-top: 6px;
-  outline: none;
-  transition: all 0.2s;
-}
-
-input:focus, select:focus {
-  border-color: var(--green);
-  box-shadow: 0 0 10px var(--green-glow);
-}
-
-.field { margin-bottom: 14px; }
-.field:last-child { margin-bottom: 0; }
-
-.btn {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  font-weight: 800;
-  font-size: 12px;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-primary {
-  background: var(--green);
-  color: #030712;
-  box-shadow: 0 4px 20px var(--green-glow);
-}
-
-.btn-primary:hover {
-  filter: brightness(1.1);
-}
-
-.btn-secondary {
-  background: #1e293b;
-  color: var(--text);
-  border: 1px solid var(--border);
-  margin-top: 8px;
-}
-
-.btn-danger {
-  background: rgba(255, 71, 87, 0.1);
-  color: var(--red);
-  border: 1px solid rgba(255, 71, 87, 0.3);
-  margin-top: 8px;
-}
-
-.btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
 .digit-box {
   width: 90px;
   height: 90px;
@@ -204,192 +73,81 @@ input:focus, select:focus {
   color: var(--green);
   box-shadow: 0 0 25px var(--green-glow);
 }
-
-.digits-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.digit-btn {
-  background: #030712;
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 10px 0;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.digit-btn.active {
-  background: rgba(36, 229, 154, 0.15);
-  border-color: var(--green);
-  color: var(--green);
-}
-
-.log-box {
-  background: #030712;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-  height: 160px;
-  overflow-y: auto;
-  font-family: monospace;
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-.log-box div {
-  border-bottom: 1px solid rgba(30, 41, 59, 0.5);
-  padding: 4px 0;
-}
-
-footer {
-  text-align: center;
-  color: var(--muted);
-  font-size: 11px;
-  margin-top: 30px;
-  letter-spacing: 1px;
-}
 </style>
 </head>
-
 <body>
 
 <header>
   <div class="logo">TITAN AI</div>
-  <div class="badge" id="connectionBadge">● DISCONNECTED</div>
+  <div class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest" id="connectionBadge">
+    ● DISCONNECTED
+  </div>
 </header>
 
-<main>
-  <div class="grid">
-    <!-- CREDENTIALS CARD -->
-    <div class="card">
-      <h2>🔐 API Credentials & Market</h2>
-      <div class="grid grid-2" style="gap:12px;">
-        <div class="field">
-          <label class="metric-label">App ID</label>
-          <input id="appId" type="text" placeholder="e.g. 1089">
-        </div>
-        <div class="field">
-          <label class="metric-label">API Token</label>
-          <input id="apiToken" type="password" placeholder="Paste token here">
-        </div>
-      </div>
-      <div class="field" style="margin-top:12px;">
-        <label class="metric-label">Volatility Index</label>
-        <select id="symbol">
-          <option value="R_10">Volatility 10 Index</option>
-          <option value="R_25">Volatility 25 Index</option>
-          <option value="R_50" selected>Volatility 50 Index</option>
-          <option value="R_75">Volatility 75 Index</option>
-          <option value="R_100">Volatility 100 Index</option>
-        </select>
-      </div>
-      <button class="btn btn-primary" onclick="connectDeriv()">CONNECT TO DERIV</button>
-      <button class="btn btn-danger" onclick="clearMemory()">CLEAR SAVED CREDENTIALS</button>
+<main class="max-w-4xl mx-auto px-4 mt-5">
+  <!-- CREDENTIALS CARD -->
+  <div class="card">
+    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-4 font-bold">🔐 Deriv API Credentials</h2>
+    <div class="mb-3">
+      <label class="text-[10px] uppercase tracking-wider text-slate-400">Personal Access Token (PAT)</label>
+      <input id="apiToken" type="password" placeholder="Paste your token here" class="w-full bg-[#030712] text-white border border-slate-700 rounded-xl p-3 mt-1 text-sm outline-none focus:border-emerald-400">
     </div>
-
-    <!-- METRICS GRID -->
-    <div class="grid grid-4">
-      <div class="metric-card">
-        <div class="metric-label">Balance</div>
-        <div class="metric-value green" id="balance">$0.00</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Session P/L</div>
-        <div class="metric-value" id="profit">$0.00</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Contracts</div>
-        <div class="metric-value" id="runs">0</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Win Rate</div>
-        <div class="metric-value blue" id="winRate">0%</div>
-      </div>
+    <div class="flex gap-2">
+      <button onclick="connectDeriv()" id="connectBtn" class="w-full bg-[#24e59a] text-[#030712] font-extrabold py-3 rounded-xl text-xs tracking-wider shadow-lg shadow-emerald-500/20 hover:brightness-110 cursor-pointer">
+        CONNECT TO DERIV
+      </button>
+      <button onclick="clearMemory()" class="bg-rose-500/10 text-rose-500 border border-rose-500/30 font-bold px-4 rounded-xl text-xs hover:bg-rose-500/20 cursor-pointer">
+        CLEAR
+      </button>
     </div>
+  </div>
 
-    <!-- CONTROLS & DIGITS -->
-    <div class="grid grid-2">
-      <div class="card">
-        <h2>📊 Live Tick Stream</h2>
-        <div style="text-align: center;">
-          <div class="metric-label">Last Tick Digit</div>
-          <div class="digit-box" id="lastDigit">–</div>
-          <div class="metric-label" id="digitInfo" style="margin-bottom: 14px;">Awaiting connection...</div>
-        </div>
-        <button class="btn btn-primary" id="startBtn" onclick="startLiveTrading()" disabled>▶ START LIVE AUTOMATION</button>
-        <button class="btn btn-secondary" onclick="stopLiveTrading()">■ STOP AUTOMATION</button>
-      </div>
-
-      <div class="card">
-        <h2>⚙️ Entry Parameters</h2>
-        <div class="metric-label">Target Barrier Digit</div>
-        <div class="digits-grid" id="digitButtons"></div>
-
-        <div class="field" style="margin-top: 14px;">
-          <label class="metric-label">Contract Type</label>
-          <select id="direction">
-            <option value="over">DIGITOVER (Higher than digit)</option>
-            <option value="under">DIGITUNDER (Lower than digit)</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label class="metric-label">Stake ($)</label>
-          <input id="stake" type="number" min="0.35" max="50" step="0.01" value="0.35">
-        </div>
-      </div>
+  <!-- METRICS GRID -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+    <div class="metric-card">
+      <div class="text-[10px] uppercase text-slate-400">Balance</div>
+      <div class="text-2xl font-black text-emerald-400 mt-1" id="balance">$0.00</div>
     </div>
+    <div class="metric-card">
+      <div class="text-[10px] uppercase text-slate-400">Session P/L</div>
+      <div class="text-2xl font-black mt-1" id="profit">$0.00</div>
+    </div>
+    <div class="metric-card">
+      <div class="text-[10px] uppercase text-slate-400">Contracts</div>
+      <div class="text-2xl font-black mt-1" id="runs">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="text-[10px] uppercase text-slate-400">Win Rate</div>
+      <div class="text-2xl font-black text-cyan-400 mt-1" id="winRate">0%</div>
+    </div>
+  </div>
 
-    <!-- SYSTEM LOG -->
-    <div class="card">
-      <h2>📜 System Execution Log</h2>
-      <div class="log-box" id="log">
-        <div>Terminal initialized. Ready for connection.</div>
-      </div>
+  <!-- LIVE TICK STREAM -->
+  <div class="card text-center">
+    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📊 Live Tick Stream</h2>
+    <div class="text-[10px] uppercase text-slate-400">Last Tick Digit</div>
+    <div class="digit-box" id="lastDigit">–</div>
+    <div class="text-xs text-cyan-400 mb-4" id="digitInfo">Awaiting connection...</div>
+  </div>
+
+  <!-- SYSTEM LOG -->
+  <div class="card">
+    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
+    <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-40 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
+      <div>Terminal initialized. Ready for connection.</div>
     </div>
   </div>
 </main>
 
-<footer>
-  TITAN AI · Secure Local Memory & Voice Terminal
-</footer>
-
 <script>
-"use strict";
-
 let ws = null;
-const state = {
-  balance: 0,
-  startingBalance: 0,
-  total: 0,
-  wins: 0,
-  losses: 0,
-  selectedDigit: 4,
-  running: false,
-  authorized: false,
-  pendingTrade: false
-};
-
+const state = { balance: 0, startingBalance: 0, total: 0, wins: 0, authorized: false };
 const $ = id => document.getElementById(id);
 
-// Load saved credentials on startup
 window.addEventListener('DOMContentLoaded', () => {
-  const savedAppId = localStorage.getItem('titan_deriv_appid');
   const savedToken = localStorage.getItem('titan_deriv_token');
-  if (savedAppId) $("appId").value = savedAppId;
   if (savedToken) $("apiToken").value = savedToken;
-  buildDigitButtons();
 });
-
-function money(n) {
-  return (n < 0 ? "-$" : "$") + Math.abs(n).toFixed(2);
-}
 
 function log(msg) {
   const line = document.createElement("div");
@@ -404,164 +162,79 @@ function speak(msg) {
   window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
 }
 
-function buildDigitButtons() {
-  const container = $("digitButtons");
-  container.innerHTML = "";
-  for (let d = 0; d <= 9; d++) {
-    const btn = document.createElement("button");
-    btn.className = "digit-btn" + (d === state.selectedDigit ? " active" : "");
-    btn.textContent = d;
-    btn.onclick = () => {
-      state.selectedDigit = d;
-      buildDigitButtons();
-      log("Target barrier changed to " + d);
-    };
-    container.appendChild(btn);
-  }
-}
-
-function connectDeriv() {
-  const appId = $("appId").value.trim();
+async function connectDeriv() {
   const token = $("apiToken").value.trim();
-
-  if (!appId || !token) {
-    alert("Please provide both an App ID and an API Token.");
+  if (!token) {
+    alert("Please paste your Deriv API Token.");
     return;
   }
 
-  localStorage.setItem('titan_deriv_appid', appId);
   localStorage.setItem('titan_deriv_token', token);
-  log("Credentials saved to browser memory.");
+  log("Requesting secure OTP connection via backend...");
   speak("Connecting to Deriv.");
+  $("connectBtn").textContent = "CONNECTING...";
 
-  ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${appId}`);
+  try {
+    let response = await fetch("/api/deriv-auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: token })
+    });
+
+    let data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Authentication failed");
+
+    log(`Authorized account: ${data.account_id} (${data.account_type})`);
+    state.balance = data.balance;
+    state.startingBalance = data.balance;
+    $("balance").textContent = "$" + Number(data.balance).toFixed(2);
+    $("connectionBadge").textContent = "● CONNECTED & AUTHORIZED";
+    $("connectionBadge").style.color = "var(--green)";
+    $("connectBtn").textContent = "CONNECTED";
+    speak("Authorized successfully.");
+
+    connectWebSocket(data.ws_url);
+
+  } catch (err) {
+    log("Auth Error: " + err.message);
+    alert("Connection Error: " + err.message);
+    $("connectBtn").textContent = "CONNECT TO DERIV";
+    speak("Connection failed.");
+  }
+}
+
+function connectWebSocket(wsUrl) {
+  ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("WebSocket opened. Authorizing...");
-    ws.send(JSON.stringify({ authorize: token }));
+    log("Authenticated WebSocket stream opened.");
+    ws.send(JSON.stringify({ ticks: "R_50", subscribe: 1 }));
   };
 
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    handleMessage(data);
+    if (data.msg_type === "tick" && data.tick) {
+      const quote = data.tick.quote.toString();
+      const digit = parseInt(quote.slice(-1));
+      $("lastDigit").textContent = digit;
+      $("digitInfo").textContent = `Quote: ${quote} | Symbol: R_50`;
+    }
   };
 
-  ws.onerror = () => log("WebSocket error.");
   ws.onclose = () => {
-    log("Connection closed.");
+    log("WebSocket connection closed.");
     $("connectionBadge").textContent = "● DISCONNECTED";
     $("connectionBadge").style.color = "var(--red)";
-    state.authorized = false;
-    $("startBtn").disabled = true;
+    $("connectBtn").textContent = "CONNECT TO DERIV";
     speak("Connection closed.");
   };
 }
 
 function clearMemory() {
-  if (confirm("Clear saved credentials from browser memory?")) {
-    localStorage.removeItem('titan_deriv_appid');
-    localStorage.removeItem('titan_deriv_token');
-    $("appId").value = "";
-    $("apiToken").value = "";
-    log("Credentials cleared.");
-    speak("Credentials cleared.");
-  }
-}
-
-function handleMessage(data) {
-  if (data.msg_type === "authorize") {
-    if (data.error) {
-      log("Auth error: " + data.error.message);
-      alert("Authorization failed: " + data.error.message);
-      speak("Authorization failed.");
-      return;
-    }
-    state.authorized = true;
-    state.balance = data.authorize.balance;
-    state.startingBalance = data.authorize.balance;
-    $("balance").textContent = money(state.balance);
-    $("connectionBadge").textContent = "● CONNECTED & AUTHORIZED";
-    $("connectionBadge").style.color = "var(--green)";
-    $("startBtn").disabled = false;
-    log(`Authorized. Balance: ${money(state.balance)}`);
-    speak("Authorized successfully.");
-
-    ws.send(JSON.stringify({ ticks: $("symbol").value, subscribe: 1 }));
-  }
-  else if (data.msg_type === "tick" && data.tick) {
-    const quote = data.tick.quote.toString();
-    const digit = parseInt(quote.slice(-1));
-    $("lastDigit").textContent = digit;
-    $("digitInfo").textContent = `Quote: ${data.tick.quote}`;
-
-    if (state.running && !state.pendingTrade) {
-      executeTrade(digit);
-    }
-  }
-  else if (data.msg_type === "buy") {
-    state.pendingTrade = false;
-    if (data.error) {
-      log("Trade error: " + data.error.message);
-      return;
-    }
-    log(`Contract purchased successfully! ID: ${data.buy.contract_id}`);
-    speak("Contract placed.");
-    ws.send(JSON.stringify({ balance: 1 }));
-  }
-  else if (data.msg_type === "balance" && data.balance) {
-    state.balance = data.balance.balance;
-    render();
-  }
-}
-
-function executeTrade(digit) {
-  const direction = $("direction").value;
-  const stake = Number($("stake").value);
-  const symbol = $("symbol").value;
-  const contractType = direction === "over" ? "DIGITOVER" : "DIGITUNDER";
-
-  state.pendingTrade = true;
-  state.total++;
-
-  ws.send(JSON.stringify({
-    buy: 1,
-    price: stake,
-    parameters: {
-      amount: stake,
-      basis: "stake",
-      contract_type: contractType,
-      currency: "USD",
-      duration: 1,
-      duration_unit: "t",
-      symbol: symbol,
-      barrier: state.selectedDigit.toString()
-    }
-  }));
-  log(`Executing ${contractType} with barrier ${state.selectedDigit}`);
-}
-
-function startLiveTrading() {
-  if (!state.authorized) return;
-  state.running = true;
-  $("startBtn").disabled = true;
-  log("Live automation started.");
-  speak("Automation started.");
-}
-
-function stopLiveTrading() {
-  state.running = false;
-  $("startBtn").disabled = false;
-  log("Live automation stopped.");
-  speak("Automation stopped.");
-}
-
-function render() {
-  $("balance").textContent = money(state.balance);
-  const profit = state.balance - state.startingBalance;
-  $("profit").textContent = money(profit);
-  $("profit").className = "metric-value " + (profit >= 0 ? "green" : "red");
-  $("runs").textContent = state.total;
-  $("winRate").textContent = state.total ? ((state.wins / state.total) * 100).toFixed(1) + "%" : "0%";
+  localStorage.removeItem('titan_deriv_token');
+  $("apiToken").value = "";
+  log("Saved credentials wiped.");
+  speak("Credentials cleared.");
 }
 </script>
 </body>
