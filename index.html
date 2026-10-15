@@ -15,7 +15,9 @@
   --green: #24e59a;
   --green-glow: rgba(36, 229, 154, 0.2);
   --red: #ff4757;
-  --blue: #38bdf8;
+  --red-glow: rgba(255, 71, 87, 0.3);
+  --ice: #38bdf8;
+  --ice-glow: rgba(56, 189, 248, 0.3);
   --yellow: #facc15;
 }
 body {
@@ -51,6 +53,8 @@ header {
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
 }
 .metric-card {
   background: var(--panel);
@@ -72,7 +76,24 @@ header {
   font-weight: 900;
   color: var(--green);
   box-shadow: 0 0 25px var(--green-glow);
+  transition: all 0.3s ease;
 }
+
+/* Feature 3: Moving Scanner Cursor Line */
+.scanline {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green), var(--ice), transparent);
+  animation: scan 2.5s infinite linear;
+}
+@keyframes scan {
+  0% { left: -50%; }
+  100% { left: 100%; }
+}
+
 .digit-btn {
   background: #030712;
   border: 1px solid var(--border);
@@ -88,6 +109,19 @@ header {
   border-color: var(--green);
   color: var(--green);
 }
+
+/* Feature 1 & 2: Dynamic Hot / Cool Styling */
+.stat-box-hot {
+  border-color: var(--red) !important;
+  background: rgba(255, 71, 87, 0.12) !important;
+  box-shadow: 0 0 12px var(--red-glow) !important;
+}
+.stat-box-cool {
+  border-color: var(--ice) !important;
+  background: rgba(56, 189, 248, 0.12) !important;
+  box-shadow: 0 0 12px var(--ice-glow) !important;
+}
+
 input, select {
   width: 100%;
   background: #030712;
@@ -161,18 +195,24 @@ input:focus, select:focus {
     </div>
   </div>
 
-  <!-- LIVE TICK STREAM & STATS PANEL -->
+  <!-- LIVE TICK STREAM & HOT/COOL STATS PANEL -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="card text-center flex flex-col justify-between">
+      <!-- Feature 3: Laser Scanline Cursor -->
+      <div class="scanline"></div>
+
       <div>
         <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📊 Live Tick Stream</h2>
         <div class="text-[10px] uppercase text-slate-400">Last Tick Digit</div>
         <div class="digit-box" id="lastDigit">–</div>
         <div class="text-xs text-cyan-400 mb-4" id="digitInfo">Awaiting connection...</div>
 
-        <!-- STATS PANEL (Feature 2) -->
+        <!-- STATS PANEL (Hot Red / Ice Blue Digits) -->
         <div class="text-left mt-2">
-          <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Digit Frequency Stats (Last 100 Ticks)</div>
+          <div class="flex justify-between items-center text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">
+            <span>Digit Stats (Last 100 Ticks)</span>
+            <span><b class="text-rose-400">■ Hot</b> | <b class="text-cyan-400">■ Cool</b></span>
+          </div>
           <div class="grid grid-cols-5 gap-1.5" id="statsGrid"></div>
         </div>
       </div>
@@ -253,7 +293,7 @@ let state = {
   total: 0,
   wins: 0,
   losses: 0,
-  consecutiveLosses: 0, // Feature 1 Tracker
+  consecutiveLosses: 0,
   selectedDigit: 4,
   running: false,
   pendingBuy: false,
@@ -301,16 +341,35 @@ function buildDigitButtons() {
   }
 }
 
-// Feature 2: Stats Grid Renderer
+// Features 1 & 2: Dynamic Hot Red and Cool Ice Blue calculations
 function buildStatsGrid() {
   const container = $("statsGrid");
   container.innerHTML = "";
   const total = historyDigits.length || 1;
+
+  const maxCount = Math.max(...counts);
+  const minCount = Math.min(...counts);
+
   for (let d = 0; d <= 9; d++) {
-    const pct = ((counts[d] / total) * 100).toFixed(0);
+    const count = counts[d];
+    const pct = ((count / total) * 100).toFixed(0);
+
+    let classHighlight = "";
+    let textStyle = "text-emerald-400";
+
+    if (historyDigits.length >= 10) {
+      if (count === maxCount && maxCount > minCount) {
+        classHighlight = "stat-box-hot";
+        textStyle = "text-rose-400 font-extrabold";
+      } else if (count === minCount && maxCount > minCount) {
+        classHighlight = "stat-box-cool";
+        textStyle = "text-cyan-400 font-extrabold";
+      }
+    }
+
     const box = document.createElement("div");
-    box.className = "bg-[#030712] border border-slate-800 rounded-lg p-1.5 text-center text-[10px]";
-    box.innerHTML = `<span class="text-slate-400 font-bold">${d}:</span> <span class="text-emerald-400 font-mono">${pct}%</span>`;
+    box.className = `bg-[#030712] border border-slate-800 rounded-lg p-1.5 text-center text-[10px] transition-all duration-300 ${classHighlight}`;
+    box.innerHTML = `<span class="text-slate-400 font-bold">${d}:</span> <span class="${textStyle} font-mono">${pct}%</span>`;
     container.appendChild(box);
   }
 }
@@ -438,13 +497,13 @@ function connectWebSocket(wsUrl) {
 
         if (p > 0) {
           state.wins++;
-          state.consecutiveLosses = 0; // Reset streak on win
+          state.consecutiveLosses = 0;
           state.nextStake = Number($("stake").value) || 0.35;
           log(`WIN! +$${p.toFixed(2)}`);
           speak("Win.");
         } else {
           state.losses++;
-          state.consecutiveLosses++; // Increment streak on loss
+          state.consecutiveLosses++;
           state.nextStake *= Number($("martingale").value) || 2.1;
           log(`LOSS! -$${Math.abs(p).toFixed(2)} (Streak: ${state.consecutiveLosses})`);
           speak("Loss.");
@@ -465,7 +524,6 @@ function connectWebSocket(wsUrl) {
           log(`🛑 Stop Loss hit ($${state.profit.toFixed(2)}). Stopped.`);
           speak("Stop loss hit.");
         }
-        // Feature 1: Circuit breaker check
         else if (state.consecutiveLosses >= maxLossStreak) {
           state.running = false;
           log(`🚨 Circuit Breaker Triggered: ${state.consecutiveLosses} consecutive losses reached. Automation halted to protect bankroll.`);
