@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080c16">
-<title>TITAN AI | Deriv Live Terminal with Voice</title>
+<title>TITAN AI | Deriv Live Terminal with Memory & Voice</title>
 
 <style>
 :root {
@@ -257,14 +257,14 @@ footer {
 <body>
 <header>
   <div class="logo">TITAN <span>AI</span></div>
-  <div class="subtitle">DERIV LIVE TERMINAL + VOICE ALERTS</div>
+  <div class="subtitle">DERIV LIVE TERMINAL + MEMORY & VOICE</div>
   <div class="badge" id="connectionBadge">● DISCONNECTED</div>
 </header>
 
 <main>
 
 <div class="notice">
-  <strong>DERIV API CONNECTION:</strong> Input your Deriv Demo/Live token and App ID below. Voice alerts are enabled and will speak out connection steps and trade outcomes.
+  <strong>DERIV API CONNECTION:</strong> Input your Deriv App ID and API Token below. Credentials will be saved permanently in your browser storage upon connecting.
 </div>
 
 <!-- CREDENTIALS CONFIG CARD -->
@@ -273,7 +273,7 @@ footer {
   <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
     <div class="field" style="margin:0;">
       <label class="label" for="appId">App ID</label>
-      <input id="appId" type="text" value="1089" placeholder="e.g. 1089">
+      <input id="appId" type="text" placeholder="e.g. 34Gk...">
     </div>
     <div class="field" style="margin:0; grid-column: span 2;">
       <label class="label" for="apiToken">API Token</label>
@@ -291,6 +291,7 @@ footer {
     </select>
   </div>
   <button class="action" onclick="connectDeriv()">CONNECT TO DERIV</button>
+  <button class="action danger" style="margin-top:8px;" onclick="clearMemory()">CLEAR SAVED CREDENTIALS</button>
 </div>
 
 <div class="grid">
@@ -407,7 +408,7 @@ footer {
 </main>
 
 <footer>
-  TITAN AI · Deriv Live Integration Terminal with Voice
+  TITAN AI · Deriv Live Integration Terminal with Local Memory & Voice
 </footer>
 
 <script>
@@ -430,6 +431,15 @@ const state = {
 };
 
 const $ = id => document.getElementById(id);
+
+// Load saved credentials on page startup
+window.addEventListener('DOMContentLoaded', () => {
+  const savedAppId = localStorage.getItem('titan_deriv_appid');
+  const savedToken = localStorage.getItem('titan_deriv_token');
+  
+  if (savedAppId) $("appId").value = savedAppId;
+  if (savedToken) $("apiToken").value = savedToken;
+});
 
 function money(n) {
   return (n < 0 ? "-$" : "$") + Math.abs(n).toFixed(2);
@@ -483,6 +493,11 @@ function connectDeriv() {
     return;
   }
 
+  // Save credentials to browser memory permanently
+  localStorage.setItem('titan_deriv_appid', appId);
+  localStorage.setItem('titan_deriv_token', token);
+  log("Credentials saved to browser local storage.");
+
   log("Connecting to Deriv WebSocket server...");
   speak("Connecting to Deriv server.");
   
@@ -511,6 +526,17 @@ function connectDeriv() {
     $("startBtn").disabled = true;
     speak("Connection closed.");
   };
+}
+
+function clearMemory() {
+  if (confirm("Clear saved App ID and API Token from browser storage?")) {
+    localStorage.removeItem('titan_deriv_appid');
+    localStorage.removeItem('titan_deriv_token');
+    $("appId").value = "";
+    $("apiToken").value = "";
+    log("Saved credentials cleared from browser memory.");
+    speak("Credentials cleared.");
+  }
 }
 
 function handleServerMessage(data) {
