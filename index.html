@@ -144,18 +144,32 @@ input:focus, select:focus {
 <main class="max-w-4xl mx-auto px-4 mt-5">
   <!-- CREDENTIALS CARD -->
   <div class="card">
-    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold">🔐 Deriv API Credentials</h2>
+    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold">🔐 Deriv API Credentials & Connection</h2>
     <div class="mb-3">
       <label class="text-[10px] uppercase tracking-wider text-slate-400">Personal Access Token (PAT)</label>
       <input id="apiToken" type="password" placeholder="Paste your token here">
     </div>
-    <div class="flex gap-2 mt-3">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
       <button onclick="connectDeriv()" id="connectBtn" class="w-full bg-[#24e59a] text-[#030712] font-extrabold py-3 rounded-xl text-xs tracking-wider shadow-lg shadow-emerald-500/20 hover:brightness-110 cursor-pointer">
         CONNECT TO DERIV
       </button>
-      <button onclick="clearMemory()" class="bg-rose-500/10 text-rose-500 border border-rose-500/30 font-bold px-4 rounded-xl text-xs hover:bg-rose-500/20 cursor-pointer">
-        CLEAR
+      <button onclick="clearMemory()" class="bg-rose-500/10 text-rose-500 border border-rose-500/30 font-bold py-3 rounded-xl text-xs hover:bg-rose-500/20 cursor-pointer">
+        CLEAR TOKEN
       </button>
+    </div>
+    <!-- QUICK ACCOUNT BUTTONS & AFFILIATE LINK -->
+    <div class="flex flex-wrap items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-800 text-[11px]">
+      <div class="flex gap-2 w-full md:w-auto">
+        <a href="https://track.deriv.com/_your_affiliate_id_here" target="_blank" class="flex-1 text-center bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-3 py-2 rounded-lg font-bold hover:bg-cyan-500/20">
+          📝 Create Real Account
+        </a>
+        <a href="https://app.deriv.com" target="_blank" class="flex-1 text-center bg-slate-800 text-slate-300 border border-slate-700 px-3 py-2 rounded-lg font-bold hover:bg-slate-700">
+          🎮 Demo Account Hub
+        </a>
+      </div>
+      <div class="text-[10px] text-slate-400 w-full md:w-auto text-center md:text-right">
+        <span>Need a token? Generate one in Deriv API Settings.</span>
+      </div>
     </div>
   </div>
 
@@ -243,7 +257,7 @@ input:focus, select:focus {
       <div class="mb-3">
         <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
         <select id="direction" onchange="toggleBarrier()">
-          <option value="SCANNER">Auto-Select Highest Confidence Market (&gt;= 65%)</option>
+          <option value="SCANNER">Auto-Select Highest Confidence Market (&gt;= 70%)</option>
           <option value="DIGITOVER">DIGITOVER (Higher than digit)</option>
           <option value="DIGITUNDER">DIGITUNDER (Lower than digit)</option>
           <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
@@ -278,7 +292,7 @@ input:focus, select:focus {
         </div>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-yellow-400">Max Loss Streak</label>
-          <input id="maxLossStreak" type="number" value="4" class="border-yellow-500/50">
+          <input id="maxLossStreak" type="number" value="3" class="border-yellow-500/50">
         </div>
       </div>
     </div>
@@ -311,7 +325,7 @@ let state = {
   wins: 0,
   losses: 0,
   consecutiveLosses: 0,
-  selectedDigit: 4,
+  selectedDigit: 4, // Default to barrier 4 for optimized ~95% payout
   running: false,
   pendingBuy: false,
   awaitingResult: false,
@@ -319,6 +333,11 @@ let state = {
   profit: 0,
   contractId: null
 };
+
+// Tick confirmation trackers for Rule #3
+let signalHoldCounter = 0;
+let lastHoldSymbol = null;
+let lastHoldType = null;
 
 const $ = id => document.getElementById(id);
 
@@ -420,10 +439,10 @@ function renderScannerTable() {
     let bestType = "NEUTRAL";
     let bestConf = 50;
 
-    if (evenPct >= 65) { bestType = "EVEN"; bestConf = evenPct; }
-    else if (oddPct >= 65) { bestType = "ODD"; bestConf = oddPct; }
-    else if (overPct >= 65) { bestType = `OVER ${barrier}`; bestConf = overPct; }
-    else if (underPct >= 65) { bestType = `UNDER ${barrier}`; bestConf = underPct; }
+    if (evenPct >= 70) { bestType = "EVEN"; bestConf = evenPct; }
+    else if (oddPct >= 70) { bestType = "ODD"; bestConf = oddPct; }
+    else if (overPct >= 70) { bestType = `OVER ${barrier}`; bestConf = overPct; }
+    else if (underPct >= 70) { bestType = `UNDER ${barrier}`; bestConf = underPct; }
 
     const tr = document.createElement("tr");
     tr.className = "hover:bg-slate-800/30 cursor-pointer";
@@ -436,7 +455,7 @@ function renderScannerTable() {
       <td class="p-2 text-cyan-400">${oddPct}%</td>
       <td class="p-2 text-yellow-400">${overPct}%</td>
       <td class="p-2 text-purple-400">${underPct}%</td>
-      <td class="p-2"><span class="px-2 py-0.5 rounded text-[9px] font-bold ${bestConf >= 65 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">${bestType} (${bestConf}%)</span></td>
+      <td class="p-2"><span class="px-2 py-0.5 rounded text-[9px] font-bold ${bestConf >= 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">${bestType} (${bestConf}%)</span></td>
     `;
     tbody.appendChild(tr);
   });
@@ -574,11 +593,11 @@ function connectWebSocket(wsUrl) {
         state.profit += p;
         state.total++;
 
-        let maxLossStreak = Number($("maxLossStreak").value) || 4;
+        let maxLossStreak = Number($("maxLossStreak").value) || 3;
 
         if (p > 0) {
           state.wins++;
-          state.consecutiveLosses = 0; // Streak cleared! Resets to primary strategy.
+          state.consecutiveLosses = 0; 
           state.nextStake = Number($("stake").value) || 0.35;
           log(`WIN! +$${p.toFixed(2)} — Recovery successful.`);
           speak("Win.");
@@ -634,6 +653,10 @@ function getBestMarketOpportunity() {
   symbols.forEach(sym => {
     const data = marketData[sym];
     const total = data.history.length || 1;
+    
+    // Require minimum history baseline
+    if (data.history.length < 20) return;
+
     let evenCount = 0;
     let overCount = 0;
     let underCount = 0;
@@ -649,16 +672,17 @@ function getBestMarketOpportunity() {
     const overPct = Math.round((overCount / total) * 100);
     const underPct = Math.round((underCount / total) * 100);
 
-    if (evenPct > best.conf && evenPct >= 65) {
+    // Enforce strict >= 70% confidence threshold
+    if (evenPct > best.conf && evenPct >= 70) {
       best = { symbol: sym, type: "DIGITEVEN", conf: evenPct, barrier: null };
     }
-    if (oddPct > best.conf && oddPct >= 65) {
+    if (oddPct > best.conf && oddPct >= 70) {
       best = { symbol: sym, type: "DIGITODD", conf: oddPct, barrier: null };
     }
-    if (overPct > best.conf && overPct >= 65) {
+    if (overPct > best.conf && overPct >= 70) {
       best = { symbol: sym, type: "DIGITOVER", conf: overPct, barrier: barrier };
     }
-    if (underPct > best.conf && underPct >= 65) {
+    if (underPct > best.conf && underPct >= 70) {
       best = { symbol: sym, type: "DIGITUNDER", conf: underPct, barrier: barrier };
     }
   });
@@ -675,27 +699,47 @@ function executeTrade() {
   // HYBRID RECOVERY ENGINE: If previous contract lost, recover using Even/Odd
   if (state.consecutiveLosses > 0) {
     contractType = (state.consecutiveLosses % 2 === 1) ? "DIGITEVEN" : "DIGITODD";
+    signalHoldCounter = 0; // Reset confirmation counter during recovery
     log(`🔄 HYBRID RECOVERY MODE (Streak: ${state.consecutiveLosses}) — Executing ${contractType} on ${targetSymbol}`);
   } 
   else {
-    // STANDARD / SCANNER MODE
+    // STANDARD / SCANNER MODE WITH RULE #3 (2-TICK CONFIRMATION DELAY)
     if (strategy === "SCANNER") {
       let opp = getBestMarketOpportunity();
       
-      if (!opp.symbol || opp.conf < 65) {
-        $("scannerStatus").textContent = "Scanning... (Waiting for >= 65% Signal)";
+      if (!opp.symbol || opp.conf < 70) {
+        signalHoldCounter = 0;
+        lastHoldSymbol = null;
+        lastHoldType = null;
+        $("scannerStatus").textContent = "Scanning... (Waiting for >= 70% Signal)";
         $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
         return;
       }
 
+      // 2-Tick Confirmation Delay Check
+      if (opp.symbol === lastHoldSymbol && opp.type === lastHoldType) {
+        signalHoldCounter++;
+      } else {
+        signalHoldCounter = 1;
+        lastHoldSymbol = opp.symbol;
+        lastHoldType = opp.type;
+      }
+
+      if (signalHoldCounter < 2) {
+        $("scannerStatus").textContent = `Spooling Signal (1/2): ${opp.symbol} (${opp.type} ${opp.conf}%)`;
+        $("scannerStatus").className = "text-cyan-400 text-[10px] font-mono animate-pulse";
+        return; // Wait for second consecutive tick confirmation
+      }
+
+      signalHoldCounter = 0;
       targetSymbol = opp.symbol;
       contractType = opp.type;
       if (opp.barrier !== null) barrier = opp.barrier.toString();
 
-      $("scannerStatus").textContent = `Signal Found: ${targetSymbol} (${contractType} ${opp.conf}%)`;
+      $("scannerStatus").textContent = `CONFIRMED SIGNAL: ${targetSymbol} (${contractType} ${opp.conf}%)`;
       $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
 
-      log(`🎯 Scanner triggered trade on ${targetSymbol} — Strategy: ${contractType} (${opp.conf}% Confidence)`);
+      log(`🎯 CONFIRMED SIGNAL (2/2 Ticks) on ${targetSymbol} — Strategy: ${contractType} (${opp.conf}% Confidence)`);
     }
   }
 
@@ -729,7 +773,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Multi-market scanner automation started with Hybrid Recovery.");
+  log("Multi-market scanner automation started with strict >= 70% filter and 2-tick confirmation.");
   speak("Automation started.");
 }
 
