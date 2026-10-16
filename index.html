@@ -196,7 +196,7 @@ input:focus, select:focus {
   <!-- LIVE SCANNER MATRIX -->
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between items-center">
-      <span>📡 Multi-Volatility Live Market Scanner (30-Tick Window)</span>
+      <span>📡 Multi-Volatility Live Market Scanner</span>
       <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
     </h2>
     <div class="overflow-x-auto">
@@ -233,7 +233,7 @@ input:focus, select:focus {
         <!-- STATS PANEL -->
         <div class="text-left mt-2">
           <div class="flex justify-between items-center text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">
-            <span>Digit Stats (Last 30 Ticks)</span>
+            <span>Digit Stats (Last 100 Ticks)</span>
             <span><b class="text-rose-400">■ Hot</b> | <b class="text-cyan-400">■ Cool</b></span>
           </div>
           <div class="grid grid-cols-5 gap-1.5" id="statsGrid"></div>
@@ -242,7 +242,7 @@ input:focus, select:focus {
 
       <div class="space-y-2 mt-4">
         <button onclick="startTrading()" id="startBtn" class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider cursor-pointer disabled:opacity-40" disabled>
-          ▶ START FAST-SCAN & TRADE
+          ▶ START MULTI-SCAN & TRADE
         </button>
         <button onclick="stopTrading()" class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2 rounded-xl text-xs cursor-pointer">
           ■ STOP AUTOMATION
@@ -257,7 +257,7 @@ input:focus, select:focus {
       <div class="mb-3">
         <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
         <select id="direction" onchange="toggleBarrier()">
-          <option value="SCANNER">Auto-Select Highest Confidence Market (&gt;= 60%)</option>
+          <option value="SCANNER">Auto-Select Highest Confidence Market (&gt;= 70%)</option>
           <option value="DIGITOVER">DIGITOVER (Higher than digit)</option>
           <option value="DIGITUNDER">DIGITUNDER (Lower than digit)</option>
           <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
@@ -302,7 +302,7 @@ input:focus, select:focus {
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. 30-tick rolling window active.</div>
+      <div>Terminal initialized. Ready for connection.</div>
     </div>
   </div>
 </main>
@@ -384,23 +384,19 @@ function buildStatsGrid() {
   const container = $("statsGrid");
   container.innerHTML = "";
   const data = marketData[activeSymbol];
-  const recentHistory = data.history.slice(-30);
-  const total = recentHistory.length || 1;
+  const total = data.history.length || 1;
 
-  let recentCounts = Array(10).fill(0);
-  recentHistory.forEach(d => recentCounts[d]++);
-
-  const maxCount = Math.max(...recentCounts);
-  const minCount = Math.min(...recentCounts);
+  const maxCount = Math.max(...data.counts);
+  const minCount = Math.min(...data.counts);
 
   for (let d = 0; d <= 9; d++) {
-    const count = recentCounts[d];
+    const count = data.counts[d];
     const pct = ((count / total) * 100).toFixed(0);
 
     let classHighlight = "";
     let textStyle = "text-emerald-400";
 
-    if (recentHistory.length >= 10) {
+    if (data.history.length >= 10) {
       if (count === maxCount && maxCount > minCount) {
         classHighlight = "stat-box-hot";
         textStyle = "text-rose-400 font-extrabold";
@@ -424,14 +420,13 @@ function renderScannerTable() {
 
   symbols.forEach(sym => {
     const data = marketData[sym];
-    const recentHistory = data.history.slice(-30);
-    const total = recentHistory.length || 1;
+    const total = data.history.length || 1;
     
     let evenCount = 0;
     let overCount = 0;
     let underCount = 0;
 
-    recentHistory.forEach(d => {
+    data.history.forEach(d => {
       if (d % 2 === 0) evenCount++;
       if (d > barrier) overCount++;
       if (d < barrier) underCount++;
@@ -445,10 +440,10 @@ function renderScannerTable() {
     let bestType = "NEUTRAL";
     let bestConf = 50;
 
-    if (evenPct >= 60) { bestType = "EVEN"; bestConf = evenPct; }
-    else if (oddPct >= 60) { bestType = "ODD"; bestConf = oddPct; }
-    else if (overPct >= 60) { bestType = `OVER ${barrier}`; bestConf = overPct; }
-    else if (underPct >= 60) { bestType = `UNDER ${barrier}`; bestConf = underPct; }
+    if (evenPct >= 70) { bestType = "EVEN"; bestConf = evenPct; }
+    else if (oddPct >= 70) { bestType = "ODD"; bestConf = oddPct; }
+    else if (overPct >= 70) { bestType = `OVER ${barrier}`; bestConf = overPct; }
+    else if (underPct >= 70) { bestType = `UNDER ${barrier}`; bestConf = underPct; }
 
     const tr = document.createElement("tr");
     tr.className = "hover:bg-slate-800/30 cursor-pointer";
@@ -461,7 +456,7 @@ function renderScannerTable() {
       <td class="p-2 text-cyan-400">${oddPct}%</td>
       <td class="p-2 text-yellow-400">${overPct}%</td>
       <td class="p-2 text-purple-400">${underPct}%</td>
-      <td class="p-2"><span class="px-2 py-0.5 rounded text-[9px] font-bold ${bestConf >= 60 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">${bestType} (${bestConf}%)</span></td>
+      <td class="p-2"><span class="px-2 py-0.5 rounded text-[9px] font-bold ${bestConf >= 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">${bestType} (${bestConf}%)</span></td>
     `;
     tbody.appendChild(tr);
   });
@@ -526,7 +521,7 @@ function connectWebSocket(wsUrl) {
 
   ws.onopen = () => {
     log("Authenticated WebSocket stream opened. Subscribing to all volatility markets...");
-    $("scannerStatus").textContent = "Scanner Active (30-Tick Window)";
+    $("scannerStatus").textContent = "Scanner Active";
     
     symbols.forEach(sym => {
       ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
@@ -570,4 +565,254 @@ function connectWebSocket(wsUrl) {
 
       if (sym === activeSymbol) {
         $("lastDigit").textContent = digit;
-        $("digitInfo").textContent =
+        $("digitInfo").textContent = `Quote: ${quote} | Symbol: ${sym}`;
+        $("activeMarketLabel").textContent = `Symbol: ${sym}`;
+        buildStatsGrid();
+      }
+
+      renderScannerTable();
+
+      if (state.running && !state.awaitingResult && !state.pendingBuy) {
+        executeTrade();
+      }
+    }
+
+    if (data.msg_type === "proposal" && state.pendingBuy) {
+      if (data.proposal && data.proposal.id) {
+        let askPrice = Number(data.proposal.ask_price || 0);
+        let maxPrice = Number((askPrice * 1.10).toFixed(2));
+        ws.send(JSON.stringify({
+          buy: data.proposal.id,
+          price: maxPrice
+        }));
+      }
+    }
+
+    if (data.msg_type === "buy" && data.buy) {
+      state.pendingBuy = false;
+      state.contractId = data.buy.contract_id;
+      state.awaitingResult = true;
+      log(`Contract purchased! ID: ${state.contractId}`);
+      speak("Contract placed.");
+
+      ws.send(JSON.stringify({
+        proposal_open_contract: 1,
+        contract_id: state.contractId,
+        subscribe: 1
+      }));
+    }
+
+    if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
+      let contract = data.proposal_open_contract;
+      if (contract.is_sold || contract.status === "sold") {
+        let p = Number(contract.profit || 0);
+        state.profit += p;
+        state.total++;
+
+        let maxLossStreak = Number($("maxLossStreak").value) || 5;
+
+        if (p > 0) {
+          state.wins++;
+          state.consecutiveLosses = 0; 
+          state.nextStake = Number($("stake").value) || 2.00;
+          log(`WIN! +$${p.toFixed(2)} — Recovery successful.`);
+          speak("Win.");
+        } else {
+          state.losses++;
+          state.consecutiveLosses++;
+          state.nextStake *= Number($("martingale").value) || 2.1;
+          log(`LOSS! -$${Math.abs(p).toFixed(2)} (Streak: ${state.consecutiveLosses}) — Switching to Even/Odd recovery step.`);
+          speak("Loss.");
+        }
+
+        renderMetrics();
+
+        let tp = Number($("tp").value);
+        let sl = Number($("sl").value);
+
+        if (state.profit >= tp) {
+          state.running = false;
+          log(`🎯 Take Profit reached ($${state.profit.toFixed(2)}). Stopped.`);
+          speak("Take profit reached.");
+        }
+        else if (state.profit <= -sl) {
+          state.running = false;
+          log(`🛑 Stop Loss hit ($${state.profit.toFixed(2)}). Stopped.`);
+          speak("Stop loss hit.");
+        }
+        else if (state.consecutiveLosses >= maxLossStreak) {
+          state.running = false;
+          log(`🚨 Circuit Breaker Triggered: ${state.consecutiveLosses} consecutive losses reached.`);
+          speak("Circuit breaker triggered.");
+        }
+
+        state.awaitingResult = false;
+        state.contractId = null;
+      }
+    }
+  };
+
+  ws.onclose = () => {
+    if (pingInterval) clearInterval(pingInterval);
+    log("WebSocket connection closed.");
+    $("connectionBadge").textContent = "● DISCONNECTED";
+    $("connectionBadge").style.color = "var(--red)";
+    $("connectBtn").textContent = "CONNECT TO DERIV";
+    $("startBtn").disabled = true;
+    speak("Connection closed.");
+  };
+}
+
+function getBestMarketOpportunity() {
+  let best = { symbol: null, type: null, conf: 0, barrier: null };
+  const barrier = state.selectedDigit;
+
+  symbols.forEach(sym => {
+    const data = marketData[sym];
+    const total = data.history.length || 1;
+    
+    if (data.history.length < 20) return;
+
+    let evenCount = 0;
+    let overCount = 0;
+    let underCount = 0;
+
+    data.history.forEach(d => {
+      if (d % 2 === 0) evenCount++;
+      if (d > barrier) overCount++;
+      if (d < barrier) underCount++;
+    });
+
+    const evenPct = Math.round((evenCount / total) * 100);
+    const oddPct = 100 - evenPct;
+    const overPct = Math.round((overCount / total) * 100);
+    const underPct = Math.round((underCount / total) * 100);
+
+    if (evenPct > best.conf && evenPct >= 70) {
+      best = { symbol: sym, type: "DIGITEVEN", conf: evenPct, barrier: null };
+    }
+    if (oddPct > best.conf && oddPct >= 70) {
+      best = { symbol: sym, type: "DIGITODD", conf: oddPct, barrier: null };
+    }
+    if (overPct > best.conf && overPct >= 70) {
+      best = { symbol: sym, type: "DIGITOVER", conf: overPct, barrier: barrier };
+    }
+    if (underPct > best.conf && underPct >= 70) {
+      best = { symbol: sym, type: "DIGITUNDER", conf: underPct, barrier: barrier };
+    }
+  });
+
+  return best;
+}
+
+function executeTrade() {
+  let strategy = $("direction").value;
+  let targetSymbol = activeSymbol;
+  let contractType = strategy;
+  let barrier = state.selectedDigit.toString();
+
+  if (state.consecutiveLosses === 0) {
+    state.nextStake = Number($("stake").value) || 2.00;
+  }
+
+  if (state.consecutiveLosses > 0) {
+    contractType = (state.consecutiveLosses % 2 === 1) ? "DIGITEVEN" : "DIGITODD";
+    signalHoldCounter = 0;
+    log(`🔄 HYBRID RECOVERY MODE (Streak: ${state.consecutiveLosses}) — Executing ${contractType} on ${targetSymbol}`);
+  } 
+  else {
+    if (strategy === "SCANNER") {
+      let opp = getBestMarketOpportunity();
+      
+      if (!opp.symbol || opp.conf < 70) {
+        signalHoldCounter = 0;
+        lastHoldSymbol = null;
+        lastHoldType = null;
+        $("scannerStatus").textContent = "Scanning... (Waiting for >= 70% Signal)";
+        $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
+        return;
+      }
+
+      if (opp.symbol === lastHoldSymbol && opp.type === lastHoldType) {
+        signalHoldCounter++;
+      } else {
+        signalHoldCounter = 1;
+        lastHoldSymbol = opp.symbol;
+        lastHoldType = opp.type;
+      }
+
+      if (signalHoldCounter < 2) {
+        $("scannerStatus").textContent = `Spooling Signal (1/2): ${opp.symbol} (${opp.type} ${opp.conf}%)`;
+        $("scannerStatus").className = "text-cyan-400 text-[10px] font-mono animate-pulse";
+        return; 
+      }
+
+      signalHoldCounter = 0;
+      targetSymbol = opp.symbol;
+      contractType = opp.type;
+      if (opp.barrier !== null) barrier = opp.barrier.toString();
+
+      $("scannerStatus").textContent = `CONFIRMED SIGNAL: ${targetSymbol} (${contractType} ${opp.conf}%)`;
+      $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
+
+      log(`🎯 CONFIRMED SIGNAL (2/2 Ticks) on ${targetSymbol} — Strategy: ${contractType} (${opp.conf}% Confidence)`);
+    }
+  }
+
+  const stake = Number(state.nextStake.toFixed(2));
+  const requiresDigitBarrier = contractType === "DIGITOVER" || contractType === "DIGITUNDER";
+
+  state.pendingBuy = true;
+  
+  let req = {
+    proposal: 1,
+    amount: stake,
+    basis: "stake",
+    contract_type: contractType,
+    currency: "USD",
+    underlying_symbol: targetSymbol,
+    duration: 5,
+    duration_unit: "t"
+  };
+
+  if (requiresDigitBarrier) {
+    req.barrier = barrier;
+    log(`Executing ${contractType} on ${targetSymbol} (Barrier: ${barrier}) | Stake: $${stake}`);
+  } else {
+    log(`Executing ${contractType} on ${targetSymbol} | Stake: $${stake}`);
+  }
+
+  ws.send(JSON.stringify(req));
+}
+
+function startTrading() {
+  if (!ws) return;
+  state.running = true;
+  state.consecutiveLosses = 0;
+  log("Multi-market scanner automation started with strict >= 70% filter.");
+  speak("Automation started.");
+}
+
+function stopTrading() {
+  state.running = false;
+  state.pendingBuy = false;
+  log("Automation stopped.");
+  speak("Automation stopped.");
+}
+
+function renderMetrics() {
+  $("profit").textContent = (state.profit < 0 ? "-$" : "$") + Math.abs(state.profit).toFixed(2);
+  $("profit").className = "text-2xl font-black mt-1 " + (state.profit >= 0 ? "text-emerald-400" : "text-rose-400");
+  $("runs").textContent = state.total;
+  $("winRate").textContent = state.total ? ((state.wins / state.total) * 100).toFixed(1) + "%" : "0%";
+}
+
+function clearMemory() {
+  localStorage.removeItem('titan_deriv_token');
+  $("apiToken").value = "";
+  log("Saved credentials wiped.");
+  speak("Credentials cleared.");
+}
+</script>
+</body>
+</html>
