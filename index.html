@@ -258,6 +258,8 @@ input:focus, select:focus {
         <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
         <select id="direction" onchange="toggleBarrier()">
           <option value="SCANNER">Auto-Select Highest Confidence Market (&gt;= 70%)</option>
+          <option value="ONETOUCH">TOUCH (Price hits target barrier)</option>
+          <option value="NOTOUCH">NO TOUCH (Price stays within bounds)</option>
           <option value="DIGITOVER">DIGITOVER (Higher than digit)</option>
           <option value="DIGITUNDER">DIGITUNDER (Lower than digit)</option>
           <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
@@ -266,7 +268,7 @@ input:focus, select:focus {
       </div>
 
       <div id="barrierContainer">
-        <label class="text-[10px] uppercase tracking-wider text-slate-400">Target Barrier Digit (For Over/Under)</label>
+        <label class="text-[10px] uppercase tracking-wider text-slate-400">Target Barrier Digit (For Over/Under & Touch)</label>
         <div class="grid grid-cols-5 gap-2 my-2" id="digitButtons"></div>
       </div>
 
@@ -313,7 +315,7 @@ const symbols = ["R_10", "R_25", "R_50", "R_75", "R_100"];
 let marketData = {};
 
 symbols.forEach(s => {
-  marketData[s] = { history: [], counts: Array(10).fill(0), lastQuote: "-", lastDigit: "-" };
+  marketData[s] = { history: [], quotes: [], counts: Array(10).fill(0), lastQuote: "-", lastDigit: "-" };
 });
 
 let activeSymbol = "R_50";
@@ -535,6 +537,7 @@ function connectWebSocket(wsUrl) {
 
     if (data.msg_type === "tick" && data.tick) {
       const sym = data.tick.symbol;
+      const quoteVal = Number(data.tick.quote);
       const quote = data.tick.quote.toString();
       const digit = parseInt(quote.slice(-1));
       
@@ -542,9 +545,11 @@ function connectWebSocket(wsUrl) {
         marketData[sym].lastQuote = quote;
         marketData[sym].lastDigit = digit;
         marketData[sym].history.push(digit);
+        marketData[sym].quotes.push(quoteVal);
         marketData[sym].counts[digit]++;
         if (marketData[sym].history.length > 100) {
           let removed = marketData[sym].history.shift();
+          marketData[sym].quotes.shift();
           marketData[sym].counts[removed]--;
         }
       }
@@ -654,12 +659,13 @@ function getBestMarketOpportunity() {
     const data = marketData[sym];
     const total = data.history.length || 1;
     
-    // Require minimum history baseline
     if (data.history.length < 20) return;
 
     let evenCount = 0;
     let overCount = 0;
     let underCount = 0;
+    let touchCount = 0;
+    let noTouchCount = 0;
 
     data.history.forEach(d => {
       if (d % 2 === 0) evenCount++;
@@ -667,12 +673,22 @@ function getBestMarketOpportunity() {
       if (d < barrier) underCount++;
     });
 
+    // Calculate Touch/No Touch directional frequency from recent quotes
+    for (let i = 1; i < data.quotes.length; i++) {
+      let diff = Math.abs(data.quotes[i] - data.quotes[i - 1]);
+      if (diff >= (barrier * 0.1)) touchCount++;
+      else noTouchCount++;
+    }
+
     const evenPct = Math.round((evenCount / total) * 100);
     const oddPct = 100 - evenPct;
     const overPct = Math.round((overCount / total) * 100);
     const underPct = Math.round((underCount / total) * 100);
+    const qTotal = (data.quotes.length - 1) || 1;
+    const touchPct = Math.round((touchCount / qTotal) * 100);
+    const noTouchPct = Math.round((noTouchCount / qTotal) * 100);
 
-    // Enforce strict >= 70% confidence threshold
+    // Enforce strict >= 70% confidence threshold across all options including Touch/No Touch
     if (evenPct > best.conf && evenPct >= 70) {
       best = { symbol: sym, type: "DIGITEVEN", conf: evenPct, barrier: null };
     }
@@ -684,6 +700,12 @@ function getBestMarketOpportunity() {
     }
     if (underPct > best.conf && underPct >= 70) {
       best = { symbol: sym, type: "DIGITUNDER", conf: underPct, barrier: barrier };
+    }
+    if (touchPct > best.conf && touchPct >= 70) {
+      best = { symbol: sym, type: "ONETOUCH", conf: touchPct, barrier: `+${barrier}` };
+    }
+    if (noTouchPct > best.conf && noTouchPct >= 70) {
+      best = { symbol: sym, type: "NOTOUCH", conf: noTouchPct, barrier: `+${barrier}` };
     }
   });
 
@@ -744,7 +766,7 @@ function executeTrade() {
   }
 
   const stake = Number(state.nextStake.toFixed(2));
-  const isEvenOdd = contractType === "DIGITEVEN" || contractType === "DIGITODD";
+  const requiresBarrier = contractType === "DIGITOVER" || contractType === "DIGITUNDER" || contractType === "ONETOUCH" || contractType === "NOTOUCH";
 
   state.pendingBuy = true;
   
@@ -755,13 +777,13 @@ function executeTrade() {
     contract_type: contractType,
     currency: "USD",
     underlying_symbol: targetSymbol,
-    duration: 1,
+    duration: 5,
     duration_unit: "t"
   };
 
-  if (!isEvenOdd) {
-    req.barrier = barrier;
-    log(`Executing ${contractType} on ${targetSymbol} (Barrier: ${barrier}) | Stake: $${stake}`);
+  if (requiresBarrier) {
+    req.barrier = (contractType === "ONETOUCH" || contractType === "NOTOUCH") ? `+${barrier}` : barrier;
+    log(`Executing ${contractType} on ${targetSymbol} (Barrier: ${req.barrier}) | Stake: $${stake}`);
   } else {
     log(`Executing ${contractType} on ${targetSymbol} | Stake: $${stake}`);
   }
@@ -773,7 +795,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Multi-market scanner automation started with strict >= 70% filter and 2-tick confirmation.");
+  log("Multi-market scanner automation started with strict >= 70% filter and Touch/No Touch support.");
   speak("Automation started.");
 }
 
