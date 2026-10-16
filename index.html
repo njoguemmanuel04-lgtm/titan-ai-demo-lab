@@ -257,9 +257,7 @@ input:focus, select:focus {
       <div class="mb-3">
         <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
         <select id="direction" onchange="toggleBarrier()">
-          <option value="SCANNER">Auto-Select Highest Confidence Market (Multi-Strategy)</option>
-          <option value="MULTUP">MULTIPLIER SNIPER (Bullish Trend Leverage)</option>
-          <option value="MULTDOWN">MULTIPLIER SNIPER (Bearish Trend Leverage)</option>
+          <option value="SCANNER">Auto-Select Highest Confidence Market (&gt;= 70%)</option>
           <option value="DIGITOVER">DIGITOVER (Higher than digit)</option>
           <option value="DIGITUNDER">DIGITUNDER (Lower than digit)</option>
           <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
@@ -311,6 +309,7 @@ input:focus, select:focus {
 
 <script>
 let ws = null;
+let pingInterval = null;
 const symbols = ["R_10", "R_25", "R_50", "R_75", "R_100"];
 let marketData = {};
 
@@ -327,7 +326,7 @@ let state = {
   wins: 0,
   losses: 0,
   consecutiveLosses: 0,
-  selectedDigit: 4, // Default to barrier 4 for optimized ~95% payout
+  selectedDigit: 4,
   running: false,
   pendingBuy: false,
   awaitingResult: false,
@@ -515,6 +514,9 @@ async function connectDeriv() {
 }
 
 function connectWebSocket(wsUrl) {
+  if (ws) { try { ws.close(); } catch(e) {} }
+  if (pingInterval) clearInterval(pingInterval);
+
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
@@ -525,6 +527,13 @@ function connectWebSocket(wsUrl) {
       ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
     });
     ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+
+    // WebSocket Keep-Alive Ping (Heartbeat every 15 seconds)
+    pingInterval = setInterval(() => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ ping: 1 }));
+      }
+    }, 15000);
   };
 
   ws.onmessage = (event) => {
@@ -644,6 +653,7 @@ function connectWebSocket(wsUrl) {
   };
 
   ws.onclose = () => {
+    if (pingInterval) clearInterval(pingInterval);
     log("WebSocket connection closed.");
     $("connectionBadge").textContent = "● DISCONNECTED";
     $("connectionBadge").style.color = "var(--red)";
@@ -666,8 +676,6 @@ function getBestMarketOpportunity() {
     let evenCount = 0;
     let overCount = 0;
     let underCount = 0;
-    let bullCount = 0;
-    let bearCount = 0;
 
     data.history.forEach(d => {
       if (d % 2 === 0) evenCount++;
@@ -675,29 +683,11 @@ function getBestMarketOpportunity() {
       if (d < barrier) underCount++;
     });
 
-    // Calculate Multiplier Sniper directional velocity
-    for (let i = 1; i < data.quotes.length; i++) {
-      if (data.quotes[i] > data.quotes[i - 1]) bullCount++;
-      else if (data.quotes[i] < data.quotes[i - 1]) bearCount++;
-    }
-
     const evenPct = Math.round((evenCount / total) * 100);
     const oddPct = 100 - evenPct;
     const overPct = Math.round((overCount / total) * 100);
     const underPct = Math.round((underCount / total) * 100);
-    const qTotal = (data.quotes.length - 1) || 1;
-    const bullPct = Math.round((bullCount / qTotal) * 100);
-    const bearPct = Math.round((bearCount / qTotal) * 100);
 
-    // Multipliers bypass the >= 70% rule (triggers instantly on directional momentum)
-    if (bullPct > 50 && bullPct > best.conf) {
-      best = { symbol: sym, type: "MULTUP", conf: bullPct, barrier: null };
-    }
-    if (bearPct > 50 && bearPct > best.conf) {
-      best = { symbol: sym, type: "MULTDOWN", conf: bearPct, barrier: null };
-    }
-
-    // Standard strategies enforce strict >= 70% confidence threshold
     if (evenPct > best.conf && evenPct >= 70) {
       best = { symbol: sym, type: "DIGITEVEN", conf: evenPct, barrier: null };
     }
@@ -721,35 +711,28 @@ function executeTrade() {
   let contractType = strategy;
   let barrier = state.selectedDigit.toString();
 
-  // Dynamically sync base stake from input if not currently recovering from a loss
   if (state.consecutiveLosses === 0) {
     state.nextStake = Number($("stake").value) || 2.00;
   }
 
-  // HYBRID RECOVERY ENGINE: If previous contract lost, recover using Even/Odd
   if (state.consecutiveLosses > 0) {
     contractType = (state.consecutiveLosses % 2 === 1) ? "DIGITEVEN" : "DIGITODD";
-    signalHoldCounter = 0; // Reset confirmation counter during recovery
+    signalHoldCounter = 0;
     log(`🔄 HYBRID RECOVERY MODE (Streak: ${state.consecutiveLosses}) — Executing ${contractType} on ${targetSymbol}`);
   } 
   else {
-    // STANDARD / SCANNER MODE WITH RULE #3 (2-TICK CONFIRMATION DELAY)
     if (strategy === "SCANNER") {
       let opp = getBestMarketOpportunity();
       
-      // For multipliers, allow firing below 70%; for digits, require >= 70%
-      let minConf = (opp.type === "MULTUP" || opp.type === "MULTDOWN") ? 50 : 70;
-
-      if (!opp.symbol || opp.conf < minConf) {
+      if (!opp.symbol || opp.conf < 70) {
         signalHoldCounter = 0;
         lastHoldSymbol = null;
         lastHoldType = null;
-        $("scannerStatus").textContent = "Scanning... (Awaiting Momentum)";
+        $("scannerStatus").textContent = "Scanning... (Waiting for >= 70% Signal)";
         $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
         return;
       }
 
-      // 2-Tick Confirmation Delay Check
       if (opp.symbol === lastHoldSymbol && opp.type === lastHoldType) {
         signalHoldCounter++;
       } else {
@@ -758,10 +741,8 @@ function executeTrade() {
         lastHoldType = opp.type;
       }
 
-      let requiredTicks = (opp.type === "MULTUP" || opp.type === "MULTDOWN") ? 1 : 2; // Instant or 2-tick confirm
-
-      if (signalHoldCounter < requiredTicks) {
-        $("scannerStatus").textContent = `Spooling Signal (${signalHoldCounter}/${requiredTicks}): ${opp.symbol} (${opp.type})`;
+      if (signalHoldCounter < 2) {
+        $("scannerStatus").textContent = `Spooling Signal (1/2): ${opp.symbol} (${opp.type} ${opp.conf}%)`;
         $("scannerStatus").className = "text-cyan-400 text-[10px] font-mono animate-pulse";
         return; 
       }
@@ -774,7 +755,7 @@ function executeTrade() {
       $("scannerStatus").textContent = `CONFIRMED SIGNAL: ${targetSymbol} (${contractType} ${opp.conf}%)`;
       $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
 
-      log(`🎯 CONFIRMED SIGNAL on ${targetSymbol} — Strategy: ${contractType} (${opp.conf}% Velocity)`);
+      log(`🎯 CONFIRMED SIGNAL (2/2 Ticks) on ${targetSymbol} — Strategy: ${contractType} (${opp.conf}% Confidence)`);
     }
   }
 
@@ -789,22 +770,16 @@ function executeTrade() {
     basis: "stake",
     contract_type: contractType,
     currency: "USD",
-    underlying_symbol: targetSymbol
+    underlying_symbol: targetSymbol,
+    duration: 5,
+    duration_unit: "t"
   };
 
-  if (contractType === "MULTUP" || contractType === "MULTDOWN") {
-    req.multiplier = 100; // x100 leverage factor for Multiplier Sniper
-    req.limit_order = { take_profit: 5, stop_loss: 20 }; // Required limit orders for multipliers to auto-buy successfully
-    log(`🎯 MULTIPLIER SNIPER: Requesting proposal for ${contractType} on ${targetSymbol} | Leverage: x100 | Stake: $${stake}`);
+  if (requiresDigitBarrier) {
+    req.barrier = barrier;
+    log(`Executing ${contractType} on ${targetSymbol} (Barrier: ${barrier}) | Stake: $${stake}`);
   } else {
-    req.duration = 5;
-    req.duration_unit = "t";
-    if (requiresDigitBarrier) {
-      req.barrier = barrier;
-      log(`Executing ${contractType} on ${targetSymbol} (Barrier: ${barrier}) | Stake: $${stake}`);
-    } else {
-      log(`Executing ${contractType} on ${targetSymbol} | Stake: $${stake}`);
-    }
+    log(`Executing ${contractType} on ${targetSymbol} | Stake: $${stake}`);
   }
 
   ws.send(JSON.stringify(req));
@@ -814,7 +789,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Multi-market scanner automation started with Multiplier Sniper (Instant Momentum Mode).");
+  log("Multi-market scanner automation started with strict >= 70% filter.");
   speak("Automation started.");
 }
 
