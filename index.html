@@ -258,8 +258,8 @@ input:focus, select:focus {
         <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
         <select id="direction" onchange="toggleBarrier()">
           <option value="SCANNER">Auto-Select Highest Confidence Market (&gt;= 70%)</option>
-          <option value="ONETOUCH">TOUCH (Price hits target barrier)</option>
-          <option value="NOTOUCH">NO TOUCH (Price stays within bounds)</option>
+          <option value="MULTUP">MULTIPLIER SNIPER (Bullish Trend Leverage)</option>
+          <option value="MULTDOWN">MULTIPLIER SNIPER (Bearish Trend Leverage)</option>
           <option value="DIGITOVER">DIGITOVER (Higher than digit)</option>
           <option value="DIGITUNDER">DIGITUNDER (Lower than digit)</option>
           <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
@@ -268,14 +268,14 @@ input:focus, select:focus {
       </div>
 
       <div id="barrierContainer">
-        <label class="text-[10px] uppercase tracking-wider text-slate-400">Target Barrier Digit (For Over/Under & Touch)</label>
+        <label class="text-[10px] uppercase tracking-wider text-slate-400">Target Barrier Digit (For Over/Under)</label>
         <div class="grid grid-cols-5 gap-2 my-2" id="digitButtons"></div>
       </div>
 
       <div class="grid grid-cols-2 gap-2 mt-3">
         <div>
           <label class="text-[10px] uppercase tracking-wider text-slate-400">Base Stake ($)</label>
-          <input id="stake" type="number" value="0.35" step="0.01">
+          <input id="stake" type="number" value="2.00" step="0.01">
         </div>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-slate-400">Martingale Multiplier</label>
@@ -331,7 +331,7 @@ let state = {
   running: false,
   pendingBuy: false,
   awaitingResult: false,
-  nextStake: 0.35,
+  nextStake: 2.00,
   profit: 0,
   contractId: null
 };
@@ -465,9 +465,9 @@ function renderScannerTable() {
 
 function toggleBarrier() {
   const type = $("direction").value;
-  const isEvenOdd = type === "DIGITEVEN" || type === "DIGITODD";
-  $("barrierContainer").style.opacity = isEvenOdd ? "0.3" : "1";
-  $("barrierContainer").style.pointerEvents = isEvenOdd ? "none" : "auto";
+  const isDigit = type === "DIGITOVER" || type === "DIGITUNDER";
+  $("barrierContainer").style.opacity = isDigit ? "1" : "0.3";
+  $("barrierContainer").style.pointerEvents = isDigit ? "auto" : "none";
 }
 
 async function connectDeriv() {
@@ -495,7 +495,7 @@ async function connectDeriv() {
     log(`Authorized account: ${data.account_id} (${data.account_type})`);
     state.balance = data.balance;
     state.startingBalance = data.balance;
-    state.nextStake = Number($("stake").value) || 0.35;
+    state.nextStake = Number($("stake").value) || 2.00;
     
     $("balance").textContent = "$" + Number(data.balance).toFixed(2);
     $("connectionBadge").textContent = "● CONNECTED & AUTHORIZED";
@@ -603,7 +603,7 @@ function connectWebSocket(wsUrl) {
         if (p > 0) {
           state.wins++;
           state.consecutiveLosses = 0; 
-          state.nextStake = Number($("stake").value) || 0.35;
+          state.nextStake = Number($("stake").value) || 2.00;
           log(`WIN! +$${p.toFixed(2)} — Recovery successful.`);
           speak("Win.");
         } else {
@@ -664,8 +664,8 @@ function getBestMarketOpportunity() {
     let evenCount = 0;
     let overCount = 0;
     let underCount = 0;
-    let touchCount = 0;
-    let noTouchCount = 0;
+    let bullCount = 0;
+    let bearCount = 0;
 
     data.history.forEach(d => {
       if (d % 2 === 0) evenCount++;
@@ -673,11 +673,10 @@ function getBestMarketOpportunity() {
       if (d < barrier) underCount++;
     });
 
-    // Calculate Touch/No Touch directional frequency from recent quotes
+    // Calculate Multiplier Sniper directional velocity
     for (let i = 1; i < data.quotes.length; i++) {
-      let diff = Math.abs(data.quotes[i] - data.quotes[i - 1]);
-      if (diff >= (barrier * 0.1)) touchCount++;
-      else noTouchCount++;
+      if (data.quotes[i] > data.quotes[i - 1]) bullCount++;
+      else if (data.quotes[i] < data.quotes[i - 1]) bearCount++;
     }
 
     const evenPct = Math.round((evenCount / total) * 100);
@@ -685,10 +684,10 @@ function getBestMarketOpportunity() {
     const overPct = Math.round((overCount / total) * 100);
     const underPct = Math.round((underCount / total) * 100);
     const qTotal = (data.quotes.length - 1) || 1;
-    const touchPct = Math.round((touchCount / qTotal) * 100);
-    const noTouchPct = Math.round((noTouchCount / qTotal) * 100);
+    const bullPct = Math.round((bullCount / qTotal) * 100);
+    const bearPct = Math.round((bearCount / qTotal) * 100);
 
-    // Enforce strict >= 70% confidence threshold across all options including Touch/No Touch
+    // Enforce strict >= 70% confidence threshold across options including Multipliers
     if (evenPct > best.conf && evenPct >= 70) {
       best = { symbol: sym, type: "DIGITEVEN", conf: evenPct, barrier: null };
     }
@@ -701,11 +700,11 @@ function getBestMarketOpportunity() {
     if (underPct > best.conf && underPct >= 70) {
       best = { symbol: sym, type: "DIGITUNDER", conf: underPct, barrier: barrier };
     }
-    if (touchPct > best.conf && touchPct >= 70) {
-      best = { symbol: sym, type: "ONETOUCH", conf: touchPct, barrier: `+${barrier}` };
+    if (bullPct > best.conf && bullPct >= 70) {
+      best = { symbol: sym, type: "MULTUP", conf: bullPct, barrier: null };
     }
-    if (noTouchPct > best.conf && noTouchPct >= 70) {
-      best = { symbol: sym, type: "NOTOUCH", conf: noTouchPct, barrier: `+${barrier}` };
+    if (bearPct > best.conf && bearPct >= 70) {
+      best = { symbol: sym, type: "MULTDOWN", conf: bearPct, barrier: null };
     }
   });
 
@@ -720,7 +719,7 @@ function executeTrade() {
 
   // Dynamically sync base stake from input if not currently recovering from a loss
   if (state.consecutiveLosses === 0) {
-    state.nextStake = Number($("stake").value) || 0.35;
+    state.nextStake = Number($("stake").value) || 2.00;
   }
 
   // HYBRID RECOVERY ENGINE: If previous contract lost, recover using Even/Odd
@@ -771,7 +770,7 @@ function executeTrade() {
   }
 
   const stake = Number(state.nextStake.toFixed(2));
-  const requiresBarrier = contractType === "DIGITOVER" || contractType === "DIGITUNDER" || contractType === "ONETOUCH" || contractType === "NOTOUCH";
+  const requiresDigitBarrier = contractType === "DIGITOVER" || contractType === "DIGITUNDER";
 
   state.pendingBuy = true;
   
@@ -786,9 +785,12 @@ function executeTrade() {
     duration_unit: "t"
   };
 
-  if (requiresBarrier) {
-    req.barrier = (contractType === "ONETOUCH" || contractType === "NOTOUCH") ? `+${barrier}` : barrier;
-    log(`Executing ${contractType} on ${targetSymbol} (Barrier: ${req.barrier}) | Stake: $${stake}`);
+  if (contractType === "MULTUP" || contractType === "MULTDOWN") {
+    req.multiplier = 100; // Standard leverage factor for Multipliers
+    log(`🎯 SNIPER TRADE: Executing ${contractType} on ${targetSymbol} | Leverage: x100 | Stake: $${stake}`);
+  } else if (requiresDigitBarrier) {
+    req.barrier = barrier;
+    log(`Executing ${contractType} on ${targetSymbol} (Barrier: ${barrier}) | Stake: $${stake}`);
   } else {
     log(`Executing ${contractType} on ${targetSymbol} | Stake: $${stake}`);
   }
@@ -800,7 +802,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Multi-market scanner automation started with strict >= 70% filter and Touch/No Touch support.");
+  log("Multi-market scanner automation started with strict >= 70% filter and Multiplier Sniper support.");
   speak("Automation started.");
 }
 
