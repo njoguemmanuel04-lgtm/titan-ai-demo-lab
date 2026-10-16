@@ -292,7 +292,7 @@ input:focus, select:focus {
         </div>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-yellow-400">Max Loss Streak</label>
-          <input id="maxLossStreak" type="number" value="3" class="border-yellow-500/50">
+          <input id="maxLossStreak" type="number" value="5" class="border-yellow-500/50">
         </div>
       </div>
     </div>
@@ -609,7 +609,7 @@ function connectWebSocket(wsUrl) {
         state.profit += p;
         state.total++;
 
-        let maxLossStreak = Number($("maxLossStreak").value) || 3;
+        let maxLossStreak = Number($("maxLossStreak").value) || 5;
 
         if (p > 0) {
           state.wins++;
