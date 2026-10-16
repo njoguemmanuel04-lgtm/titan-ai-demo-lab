@@ -570,9 +570,11 @@ function connectWebSocket(wsUrl) {
 
     if (data.msg_type === "proposal" && state.pendingBuy) {
       if (data.proposal && data.proposal.id) {
+        let askPrice = Number(data.proposal.ask_price || 0);
+        let maxPrice = Number((askPrice * 1.10).toFixed(2));
         ws.send(JSON.stringify({
           buy: data.proposal.id,
-          price: data.proposal.ask_price
+          price: maxPrice
         }));
       }
     }
@@ -792,6 +794,7 @@ function executeTrade() {
 
   if (contractType === "MULTUP" || contractType === "MULTDOWN") {
     req.multiplier = 100; // x100 leverage factor for Multiplier Sniper
+    req.limit_order = { take_profit: 5, stop_loss: 20 }; // Required limit orders for multipliers to auto-buy successfully
     log(`🎯 MULTIPLIER SNIPER: Requesting proposal for ${contractType} on ${targetSymbol} | Leverage: x100 | Stake: $${stake}`);
   } else {
     req.duration = 5;
