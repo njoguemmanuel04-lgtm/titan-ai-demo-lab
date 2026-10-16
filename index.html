@@ -787,19 +787,21 @@ function executeTrade() {
     basis: "stake",
     contract_type: contractType,
     currency: "USD",
-    underlying_symbol: targetSymbol,
-    duration: 5,
-    duration_unit: "t"
+    underlying_symbol: targetSymbol
   };
 
   if (contractType === "MULTUP" || contractType === "MULTDOWN") {
     req.multiplier = 100; // x100 leverage factor for Multiplier Sniper
-    log(`🎯 MULTIPLIER SNIPER: Executing ${contractType} on ${targetSymbol} | Leverage: x100 | Stake: $${stake}`);
-  } else if (requiresDigitBarrier) {
-    req.barrier = barrier;
-    log(`Executing ${contractType} on ${targetSymbol} (Barrier: ${barrier}) | Stake: $${stake}`);
+    log(`🎯 MULTIPLIER SNIPER: Requesting proposal for ${contractType} on ${targetSymbol} | Leverage: x100 | Stake: $${stake}`);
   } else {
-    log(`Executing ${contractType} on ${targetSymbol} | Stake: $${stake}`);
+    req.duration = 5;
+    req.duration_unit = "t";
+    if (requiresDigitBarrier) {
+      req.barrier = barrier;
+      log(`Executing ${contractType} on ${targetSymbol} (Barrier: ${barrier}) | Stake: $${stake}`);
+    } else {
+      log(`Executing ${contractType} on ${targetSymbol} | Stake: $${stake}`);
+    }
   }
 
   ws.send(JSON.stringify(req));
