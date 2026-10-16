@@ -196,7 +196,7 @@ input:focus, select:focus {
   <!-- LIVE SCANNER MATRIX -->
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between items-center">
-      <span>📡 Multi-Volatility Live Market Scanner</span>
+      <span>📡 Multi-Volatility Live Market Scanner (30-Tick Window)</span>
       <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
     </h2>
     <div class="overflow-x-auto">
@@ -233,7 +233,7 @@ input:focus, select:focus {
         <!-- STATS PANEL -->
         <div class="text-left mt-2">
           <div class="flex justify-between items-center text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">
-            <span>Digit Stats (Last 100 Ticks)</span>
+            <span>Digit Stats (Last 30 Ticks)</span>
             <span><b class="text-rose-400">■ Hot</b> | <b class="text-cyan-400">■ Cool</b></span>
           </div>
           <div class="grid grid-cols-5 gap-1.5" id="statsGrid"></div>
@@ -242,7 +242,7 @@ input:focus, select:focus {
 
       <div class="space-y-2 mt-4">
         <button onclick="startTrading()" id="startBtn" class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider cursor-pointer disabled:opacity-40" disabled>
-          ▶ START MULTI-SCAN & TRADE
+          ▶ START FAST-SCAN & TRADE
         </button>
         <button onclick="stopTrading()" class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2 rounded-xl text-xs cursor-pointer">
           ■ STOP AUTOMATION
@@ -257,7 +257,7 @@ input:focus, select:focus {
       <div class="mb-3">
         <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
         <select id="direction" onchange="toggleBarrier()">
-          <option value="SCANNER">Auto-Select Highest Confidence Market (&gt;= 70%)</option>
+          <option value="SCANNER">Auto-Select Highest Confidence Market (&gt;= 60%)</option>
           <option value="DIGITOVER">DIGITOVER (Higher than digit)</option>
           <option value="DIGITUNDER">DIGITUNDER (Lower than digit)</option>
           <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
@@ -302,7 +302,7 @@ input:focus, select:focus {
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Ready for connection.</div>
+      <div>Terminal initialized. 30-tick rolling window active.</div>
     </div>
   </div>
 </main>
@@ -384,19 +384,23 @@ function buildStatsGrid() {
   const container = $("statsGrid");
   container.innerHTML = "";
   const data = marketData[activeSymbol];
-  const total = data.history.length || 1;
+  const recentHistory = data.history.slice(-30);
+  const total = recentHistory.length || 1;
 
-  const maxCount = Math.max(...data.counts);
-  const minCount = Math.min(...data.counts);
+  let recentCounts = Array(10).fill(0);
+  recentHistory.forEach(d => recentCounts[d]++);
+
+  const maxCount = Math.max(...recentCounts);
+  const minCount = Math.min(...recentCounts);
 
   for (let d = 0; d <= 9; d++) {
-    const count = data.counts[d];
+    const count = recentCounts[d];
     const pct = ((count / total) * 100).toFixed(0);
 
     let classHighlight = "";
     let textStyle = "text-emerald-400";
 
-    if (data.history.length >= 10) {
+    if (recentHistory.length >= 10) {
       if (count === maxCount && maxCount > minCount) {
         classHighlight = "stat-box-hot";
         textStyle = "text-rose-400 font-extrabold";
@@ -420,13 +424,14 @@ function renderScannerTable() {
 
   symbols.forEach(sym => {
     const data = marketData[sym];
-    const total = data.history.length || 1;
+    const recentHistory = data.history.slice(-30);
+    const total = recentHistory.length || 1;
     
     let evenCount = 0;
     let overCount = 0;
     let underCount = 0;
 
-    data.history.forEach(d => {
+    recentHistory.forEach(d => {
       if (d % 2 === 0) evenCount++;
       if (d > barrier) overCount++;
       if (d < barrier) underCount++;
@@ -440,10 +445,10 @@ function renderScannerTable() {
     let bestType = "NEUTRAL";
     let bestConf = 50;
 
-    if (evenPct >= 70) { bestType = "EVEN"; bestConf = evenPct; }
-    else if (oddPct >= 70) { bestType = "ODD"; bestConf = oddPct; }
-    else if (overPct >= 70) { bestType = `OVER ${barrier}`; bestConf = overPct; }
-    else if (underPct >= 70) { bestType = `UNDER ${barrier}`; bestConf = underPct; }
+    if (evenPct >= 60) { bestType = "EVEN"; bestConf = evenPct; }
+    else if (oddPct >= 60) { bestType = "ODD"; bestConf = oddPct; }
+    else if (overPct >= 60) { bestType = `OVER ${barrier}`; bestConf = overPct; }
+    else if (underPct >= 60) { bestType = `UNDER ${barrier}`; bestConf = underPct; }
 
     const tr = document.createElement("tr");
     tr.className = "hover:bg-slate-800/30 cursor-pointer";
@@ -456,7 +461,7 @@ function renderScannerTable() {
       <td class="p-2 text-cyan-400">${oddPct}%</td>
       <td class="p-2 text-yellow-400">${overPct}%</td>
       <td class="p-2 text-purple-400">${underPct}%</td>
-      <td class="p-2"><span class="px-2 py-0.5 rounded text-[9px] font-bold ${bestConf >= 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">${bestType} (${bestConf}%)</span></td>
+      <td class="p-2"><span class="px-2 py-0.5 rounded text-[9px] font-bold ${bestConf >= 60 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">${bestType} (${bestConf}%)</span></td>
     `;
     tbody.appendChild(tr);
   });
@@ -521,7 +526,7 @@ function connectWebSocket(wsUrl) {
 
   ws.onopen = () => {
     log("Authenticated WebSocket stream opened. Subscribing to all volatility markets...");
-    $("scannerStatus").textContent = "Scanner Active";
+    $("scannerStatus").textContent = "Scanner Active (30-Tick Window)";
     
     symbols.forEach(sym => {
       ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
@@ -669,15 +674,16 @@ function getBestMarketOpportunity() {
 
   symbols.forEach(sym => {
     const data = marketData[sym];
-    const total = data.history.length || 1;
+    const recentHistory = data.history.slice(-30);
+    const total = recentHistory.length || 1;
     
-    if (data.history.length < 20) return;
+    if (recentHistory.length < 15) return;
 
     let evenCount = 0;
     let overCount = 0;
     let underCount = 0;
 
-    data.history.forEach(d => {
+    recentHistory.forEach(d => {
       if (d % 2 === 0) evenCount++;
       if (d > barrier) overCount++;
       if (d < barrier) underCount++;
@@ -688,16 +694,17 @@ function getBestMarketOpportunity() {
     const overPct = Math.round((overCount / total) * 100);
     const underPct = Math.round((underCount / total) * 100);
 
-    if (evenPct > best.conf && evenPct >= 70) {
+    // Optimized 60% confidence threshold on 30-tick rolling window
+    if (evenPct > best.conf && evenPct >= 60) {
       best = { symbol: sym, type: "DIGITEVEN", conf: evenPct, barrier: null };
     }
-    if (oddPct > best.conf && oddPct >= 70) {
+    if (oddPct > best.conf && oddPct >= 60) {
       best = { symbol: sym, type: "DIGITODD", conf: oddPct, barrier: null };
     }
-    if (overPct > best.conf && overPct >= 70) {
+    if (overPct > best.conf && overPct >= 60) {
       best = { symbol: sym, type: "DIGITOVER", conf: overPct, barrier: barrier };
     }
-    if (underPct > best.conf && underPct >= 70) {
+    if (underPct > best.conf && underPct >= 60) {
       best = { symbol: sym, type: "DIGITUNDER", conf: underPct, barrier: barrier };
     }
   });
@@ -724,11 +731,11 @@ function executeTrade() {
     if (strategy === "SCANNER") {
       let opp = getBestMarketOpportunity();
       
-      if (!opp.symbol || opp.conf < 70) {
+      if (!opp.symbol || opp.conf < 60) {
         signalHoldCounter = 0;
         lastHoldSymbol = null;
         lastHoldType = null;
-        $("scannerStatus").textContent = "Scanning... (Waiting for >= 70% Signal)";
+        $("scannerStatus").textContent = "Scanning... (Waiting for >= 60% Signal)";
         $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
         return;
       }
@@ -789,7 +796,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Multi-market scanner automation started with strict >= 70% filter.");
+  log("Multi-market scanner automation started with 30-tick window and >= 60% filter.");
   speak("Automation started.");
 }
 
