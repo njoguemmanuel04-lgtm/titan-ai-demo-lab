@@ -718,6 +718,11 @@ function executeTrade() {
   let contractType = strategy;
   let barrier = state.selectedDigit.toString();
 
+  // Dynamically sync base stake from input if not currently recovering from a loss
+  if (state.consecutiveLosses === 0) {
+    state.nextStake = Number($("stake").value) || 0.35;
+  }
+
   // HYBRID RECOVERY ENGINE: If previous contract lost, recover using Even/Odd
   if (state.consecutiveLosses > 0) {
     contractType = (state.consecutiveLosses % 2 === 1) ? "DIGITEVEN" : "DIGITODD";
