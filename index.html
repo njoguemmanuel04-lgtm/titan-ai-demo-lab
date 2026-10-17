@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | Pure Over/Under Terminal</title>
+<title>TITAN AI | Pure Dynamic Over/Under Terminal</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -91,21 +91,6 @@ header {
   0% { left: -50%; }
   100% { left: 100%; }
 }
-.digit-btn {
-  background: #030712;
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 10px 0;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-}
-.digit-btn.active {
-  background: rgba(36, 229, 154, 0.15);
-  border-color: var(--green);
-  color: var(--green);
-}
 .stat-box-hot {
   border-color: var(--red) !important;
   background: rgba(255, 71, 87, 0.12) !important;
@@ -127,9 +112,7 @@ input, select {
   margin-top: 4px;
   outline: none;
 }
-input:focus, select:focus {
-  border-color: var(--green);
-}
+input:focus, select:focus { border-color: var(--green); }
 button:disabled { opacity: .4; cursor: not-allowed; }
 </style>
 </head>
@@ -138,7 +121,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    PURE OVER/UNDER HYBRID RECOVERY TERMINAL
+    DYNAMIC OVER/UNDER SCANNER TERMINAL
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -186,7 +169,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <!-- LIVE SCANNER MATRIX -->
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between items-center">
-      <span>📡 Multi-Volatility Over/Under Scanner (30-Tick Window)</span>
+      <span>📡 Multi-Volatility Dynamic Barrier Scanner (30-Tick Window)</span>
       <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
     </h2>
     <div class="overflow-x-auto">
@@ -196,9 +179,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
             <th class="p-2">Market</th>
             <th class="p-2">Last Tick</th>
             <th class="p-2">Digit</th>
-            <th class="p-2">Over%</th>
-            <th class="p-2">Under%</th>
-            <th class="p-2">Top Signal</th>
+            <th class="p-2">Best Opportunity Signal</th>
           </tr>
         </thead>
         <tbody id="scannerTable" class="divide-y divide-slate-800/50 font-mono">
@@ -230,7 +211,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
       <div class="space-y-2 mt-4">
         <button onclick="startTrading()" id="startBtn" class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider cursor-pointer disabled:opacity-40" disabled>
-          ▶ START OVER/UNDER AUTOMATION
+          ▶ START AUTO OVER/UNDER AUTOMATION
         </button>
         <button onclick="stopTrading()" class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2 rounded-xl text-xs cursor-pointer">
           ■ STOP AUTOMATION
@@ -245,15 +226,8 @@ button:disabled { opacity: .4; cursor: not-allowed; }
       <div class="mb-3">
         <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
         <select id="direction">
-          <option value="SCANNER">Auto-Select Highest Confidence Over/Under (&gt;= 60%)</option>
-          <option value="DIGITOVER">DIGITOVER (Higher than barrier)</option>
-          <option value="DIGITUNDER">DIGITUNDER (Lower than barrier)</option>
+          <option value="SCANNER">Auto-Select Best Over/Under Barrier (&gt;= 60%)</option>
         </select>
-      </div>
-
-      <div id="barrierContainer">
-        <label class="text-[10px] uppercase tracking-wider text-slate-400">Target Barrier Digit (Over/Under)</label>
-        <div class="grid grid-cols-5 gap-2 my-2" id="digitButtons"></div>
       </div>
 
       <div class="grid grid-cols-2 gap-2 mt-3">
@@ -288,7 +262,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Pure Over/Under engine active.</div>
+      <div>Terminal initialized. Dynamic barrier selection active.</div>
     </div>
   </div>
 </main>
@@ -297,6 +271,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 let ws = null;
 let pingInterval = null;
 const symbols = ["R_10", "R_25", "R_50", "R_75", "R_100"];
+const barrierLevels = [1, 2, 4, 5, 7, 8];
 let marketData = {};
 
 symbols.forEach(s => {
@@ -312,7 +287,7 @@ let state = {
   wins: 0,
   losses: 0,
   consecutiveLosses: 0,
-  selectedDigit: 4, // Default barrier 4 for ~95% payout
+  lastUsedBarrier: 4,
   running: false,
   pendingBuy: false,
   awaitingResult: false,
@@ -324,13 +299,13 @@ let state = {
 let signalHoldCounter = 0;
 let lastHoldSymbol = null;
 let lastHoldType = null;
+let lastHoldBarrier = null;
 
 const $ = id => document.getElementById(id);
 
 window.addEventListener('DOMContentLoaded', () => {
   const savedToken = localStorage.getItem('titan_deriv_token');
   if (savedToken) $("apiToken").value = savedToken;
-  buildDigitButtons();
   buildStatsGrid();
   renderScannerTable();
 });
@@ -346,23 +321,6 @@ function speak(msg) {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
-}
-
-function buildDigitButtons() {
-  const container = $("digitButtons");
-  container.innerHTML = "";
-  for (let d = 0; d <= 9; d++) {
-    const btn = document.createElement("button");
-    btn.className = "digit-btn" + (d === state.selectedDigit ? " active" : "");
-    btn.textContent = d;
-    btn.onclick = () => {
-      state.selectedDigit = d;
-      buildDigitButtons();
-      renderScannerTable();
-      log("Target barrier set to " + d);
-    };
-    container.appendChild(btn);
-  }
 }
 
 function buildStatsGrid() {
@@ -402,32 +360,45 @@ function buildStatsGrid() {
   }
 }
 
-function renderScannerTable() {
-  const tbody = $("scannerTable");
-  tbody.innerHTML = "";
-  const barrier = state.selectedDigit;
+function evaluateBestBarrierForMarket(sym) {
+  const data = marketData[sym];
+  const recentHistory = data.history.slice(-30);
+  const total = recentHistory.length || 1;
 
-  symbols.forEach(sym => {
-    const data = marketData[sym];
-    const recentHistory = data.history.slice(-30);
-    const total = recentHistory.length || 1;
-    
+  let bestForMarket = { type: "NEUTRAL", conf: 0, barrier: 4 };
+
+  if (recentHistory.length < 15) return bestForMarket;
+
+  barrierLevels.forEach(b => {
     let overCount = 0;
     let underCount = 0;
 
     recentHistory.forEach(d => {
-      if (d > barrier) overCount++;
-      if (d < barrier) underCount++;
+      if (d > b) overCount++;
+      if (d < b) underCount++;
     });
 
     const overPct = Math.round((overCount / total) * 100);
     const underPct = Math.round((underCount / total) * 100);
 
-    let bestType = "NEUTRAL";
-    let bestConf = 50;
+    if (overPct > bestForMarket.conf && overPct >= 60) {
+      bestForMarket = { type: "DIGITOVER", conf: overPct, barrier: b };
+    }
+    if (underPct > bestForMarket.conf && underPct >= 60) {
+      bestForMarket = { type: "DIGITUNDER", conf: underPct, barrier: b };
+    }
+  });
 
-    if (overPct >= 60) { bestType = `OVER ${barrier}`; bestConf = overPct; }
-    else if (underPct >= 60) { bestType = `UNDER ${barrier}`; bestConf = underPct; }
+  return bestForMarket;
+}
+
+function renderScannerTable() {
+  const tbody = $("scannerTable");
+  tbody.innerHTML = "";
+
+  symbols.forEach(sym => {
+    const data = marketData[sym];
+    const bestSignal = evaluateBestBarrierForMarket(sym);
 
     const tr = document.createElement("tr");
     tr.className = "hover:bg-slate-800/30 cursor-pointer";
@@ -436,9 +407,11 @@ function renderScannerTable() {
       <td class="p-2 font-bold ${sym === activeSymbol ? 'text-emerald-400' : 'text-slate-300'}">${sym}</td>
       <td class="p-2 text-slate-400">${data.lastQuote}</td>
       <td class="p-2 text-yellow-400 font-bold">${data.lastDigit}</td>
-      <td class="p-2 text-yellow-400">${overPct}%</td>
-      <td class="p-2 text-purple-400">${underPct}%</td>
-      <td class="p-2"><span class="px-2 py-0.5 rounded text-[9px] font-bold ${bestConf >= 60 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">${bestType} (${bestConf}%)</span></td>
+      <td class="p-2">
+        <span class="px-2 py-0.5 rounded text-[9px] font-bold ${bestSignal.conf >= 60 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">
+          ${bestSignal.type !== "NEUTRAL" ? `${bestSignal.type} ${bestSignal.barrier} (${bestSignal.conf}%)` : "Scanning..."}
+        </span>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -495,7 +468,7 @@ function connectWebSocket(wsUrl) {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("Authenticated WebSocket stream opened. Pure Over/Under engine active...");
+    log("Authenticated WebSocket stream opened. Dynamic Over/Under scanner active...");
     $("scannerStatus").textContent = "Scanner Active (30-Tick Window)";
     
     symbols.forEach(sym => {
@@ -503,7 +476,7 @@ function connectWebSocket(wsUrl) {
     });
     ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
 
-    // WebSocket Keep-Alive Heartbeat Ping every 15 seconds
+    // WebSocket Heartbeat Ping every 15 seconds
     pingInterval = setInterval(() => {
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ ping: 1 }));
@@ -597,8 +570,8 @@ function connectWebSocket(wsUrl) {
           state.consecutiveLosses++;
           
           let mult = Number($("martingale").value) || 2.1;
-          if (state.selectedDigit === 1 || state.selectedDigit === 8) mult = 4.5;
-          if (state.selectedDigit === 2 || state.selectedDigit === 7) mult = 1.2;
+          if (state.lastUsedBarrier === 1 || state.lastUsedBarrier === 8) mult = 4.5;
+          if (state.lastUsedBarrier === 2 || state.lastUsedBarrier === 7) mult = 1.2;
 
           state.nextStake *= mult;
           log(`LOSS! -$${Math.abs(p).toFixed(2)} (Streak: ${state.consecutiveLosses}) — Adjusting stake.`);
@@ -644,83 +617,61 @@ function connectWebSocket(wsUrl) {
 }
 
 function getBestMarketOpportunity() {
-  let best = { symbol: null, type: null, conf: 0, barrier: state.selectedDigit };
-  const barrier = state.selectedDigit;
+  let bestGlobal = { symbol: null, type: null, conf: 0, barrier: 4 };
 
   symbols.forEach(sym => {
-    const data = marketData[sym];
-    const recentHistory = data.history.slice(-30);
-    const total = recentHistory.length || 1;
-    
-    if (recentHistory.length < 15) return;
-
-    let overCount = 0;
-    let underCount = 0;
-
-    recentHistory.forEach(d => {
-      if (d > barrier) overCount++;
-      if (d < barrier) underCount++;
-    });
-
-    const overPct = Math.round((overCount / total) * 100);
-    const underPct = Math.round((underCount / total) * 100);
-
-    if (overPct > best.conf && overPct >= 60) {
-      best = { symbol: sym, type: "DIGITOVER", conf: overPct, barrier: barrier };
-    }
-    if (underPct > best.conf && underPct >= 60) {
-      best = { symbol: sym, type: "DIGITUNDER", conf: underPct, barrier: barrier };
+    const opp = evaluateBestBarrierForMarket(sym);
+    if (opp.conf > bestGlobal.conf && opp.conf >= 60) {
+      bestGlobal = { symbol: sym, type: opp.type, conf: opp.conf, barrier: opp.barrier };
     }
   });
 
-  return best;
+  return bestGlobal;
 }
 
 function executeTrade() {
-  let strategy = $("direction").value;
-  let targetSymbol = activeSymbol;
-  let contractType = strategy;
-  let barrier = state.selectedDigit.toString();
-
   if (state.consecutiveLosses === 0) {
     state.nextStake = Number($("stake").value) || 2.00;
   }
 
-  if (strategy === "SCANNER") {
-    let opp = getBestMarketOpportunity();
-    
-    if (!opp.symbol || opp.conf < 60) {
-      signalHoldCounter = 0;
-      lastHoldSymbol = null;
-      lastHoldType = null;
-      $("scannerStatus").textContent = "Scanning... (Waiting for >= 60% Signal)";
-      $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
-      return;
-    }
-
-    if (opp.symbol === lastHoldSymbol && opp.type === lastHoldType) {
-      signalHoldCounter++;
-    } else {
-      signalHoldCounter = 1;
-      lastHoldSymbol = opp.symbol;
-      lastHoldType = opp.type;
-    }
-
-    if (signalHoldCounter < 2) {
-      $("scannerStatus").textContent = `Spooling Signal (1/2): ${opp.symbol} (${opp.type} ${opp.conf}%)`;
-      $("scannerStatus").className = "text-cyan-400 text-[10px] font-mono animate-pulse";
-      return; 
-    }
-
+  let opp = getBestMarketOpportunity();
+  
+  if (!opp.symbol || opp.conf < 60) {
     signalHoldCounter = 0;
-    targetSymbol = opp.symbol;
-    contractType = opp.type;
-
-    $("scannerStatus").textContent = `CONFIRMED SIGNAL: ${targetSymbol} (${contractType} ${opp.conf}%)`;
-    $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
-
-    log(`🎯 CONFIRMED SIGNAL (2/2 Ticks) on ${targetSymbol} — Strategy: ${contractType} (${opp.conf}% Confidence)`);
+    lastHoldSymbol = null;
+    lastHoldType = null;
+    lastHoldBarrier = null;
+    $("scannerStatus").textContent = "Scanning... (Waiting for >= 60% Signal)";
+    $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
+    return;
   }
+
+  if (opp.symbol === lastHoldSymbol && opp.type === lastHoldType && opp.barrier === lastHoldBarrier) {
+    signalHoldCounter++;
+  } else {
+    signalHoldCounter = 1;
+    lastHoldSymbol = opp.symbol;
+    lastHoldType = opp.type;
+    lastHoldBarrier = opp.barrier;
+  }
+
+  if (signalHoldCounter < 2) {
+    $("scannerStatus").textContent = `Spooling Signal (1/2): ${opp.symbol} (${opp.type} ${opp.barrier} ${opp.conf}%)`;
+    $("scannerStatus").className = "text-cyan-400 text-[10px] font-mono animate-pulse";
+    return; 
+  }
+
+  signalHoldCounter = 0;
+  let targetSymbol = opp.symbol;
+  let contractType = opp.type;
+  let barrier = opp.barrier.toString();
+
+  state.lastUsedBarrier = opp.barrier;
+
+  $("scannerStatus").textContent = `CONFIRMED SIGNAL: ${targetSymbol} (${contractType} ${barrier} - ${opp.conf}%)`;
+  $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
+
+  log(`🎯 CONFIRMED SIGNAL (2/2 Ticks) on ${targetSymbol} — Strategy: ${contractType} ${barrier} (${opp.conf}% Confidence)`);
 
   const stake = Number(state.nextStake.toFixed(2));
   state.pendingBuy = true;
@@ -745,7 +696,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Pure Over/Under scanner automation started.");
+  log("Dynamic Over/Under scanner automation started.");
   speak("Automation started.");
 }
 
