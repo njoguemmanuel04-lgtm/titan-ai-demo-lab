@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | Pure Dynamic Over/Under Terminal</title>
+<title>TITAN AI | Dynamic Over/Under Terminal</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -121,7 +121,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    DYNAMIC OVER/UNDER SCANNER TERMINAL
+    DYNAMIC OVER/UNDER TERMINAL
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -262,7 +262,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Dynamic barrier selection active.</div>
+      <div>Terminal initialized. Dynamic barrier selection active (Excluding Over 1 / Under 8).</div>
     </div>
   </div>
 </main>
@@ -271,7 +271,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 let ws = null;
 let pingInterval = null;
 const symbols = ["R_10", "R_25", "R_50", "R_75", "R_100"];
-const barrierLevels = [1, 2, 4, 5, 7, 8];
+const barrierLevels = [2, 4, 5, 7]; // Removed barriers 1 and 8
 let marketData = {};
 
 symbols.forEach(s => {
@@ -570,7 +570,6 @@ function connectWebSocket(wsUrl) {
           state.consecutiveLosses++;
           
           let mult = Number($("martingale").value) || 2.1;
-          if (state.lastUsedBarrier === 1 || state.lastUsedBarrier === 8) mult = 4.5;
           if (state.lastUsedBarrier === 2 || state.lastUsedBarrier === 7) mult = 1.2;
 
           state.nextStake *= mult;
