@@ -4,15 +4,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | EVEN ODD Terminal</title>
+<title>TITAN AI | DIGIT MATCHES</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
   --bg:#030712;--panel:#0f172a;--border:#1e293b;
   --text:#f8fafc;--muted:#94a3b8;--green:#24e59a;
-  --green-glow:rgba(36,229,154,.2);--red:#ff4757;
-  --red-glow:rgba(255,71,87,.3);--ice:#38bdf8;
-  --ice-glow:rgba(56,189,248,.3);--yellow:#facc15;
+  --red:#ff4757;--ice:#38bdf8;--yellow:#facc15;
 }
 body {
   background:radial-gradient(circle at 50% 0%,#1e1b4b 0%,var(--bg) 60%);
@@ -45,7 +43,7 @@ header {
   align-items:center;justify-content:center;
   background:rgba(36,229,154,.05);border:2px solid var(--green);
   border-radius:20px;font-size:48px;font-weight:900;
-  color:var(--green);box-shadow:0 0 25px var(--green-glow);
+  color:var(--green);box-shadow:0 0 25px rgba(36,229,154,.2);
 }
 .scanline {
   position:absolute;top:0;left:-100%;width:50%;height:2px;
@@ -53,16 +51,8 @@ header {
   animation:scan 2.5s infinite linear;
 }
 @keyframes scan {0%{left:-50%}100%{left:100%}}
-.digit-btn {
-  background:#030712;border:1px solid var(--border);color:var(--text);
-  padding:10px 0;border-radius:8px;font-weight:700;font-size:14px;
-}
-.stat-box-hot {
-  border-color:var(--red)!important;background:rgba(255,71,87,.12)!important;
-}
-.stat-box-cool {
-  border-color:var(--ice)!important;background:rgba(56,189,248,.12)!important;
-}
+.stat-box-hot {border-color:var(--red)!important;background:rgba(255,71,87,.12)!important}
+.stat-box-cool {border-color:var(--ice)!important;background:rgba(56,189,248,.12)!important}
 input,select {
   width:100%;background:#030712;color:var(--text);
   border:1px solid var(--border);border-radius:10px;
@@ -70,12 +60,21 @@ input,select {
 }
 input:focus,select:focus {border-color:var(--green)}
 button:disabled {opacity:.4;cursor:not-allowed}
+.digit-chip {
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:25px;height:27px;border-radius:7px;
+  border:1px solid #166534;background:#052e20;
+  color:#86efac;font-weight:800;margin:2px;padding:0 5px;
+}
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">TITAN AI</div>
+  <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
+    DIGIT MATCHES ENGINE
+  </div>
   <div id="connectionBadge"
        class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -109,25 +108,25 @@ button:disabled {opacity:.4;cursor:not-allowed}
       </a>
       <a href="https://app.deriv.com" target="_blank" rel="noopener"
         class="flex-1 text-center bg-slate-800 text-slate-300 border border-slate-700 px-3 py-2 rounded-lg font-bold">
-        🎮 Demo Account Hub
+        🎮 Demo Account
       </a>
     </div>
     <p class="text-[10px] text-slate-400 mt-3">
-      Generate your token in Deriv API Settings. Use a demo account for testing.
+      Use a demo account first. Never share your API token with anyone.
     </p>
   </div>
 
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
     <div class="metric-card">
       <div class="text-[10px] uppercase text-slate-400">Balance</div>
-      <div class="text-2xl font-black text-emerald-400 mt-1" id="balance">$0.00</div>
+      <div class="text-xl md:text-2xl font-black text-emerald-400 mt-1" id="balance">USD 0.00</div>
     </div>
     <div class="metric-card">
       <div class="text-[10px] uppercase text-slate-400">Session P/L</div>
-      <div class="text-2xl font-black mt-1" id="profit">$0.00</div>
+      <div class="text-xl md:text-2xl font-black mt-1" id="profit">USD 0.00</div>
     </div>
     <div class="metric-card">
-      <div class="text-[10px] uppercase text-slate-400">Contracts</div>
+      <div class="text-[10px] uppercase text-slate-400">Settled</div>
       <div class="text-2xl font-black mt-1" id="runs">0</div>
     </div>
     <div class="metric-card">
@@ -137,18 +136,23 @@ button:disabled {opacity:.4;cursor:not-allowed}
   </div>
 
   <div class="card">
-    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between">
-      <span>📡 Multi-Volatility EVEN/ODD Scanner</span>
+    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between gap-2">
+      <span>📡 Multi-Market Matches Scanner</span>
       <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
     </h2>
+    <p class="text-[10px] text-slate-500 mb-3">
+      The candidate digits are ranked from recent tick history. They are not guaranteed predictions.
+      Tap a market row to select it.
+    </p>
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse text-xs">
         <thead>
           <tr class="border-b border-slate-800 text-[10px] text-slate-400 uppercase">
-            <th class="p-2">Market</th><th class="p-2">Last Tick</th>
-            <th class="p-2">Digit</th><th class="p-2">Even%</th>
-            <th class="p-2">Odd%</th><th class="p-2">Over%</th>
-            <th class="p-2">Under%</th><th class="p-2">Top Signal</th>
+            <th class="p-2">Market</th>
+            <th class="p-2">Last Quote</th>
+            <th class="p-2">Last Digit</th>
+            <th class="p-2">Ticks</th>
+            <th class="p-2">5 Candidate Digits</th>
           </tr>
         </thead>
         <tbody id="scannerTable" class="divide-y divide-slate-800/50 font-mono"></tbody>
@@ -166,18 +170,27 @@ button:disabled {opacity:.4;cursor:not-allowed}
         <div class="text-[10px] uppercase text-slate-400" id="activeMarketLabel">Symbol: R_50</div>
         <div class="digit-box" id="lastDigit">–</div>
         <div class="text-xs text-cyan-400 mb-4" id="digitInfo">Awaiting connection...</div>
+
         <div class="text-left mt-2">
           <div class="flex justify-between text-[10px] uppercase text-slate-400 mb-1.5">
-            <span>Digit Stats (Last 30 Ticks)</span>
-            <span><b class="text-rose-400">■ Hot</b> | <b class="text-cyan-400">■ Cool</b></span>
+            <span>Recent digit frequency</span>
+            <span>0–9</span>
           </div>
           <div class="grid grid-cols-5 gap-1.5" id="statsGrid"></div>
         </div>
+
+        <div class="mt-4 text-left bg-slate-950 border border-slate-800 rounded-xl p-3">
+          <div class="text-[10px] text-slate-400 uppercase">AI selected digits</div>
+          <div id="chosenDigits" class="mt-2 flex flex-wrap gap-1">
+            <span class="text-xs text-slate-500">Waiting for tick history</span>
+          </div>
+        </div>
       </div>
+
       <div class="space-y-2 mt-4">
         <button onclick="startTrading()" id="startBtn"
           class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider" disabled>
-          ▶ START 5-TRADE BATCHES
+          ▶ START 5 MATCHES TRADES
         </button>
         <button onclick="stopTrading()"
           class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2 rounded-xl text-xs">
@@ -188,18 +201,18 @@ button:disabled {opacity:.4;cursor:not-allowed}
 
     <div class="card">
       <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">
-        ⚙️ Batch Parameters &amp; Risk
+        ⚙️ Matches Parameters &amp; Risk
       </h2>
 
-      <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
-      <select id="direction">
-        <option value="SCANNER">Auto-Select EVEN/ODD Signal</option>
-        <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
-        <option value="DIGITODD">DIGITODD (Odd digit)</option>
+      <label class="text-[10px] uppercase tracking-wider text-slate-400">Market selection</label>
+      <select id="marketMode">
+        <option value="AUTO">AI selects market and digits</option>
+        <option value="SELECTED">Use selected market and AI digits</option>
       </select>
 
-      <label class="text-[10px] uppercase tracking-wider text-slate-400 mt-3 block">Selected market</label>
-      <p class="text-xs text-slate-400 mt-1">Tap a market row in the scanner to select it for manual EVEN/ODD trading.</p>
+      <p class="text-xs text-slate-400 mt-2">
+        Each batch uses five different DIGITMATCH barriers, for example 4, 7, 9, 2, 1.
+      </p>
 
       <div class="grid grid-cols-2 gap-2 mt-3">
         <div>
@@ -213,15 +226,15 @@ button:disabled {opacity:.4;cursor:not-allowed}
       </div>
 
       <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 mt-3">
-        <div class="flex justify-between text-xs">
+        <div class="flex justify-between text-xs gap-2">
           <span class="text-slate-400">Planned stake per batch</span>
-          <strong id="batchCost">$1.75</strong>
+          <strong id="batchCost">USD 1.75</strong>
         </div>
-        <div class="flex justify-between text-xs mt-2">
+        <div class="flex justify-between text-xs mt-2 gap-2">
           <span class="text-slate-400">Batch status</span>
           <strong id="batchStatus" class="text-cyan-400">Idle</strong>
         </div>
-        <div class="flex justify-between text-xs mt-2">
+        <div class="flex justify-between text-xs mt-2 gap-2">
           <span class="text-slate-400">Settled in current batch</span>
           <strong id="batchProgress">0 / 5</strong>
         </div>
@@ -247,7 +260,8 @@ button:disabled {opacity:.4;cursor:not-allowed}
         </div>
       </div>
       <p class="text-[10px] text-slate-500 mt-3">
-        Five trades can lose together. Historical digit frequencies do not guarantee the next outcome.
+        Five contracts can lose together. Historical frequency does not predict the next tick.
+        Risk limits stop new trades but cannot undo purchases already accepted by Deriv.
       </p>
     </div>
   </div>
@@ -257,7 +271,7 @@ button:disabled {opacity:.4;cursor:not-allowed}
       📜 System Execution Log
     </h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Demo testing recommended.</div>
+      <div>Digit Matches terminal initialized. Demo testing recommended.</div>
     </div>
   </div>
 </main>
@@ -275,11 +289,9 @@ let activeSymbol = "R_50";
 let accountCurrency = "USD";
 let lastTickKey = "";
 let signalHoldCounter = 0;
-let lastHoldSymbol = null;
-let lastHoldType = null;
+let lastHoldKey = "";
 let currentBatch = null;
 let batchSequence = 0;
-let intentionalClose = false;
 let unknownPurchase = false;
 
 const pendingRequests = new Map();
@@ -290,7 +302,6 @@ const marketData = {};
 symbols.forEach(symbol => {
   marketData[symbol] = {
     history: [],
-    counts: Array(10).fill(0),
     lastQuote: "-",
     lastDigit: "-"
   };
@@ -298,7 +309,6 @@ symbols.forEach(symbol => {
 
 const state = {
   balance: 0,
-  startingBalance: 0,
   total: 0,
   wins: 0,
   losses: 0,
@@ -312,6 +322,7 @@ const state = {
 window.addEventListener("DOMContentLoaded", () => {
   const savedToken = localStorage.getItem("titan_deriv_token");
   if (savedToken) $("apiToken").value = savedToken;
+
   buildStatsGrid();
   renderScannerTable();
   updateBatchCost();
@@ -333,8 +344,7 @@ function speak(message) {
 
 function resetSignalConfirmation() {
   signalHoldCounter = 0;
-  lastHoldSymbol = null;
-  lastHoldType = null;
+  lastHoldKey = "";
 }
 
 function updateBatchCost() {
@@ -377,12 +387,11 @@ function takePendingRequest(data) {
   const rawId = data.req_id ?? data.echo_req?.req_id;
   if (rawId === undefined || rawId === null) return null;
 
-  const reqId = Number(rawId);
-  const entry = pendingRequests.get(reqId);
+  const entry = pendingRequests.get(Number(rawId));
   if (!entry) return null;
 
   clearTimeout(entry.timer);
-  pendingRequests.delete(reqId);
+  pendingRequests.delete(Number(rawId));
   return entry;
 }
 
@@ -420,19 +429,16 @@ function checkBatchCompletion() {
     return;
   }
 
-  const finished = currentBatch.trades.every(t => isTerminal(t.status));
-  if (finished) {
+  if (currentBatch.trades.every(t => isTerminal(t.status))) {
     const b = currentBatch;
     const settled = b.trades.filter(t => t.status === "settled").length;
     const rejected = b.trades.filter(t => t.status === "failed").length;
     const cancelled = b.trades.filter(t => t.status === "cancelled").length;
 
     log(
-      `BATCH ${b.id} COMPLETE — ${settled} settled, ` +
-      `${rejected} rejected, ${cancelled} cancelled. ` +
-      `Batch net P/L: ${accountCurrency} ${b.profit.toFixed(2)}`
+      `BATCH ${b.id} COMPLETE — ${settled} settled, ${rejected} rejected, ` +
+      `${cancelled} cancelled. Net P/L: ${accountCurrency} ${b.profit.toFixed(2)}`
     );
-
     currentBatch = null;
   }
 
@@ -449,7 +455,7 @@ function handleRequestTimeout(entry) {
 
   if (entry.kind === "proposal" && trade.status === "proposal_pending") {
     trade.status = "failed";
-    log(`Batch ${entry.batchId}, trade ${entry.tradeIndex + 1}: proposal timed out; no buy confirmation received.`);
+    log(`Trade ${entry.tradeIndex + 1}: proposal timed out.`);
     checkBatchCompletion();
     return;
   }
@@ -458,13 +464,33 @@ function handleRequestTimeout(entry) {
     trade.status = "unknown";
     unknownPurchase = true;
     state.running = false;
-    $("scannerStatus").textContent = "Verify Deriv account";
     log(
-      `URGENT: Batch ${entry.batchId}, trade ${entry.tradeIndex + 1}: ` +
-      `buy response timed out. Purchase status is unknown. Check Deriv before restarting.`
+      `URGENT: Trade ${entry.tradeIndex + 1} buy response timed out. ` +
+      `Check Deriv account history before restarting.`
     );
     updateBatchDisplay();
   }
+}
+
+/*
+ * Select five distinct digits with the lowest observed frequencies
+ * in the latest 100 ticks. This is a ranking heuristic, not a prediction.
+ */
+function getCandidateDigits(symbol) {
+  const history = marketData[symbol].history.slice(-100);
+  if (history.length < 100) return null;
+
+  const counts = Array(10).fill(0);
+  history.forEach(digit => counts[digit]++);
+
+  return Array.from({ length: 10 }, (_, digit) => ({
+    digit,
+    count: counts[digit],
+    frequency: counts[digit] / history.length
+  }))
+  .sort((a, b) => a.count - b.count || a.digit - b.digit)
+  .slice(0, 5)
+  .map(item => item.digit);
 }
 
 function buildStatsGrid() {
@@ -508,22 +534,23 @@ function buildStatsGrid() {
     box.append(label, value);
     container.appendChild(box);
   }
-}
 
-function getStats(symbol, windowSize = 30) {
-  const history = marketData[symbol].history.slice(-windowSize);
-  const n = history.length;
-  const even = history.filter(d => d % 2 === 0).length;
-  const over = history.filter(d => d > 4).length;
-  const under = history.filter(d => d < 4).length;
+  const candidates = getCandidateDigits(activeSymbol);
+  const chosen = $("chosenDigits");
+  chosen.innerHTML = "";
 
-  return {
-    n,
-    evenPct: n ? even / n * 100 : 0,
-    oddPct: n ? (n - even) / n * 100 : 0,
-    overPct: n ? over / n * 100 : 0,
-    underPct: n ? under / n * 100 : 0
-  };
+  if (!candidates) {
+    chosen.textContent = "Collecting 100 ticks...";
+    chosen.className = "mt-2 text-xs text-slate-500";
+  } else {
+    chosen.className = "mt-2 flex flex-wrap gap-1";
+    candidates.forEach(digit => {
+      const chip = document.createElement("span");
+      chip.className = "digit-chip";
+      chip.textContent = digit;
+      chosen.appendChild(chip);
+    });
+  }
 }
 
 function renderScannerTable() {
@@ -532,18 +559,12 @@ function renderScannerTable() {
 
   symbols.forEach(symbol => {
     const data = marketData[symbol];
-    const stats = getStats(symbol, 30);
-    const best = stats.evenPct >= stats.oddPct
-      ? { type: "DIGITEVEN", conf: stats.evenPct }
-      : { type: "DIGITODD", conf: stats.oddPct };
-
-    const ready = stats.n >= 30;
-    const label = !ready
-      ? `COLLECTING (${stats.n}/30)`
-      : `${best.type.replace("DIGIT", "")} (${best.conf.toFixed(0)}%)`;
-
+    const candidates = getCandidateDigits(symbol);
     const row = document.createElement("tr");
+
     row.className = "hover:bg-slate-800/30 cursor-pointer";
+    if (symbol === activeSymbol) row.style.background = "rgba(36,229,154,.06)";
+
     row.onclick = () => {
       activeSymbol = symbol;
       $("activeMarketLabel").textContent = "Symbol: " + symbol;
@@ -553,45 +574,70 @@ function renderScannerTable() {
     };
 
     const values = [
-      symbol, data.lastQuote, data.lastDigit,
-      Math.round(stats.evenPct) + "%",
-      Math.round(stats.oddPct) + "%",
-      Math.round(stats.overPct) + "%",
-      Math.round(stats.underPct) + "%"
+      symbol,
+      data.lastQuote,
+      data.lastDigit,
+      data.history.length
     ];
 
     values.forEach((value, index) => {
       const cell = document.createElement("td");
       cell.className = "p-2 " + (index === 0
-        ? (symbol === activeSymbol ? "font-bold text-emerald-400" : "font-bold text-slate-300")
+        ? "font-bold text-emerald-400"
         : "text-slate-400");
       cell.textContent = value;
       row.appendChild(cell);
     });
 
-    const cell = document.createElement("td");
-    cell.className = "p-2";
-    const badge = document.createElement("span");
-    badge.className = "px-2 py-0.5 rounded text-[9px] font-bold " +
-      (ready && best.conf >= 60
-        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-        : "bg-slate-800 text-slate-400");
-    badge.textContent = label;
-    cell.appendChild(badge);
-    row.appendChild(cell);
+    const candidateCell = document.createElement("td");
+    candidateCell.className = "p-2";
+
+    if (!candidates) {
+      candidateCell.textContent = `COLLECTING ${data.history.length}/100`;
+      candidateCell.className += " text-slate-500";
+    } else {
+      candidates.forEach(digit => {
+        const chip = document.createElement("span");
+        chip.className = "digit-chip";
+        chip.textContent = digit;
+        candidateCell.appendChild(chip);
+      });
+    }
+
+    row.appendChild(candidateCell);
     tbody.appendChild(row);
   });
 }
 
+function getBestMarketOpportunity() {
+  const candidates = [];
+
+  symbols.forEach(symbol => {
+    const digits = getCandidateDigits(symbol);
+    if (!digits) return;
+
+    const history = marketData[symbol].history.slice(-100);
+    const counts = Array(10).fill(0);
+    history.forEach(d => counts[d]++);
+
+    const score = digits.reduce((sum, digit) => sum + counts[digit], 0);
+    candidates.push({ symbol, digits, score });
+  });
+
+  candidates.sort((a, b) => a.score - b.score || a.symbol.localeCompare(b.symbol));
+  return candidates[0] || null;
+}
+
 async function connectDeriv() {
   const token = $("apiToken").value.trim();
+
   if (!token) {
     alert("Please paste your Deriv API token.");
     return;
   }
 
   if (unknownPurchase) {
-    alert("A buy request has an unknown result. Verify your Deriv account before reconnecting or restarting.");
+    alert("A buy request has an unknown result. Verify your Deriv account before reconnecting.");
     return;
   }
 
@@ -610,21 +656,24 @@ async function connectDeriv() {
     });
 
     const data = await response.json();
+
     if (!response.ok || !data.ok || !data.ws_url) {
       throw new Error(data.error || "Authentication failed.");
     }
+
     if (!Number.isFinite(Number(data.balance))) {
       throw new Error("Backend returned an invalid account balance.");
     }
 
     state.balance = Number(data.balance);
-    state.startingBalance = state.balance;
     state.accountId = data.account_id ?? null;
     state.accountType = data.account_type ?? "";
     accountCurrency = data.currency || "USD";
 
     $("balance").textContent = accountCurrency + " " + state.balance.toFixed(2);
+    updateBatchCost();
     log(`Authorized account: ${data.account_id} (${data.account_type})`);
+
     connectWebSocket(data.ws_url);
   } catch (error) {
     log("Auth Error: " + error.message);
@@ -636,8 +685,6 @@ async function connectDeriv() {
 }
 
 function connectWebSocket(wsUrl) {
-  intentionalClose = false;
-
   if (ws) {
     try { ws.close(); } catch (_) {}
   }
@@ -658,7 +705,7 @@ function connectWebSocket(wsUrl) {
     if (ws !== socket) return;
 
     log("Authenticated WebSocket stream opened.");
-    $("scannerStatus").textContent = "Scanner Active";
+    $("scannerStatus").textContent = "Matches scanner active";
     $("connectionBadge").textContent = "● CONNECTED & AUTHORIZED";
     $("connectionBadge").style.color = "var(--green)";
     $("connectBtn").textContent = "CONNECTED";
@@ -674,7 +721,6 @@ function connectWebSocket(wsUrl) {
       }
     }, 15000);
 
-    // Restore monitoring for contracts still open after a disconnection.
     if (currentBatch) {
       currentBatch.trades.forEach(trade => {
         if (trade.status === "open" && trade.contractId) {
@@ -685,7 +731,7 @@ function connectWebSocket(wsUrl) {
               subscribe: 1
             });
             log("Resubscribed to contract " + trade.contractId);
-          } catch (error) {
+          } catch (_) {
             log("Could not resubscribe to contract " + trade.contractId);
           }
         }
@@ -709,26 +755,20 @@ function connectWebSocket(wsUrl) {
     const tracked = takePendingRequest(data);
 
     if (data.error) {
-      const message = data.error.message || "Unknown Deriv error.";
-      log("Deriv API Error: " + message);
-
+      log("Deriv API Error: " + (data.error.message || "Unknown error."));
       const trade = getBatchTrade(tracked);
 
       if (trade && tracked.kind === "proposal") {
         trade.status = "failed";
-        log(`Batch ${tracked.batchId}, trade ${tracked.tradeIndex + 1} proposal rejected.`);
+        log(`Trade ${tracked.tradeIndex + 1} proposal rejected.`);
         checkBatchCompletion();
       } else if (trade && tracked.kind === "buy") {
         trade.status = "failed";
-        log(`Batch ${tracked.batchId}, trade ${tracked.tradeIndex + 1} buy rejected by Deriv.`);
+        log(`Trade ${tracked.tradeIndex + 1} buy rejected by Deriv.`);
         checkBatchCompletion();
-      } else if (tracked && tracked.kind === "unknown-monitor") {
-        state.running = false;
-        log("Contract monitoring error. Verify the contract in Deriv.");
-      } else if (!tracked) {
-        log("Unmatched API error; verify the Deriv account if a trade may be open.");
+      } else {
+        log("If a purchase response was lost, verify the account history.");
       }
-
       return;
     }
 
@@ -738,6 +778,7 @@ function connectWebSocket(wsUrl) {
         state.balance = value;
         accountCurrency = data.balance.currency || accountCurrency;
         $("balance").textContent = accountCurrency + " " + value.toFixed(2);
+        updateBatchCost();
       }
     }
 
@@ -760,12 +801,11 @@ function connectWebSocket(wsUrl) {
       market.lastQuote = quote;
       market.lastDigit = digit;
       market.history.push(digit);
-
       if (market.history.length > 200) market.history.shift();
 
       if (symbol === activeSymbol) {
         $("lastDigit").textContent = digit;
-        $("digitInfo").textContent = `Quote: ${quote} | Symbol: ${symbol}`;
+        $("digitInfo").textContent = `Quote: ${quote} | Market: ${symbol}`;
         $("activeMarketLabel").textContent = "Symbol: " + symbol;
         buildStatsGrid();
       }
@@ -783,15 +823,14 @@ function connectWebSocket(wsUrl) {
 
       if (!data.proposal || !data.proposal.id) {
         trade.status = "failed";
-        log("Invalid proposal returned for batch trade " + (tracked.tradeIndex + 1));
+        log(`No valid proposal for trade ${tracked.tradeIndex + 1}.`);
         checkBatchCompletion();
         return;
       }
 
-      // Do not buy a proposal if the user stopped automation or a risk limit was hit.
       if (!state.running || unknownPurchase) {
         trade.status = "cancelled";
-        log(`Batch ${tracked.batchId}, trade ${tracked.tradeIndex + 1}: proposal not bought because automation stopped.`);
+        log(`Trade ${tracked.tradeIndex + 1} not bought because automation stopped.`);
         checkBatchCompletion();
         return;
       }
@@ -799,7 +838,7 @@ function connectWebSocket(wsUrl) {
       const askPrice = Number(data.proposal.ask_price);
       if (!Number.isFinite(askPrice) || askPrice <= 0) {
         trade.status = "failed";
-        log("Invalid proposal ask price; trade skipped.");
+        log("Invalid proposal price; trade skipped.");
         checkBatchCompletion();
         return;
       }
@@ -813,7 +852,7 @@ function connectWebSocket(wsUrl) {
           { kind: "buy", batchId: tracked.batchId, tradeIndex: tracked.tradeIndex },
           20000
         );
-        log(`Batch ${tracked.batchId}: buy request sent for trade ${tracked.tradeIndex + 1}/5.`);
+        log(`Buy request sent: digit ${trade.digit}, trade ${tracked.tradeIndex + 1}/5.`);
       } catch (error) {
         trade.status = "failed";
         log("Buy request failed: " + error.message);
@@ -830,7 +869,7 @@ function connectWebSocket(wsUrl) {
         trade.status = "unknown";
         unknownPurchase = true;
         state.running = false;
-        log("Buy response did not contain a contract ID. Verify your Deriv account.");
+        log("Buy response has no contract ID. Verify your Deriv account.");
         updateBatchDisplay();
         return;
       }
@@ -840,8 +879,8 @@ function connectWebSocket(wsUrl) {
       contractToTrade.set(String(contractId), trade);
 
       log(
-        `PURCHASED: batch ${tracked.batchId}, trade ${tracked.tradeIndex + 1}/5, ` +
-        `contract ${contractId}.`
+        `PURCHASED: batch ${tracked.batchId}, digit ${trade.digit}, ` +
+        `trade ${tracked.tradeIndex + 1}/5, contract ${contractId}.`
       );
 
       try {
@@ -850,7 +889,7 @@ function connectWebSocket(wsUrl) {
           contract_id: contractId,
           subscribe: 1
         });
-      } catch (error) {
+      } catch (_) {
         state.running = false;
         log(`Could not subscribe to contract ${contractId}. Verify it in Deriv.`);
       }
@@ -874,7 +913,6 @@ function connectWebSocket(wsUrl) {
     pingInterval = null;
     state.running = false;
 
-    // Pending buy requests may have reached Deriv even if their replies were lost.
     for (const [reqId, entry] of pendingRequests.entries()) {
       clearTimeout(entry.timer);
       pendingRequests.delete(reqId);
@@ -887,7 +925,7 @@ function connectWebSocket(wsUrl) {
       } else if (entry.kind === "buy" && trade.status === "buy_pending") {
         trade.status = "unknown";
         unknownPurchase = true;
-        log("Connection dropped during a buy request. Check Deriv before trading again.");
+        log("Connection dropped during a buy request. Check Deriv account history.");
       }
     }
 
@@ -923,7 +961,6 @@ function handleContractUpdate(contract) {
 
   trade.status = "settled";
   trade.profit = resultProfit;
-
   state.profit += resultProfit;
   state.total++;
 
@@ -934,12 +971,12 @@ function handleContractUpdate(contract) {
   if (resultProfit > 0) {
     state.wins++;
     state.consecutiveLosses = 0;
-    log(`WIN contract ${id}: +${accountCurrency} ${resultProfit.toFixed(2)}`);
+    log(`WIN: digit ${trade.digit}, contract ${id}, +${accountCurrency} ${resultProfit.toFixed(2)}`);
   } else {
     state.losses++;
     state.consecutiveLosses++;
     log(
-      `LOSS contract ${id}: ${accountCurrency} ${resultProfit.toFixed(2)}. ` +
+      `LOSS: digit ${trade.digit}, contract ${id}, ${accountCurrency} ${resultProfit.toFixed(2)}. ` +
       `Loss streak: ${state.consecutiveLosses}`
     );
   }
@@ -969,41 +1006,9 @@ function handleContractUpdate(contract) {
   checkBatchCompletion();
 }
 
-function getBestMarketOpportunity() {
-  const candidates = [];
-
-  symbols.forEach(symbol => {
-    const history = marketData[symbol].history.slice(-100);
-    if (history.length < 100) return;
-
-    const evenCount = history.filter(d => d % 2 === 0).length;
-    const oddCount = history.length - evenCount;
-
-    [
-      { symbol, type: "DIGITEVEN", count: evenCount },
-      { symbol, type: "DIGITODD", count: oddCount }
-    ].forEach(option => {
-      const probability = option.count / history.length;
-      const baseline = 0.5;
-      const margin = 2 * Math.sqrt(baseline * (1 - baseline) / history.length);
-
-      // Historical-frequency filter only; it does not establish a predictive edge.
-      if (probability >= 0.60 && probability > baseline + margin) {
-        candidates.push({
-          symbol: option.symbol,
-          type: option.type,
-          conf: probability * 100
-        });
-      }
-    });
-  });
-
-  candidates.sort((a, b) => b.conf - a.conf);
-  return candidates[0] || null;
-}
-
 function executeTrade() {
   if (!state.running || currentBatch || unknownPurchase) return;
+
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     state.running = false;
     log("No live connection. Trading stopped.");
@@ -1022,7 +1027,7 @@ function executeTrade() {
     !Number.isInteger(maxLoss) || maxLoss < 1
   ) {
     state.running = false;
-    log("Invalid settings. Stake must be at least $0.35 and risk limits must be positive.");
+    log("Invalid settings. Stake must be at least 0.35 and risk limits must be positive.");
     return;
   }
 
@@ -1034,52 +1039,56 @@ function executeTrade() {
   }
 
   let symbol = activeSymbol;
-  let type = $("direction").value;
+  let digits = getCandidateDigits(symbol);
 
-  if (type === "SCANNER") {
+  if ($("marketMode").value === "AUTO") {
     const opportunity = getBestMarketOpportunity();
+
     if (!opportunity) {
       resetSignalConfirmation();
       $("scannerStatus").textContent = "Collecting 100 ticks per market";
       return;
     }
 
-    const same = opportunity.symbol === lastHoldSymbol &&
-                 opportunity.type === lastHoldType;
-
-    signalHoldCounter = same ? signalHoldCounter + 1 : 1;
-    lastHoldSymbol = opportunity.symbol;
-    lastHoldType = opportunity.type;
+    const confirmationKey = opportunity.symbol + "|" + opportunity.digits.join("");
+    if (confirmationKey === lastHoldKey) {
+      signalHoldCounter++;
+    } else {
+      lastHoldKey = confirmationKey;
+      signalHoldCounter = 1;
+    }
 
     if (signalHoldCounter < 3) {
-      $("scannerStatus").textContent =
-        `Confirming ${opportunity.symbol} ${opportunity.type}: ${signalHoldCounter}/3`;
+      $("scannerStatus").textContent = `Confirming candidate batch ${signalHoldCounter}/3`;
       return;
     }
 
     symbol = opportunity.symbol;
-    type = opportunity.type;
+    digits = opportunity.digits;
     resetSignalConfirmation();
 
-    log(`Signal confirmed: ${symbol} ${type}, historical frequency ${opportunity.conf.toFixed(1)}%.`);
+    log(`AI selected ${symbol}; candidate digits: ${digits.join(", ")}. This is historical ranking, not a guaranteed signal.`);
   }
 
-  if (!symbols.includes(symbol) || !["DIGITEVEN", "DIGITODD"].includes(type)) {
-    state.running = false;
-    log("Invalid market or contract type. Trading stopped.");
+  if (!symbols.includes(symbol) || !Array.isArray(digits) || digits.length !== 5 ||
+      new Set(digits).size !== 5 || digits.some(d => !Number.isInteger(d) || d < 0 || d > 9)) {
+    $("scannerStatus").textContent = "Collecting digit history";
     return;
   }
 
+  const batchId = ++batchSequence;
   const batch = {
-    id: ++batchSequence,
+    id: batchId,
     symbol,
-    type,
+    type: "DIGITMATCH",
+    digits: [...digits],
     stake,
     target: 5,
     profit: 0,
-    trades: Array.from({ length: 5 }, (_, index) => ({
+    trades: digits.map((digit, index) => ({
       index,
-      batchId: batchSequence,
+      batchId,
+      digit,
       status: "proposal_pending",
       proposalId: null,
       contractId: null,
@@ -1090,14 +1099,13 @@ function executeTrade() {
   currentBatch = batch;
   updateBatchDisplay();
 
-  $("scannerStatus").textContent = `Submitting batch ${batch.id}`;
+  $("scannerStatus").textContent = `Submitting matches batch ${batch.id}`;
   log(
-    `BATCH ${batch.id}: submitting 5 ${type} trades on ${symbol}; ` +
-    `${accountCurrency} ${stake.toFixed(2)} each; planned stake ` +
-    `${accountCurrency} ${plannedStake.toFixed(2)}.`
+    `BATCH ${batch.id}: 5 DIGITMATCH contracts on ${symbol}; ` +
+    `digits ${digits.join(", ")}; ${accountCurrency} ${stake.toFixed(2)} each; ` +
+    `planned total ${accountCurrency} ${plannedStake.toFixed(2)}.`
   );
 
-  // Submit five separate proposals rapidly for the same market and direction.
   batch.trades.forEach(trade => {
     try {
       sendTracked(
@@ -1105,9 +1113,10 @@ function executeTrade() {
           proposal: 1,
           amount: stake,
           basis: "stake",
-          contract_type: type,
+          contract_type: "DIGITMATCH",
           currency: accountCurrency,
           underlying_symbol: symbol,
+          barrier: String(trade.digit),
           duration: 1,
           duration_unit: "t"
         },
@@ -1116,7 +1125,7 @@ function executeTrade() {
       );
     } catch (error) {
       trade.status = "failed";
-      log(`Trade ${trade.index + 1} proposal could not be sent: ${error.message}`);
+      log(`Digit ${trade.digit} proposal could not be sent: ${error.message}`);
     }
   });
 
@@ -1130,7 +1139,7 @@ function startTrading() {
   }
 
   if (unknownPurchase) {
-    alert("A purchase result is unknown. Check your Deriv account before restarting.");
+    alert("A purchase result is unknown. Check Deriv account history before restarting.");
     return;
   }
 
@@ -1160,28 +1169,27 @@ function startTrading() {
   }
 
   if (state.accountType && !/demo/i.test(String(state.accountType))) {
-    if (!confirm("This account may be REAL. Five trades can lose together. Continue?")) return;
+    if (!confirm("This account may be REAL. Five contracts can lose together. Continue?")) return;
   }
 
   state.running = true;
   resetSignalConfirmation();
 
-  log("Automation started: five trades per confirmed signal; fixed stake; Martingale OFF.");
-  log("Each trade will be tracked independently. Historical frequencies do not guarantee results.");
+  log("Matches automation started: five distinct digits per batch; fixed stake; Martingale OFF.");
+  log("AI ranks recent digit frequencies; it cannot guarantee the next digit.");
 
-  $("scannerStatus").textContent = "EVEN/ODD scanner active";
-  speak("Automation started.");
+  $("scannerStatus").textContent = "Matches scanner active";
+  speak("Digit Matches automation started.");
 
-  // If a previous batch is still settling, it is monitored first.
   if (currentBatch) {
-    log("Existing batch is still being tracked. A new batch will not start until it finishes.");
+    log("Existing batch is still being tracked. No new batch starts until it finishes.");
   }
 }
 
 function stopTrading() {
   state.running = false;
   resetSignalConfirmation();
-  log("Stopped new trades. Any purchases already accepted will continue to be monitored.");
+  log("Stopped new trades. Purchases already accepted will continue to be monitored.");
   $("scannerStatus").textContent = "New trades stopped";
   speak("New trades stopped.");
 }
