@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | DIGIT MATCHES</title>
+<title>TITAN AI | AUTO DIGIT MATCHES</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -51,8 +51,6 @@ header {
   animation:scan 2.5s infinite linear;
 }
 @keyframes scan {0%{left:-50%}100%{left:100%}}
-.stat-box-hot {border-color:var(--red)!important;background:rgba(255,71,87,.12)!important}
-.stat-box-cool {border-color:var(--ice)!important;background:rgba(56,189,248,.12)!important}
 input,select {
   width:100%;background:#030712;color:var(--text);
   border:1px solid var(--border);border-radius:10px;
@@ -62,9 +60,9 @@ input:focus,select:focus {border-color:var(--green)}
 button:disabled {opacity:.4;cursor:not-allowed}
 .digit-chip {
   display:inline-flex;align-items:center;justify-content:center;
-  min-width:25px;height:27px;border-radius:7px;
+  min-width:30px;height:30px;border-radius:8px;
   border:1px solid #166534;background:#052e20;
-  color:#86efac;font-weight:800;margin:2px;padding:0 5px;
+  color:#86efac;font-weight:800;margin:2px;padding:0 7px;
 }
 </style>
 </head>
@@ -73,10 +71,10 @@ button:disabled {opacity:.4;cursor:not-allowed}
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    DIGIT MATCHES ENGINE
+    AUTOMATIC DIGIT MATCHES
   </div>
   <div id="connectionBadge"
-       class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
+    class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
   </div>
 </header>
@@ -85,48 +83,48 @@ button:disabled {opacity:.4;cursor:not-allowed}
 
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold">
-      🔐 Deriv API Credentials &amp; Connection
+      🔐 Deriv Connection
     </h2>
-    <label class="text-[10px] uppercase tracking-wider text-slate-400">Personal Access Token (PAT)</label>
-    <input id="apiToken" type="password" autocomplete="off" placeholder="Paste your token here">
+    <label class="text-[10px] uppercase tracking-wider text-slate-400">
+      Personal Access Token
+    </label>
+    <input id="apiToken" type="password" autocomplete="off"
+      placeholder="Paste your Deriv token">
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
+    <div class="grid grid-cols-2 gap-2 mt-3">
       <button onclick="connectDeriv()" id="connectBtn"
-        class="w-full bg-[#24e59a] text-[#030712] font-extrabold py-3 rounded-xl text-xs tracking-wider">
+        class="bg-[#24e59a] text-[#030712] font-extrabold py-3 rounded-xl text-xs">
         CONNECT TO DERIV
       </button>
       <button onclick="clearMemory()"
-        class="bg-rose-500/10 text-rose-500 border border-rose-500/30 font-bold py-3 rounded-xl text-xs">
+        class="bg-rose-500/10 text-rose-400 border border-rose-500/30 font-bold py-3 rounded-xl text-xs">
         CLEAR TOKEN
       </button>
     </div>
 
-    <div class="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-800 text-[11px]">
+    <div class="flex gap-2 mt-3">
       <a href="https://app.deriv.com" target="_blank" rel="noopener"
-        class="flex-1 text-center bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-3 py-2 rounded-lg font-bold">
-        📝 Open Deriv
-      </a>
-      <a href="https://app.deriv.com" target="_blank" rel="noopener"
-        class="flex-1 text-center bg-slate-800 text-slate-300 border border-slate-700 px-3 py-2 rounded-lg font-bold">
-        🎮 Demo Account
+        class="flex-1 text-center bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-3 py-2 rounded-lg text-xs font-bold">
+        OPEN DERIV
       </a>
     </div>
     <p class="text-[10px] text-slate-400 mt-3">
-      Use a demo account first. Never share your API token with anyone.
+      Use a demo account first. Never share your token. The token is saved
+      in this browser until you clear it.
     </p>
   </div>
 
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
     <div class="metric-card">
       <div class="text-[10px] uppercase text-slate-400">Balance</div>
-      <div class="text-xl md:text-2xl font-black text-emerald-400 mt-1" id="balance">USD 0.00</div>
+      <div class="text-lg font-black text-emerald-400 mt-1" id="balance">USD 0.00</div>
     </div>
     <div class="metric-card">
       <div class="text-[10px] uppercase text-slate-400">Session P/L</div>
-      <div class="text-xl md:text-2xl font-black mt-1" id="profit">USD 0.00</div>
+      <div class="text-lg font-black mt-1" id="profit">USD 0.00</div>
     </div>
     <div class="metric-card">
-      <div class="text-[10px] uppercase text-slate-400">Settled</div>
+      <div class="text-[10px] uppercase text-slate-400">Settled Trades</div>
       <div class="text-2xl font-black mt-1" id="runs">0</div>
     </div>
     <div class="metric-card">
@@ -137,22 +135,24 @@ button:disabled {opacity:.4;cursor:not-allowed}
 
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between gap-2">
-      <span>📡 Multi-Market Matches Scanner</span>
-      <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
+      <span>📡 Market Scanner</span>
+      <span id="scannerStatus" class="text-emerald-400 text-[10px]">Idle</span>
     </h2>
     <p class="text-[10px] text-slate-500 mb-3">
-      The candidate digits are ranked from recent tick history. They are not guaranteed predictions.
-      Tap a market row to select it.
+      TITAN ranks the most frequent digit in each market's last 100 ticks.
+      Historical frequency does not predict the next digit or guarantee profit.
     </p>
+
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse text-xs">
         <thead>
           <tr class="border-b border-slate-800 text-[10px] text-slate-400 uppercase">
             <th class="p-2">Market</th>
-            <th class="p-2">Last Quote</th>
+            <th class="p-2">Quote</th>
             <th class="p-2">Last Digit</th>
             <th class="p-2">Ticks</th>
-            <th class="p-2">5 Candidate Digits</th>
+            <th class="p-2">Top Digit</th>
+            <th class="p-2">Frequency</th>
           </tr>
         </thead>
         <tbody id="scannerTable" class="divide-y divide-slate-800/50 font-mono"></tbody>
@@ -161,91 +161,91 @@ button:disabled {opacity:.4;cursor:not-allowed}
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div class="card text-center flex flex-col justify-between">
+    <div class="card text-center">
       <div class="scanline"></div>
-      <div>
-        <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">
-          📊 Active Focus Stream
-        </h2>
-        <div class="text-[10px] uppercase text-slate-400" id="activeMarketLabel">Symbol: R_50</div>
-        <div class="digit-box" id="lastDigit">–</div>
-        <div class="text-xs text-cyan-400 mb-4" id="digitInfo">Awaiting connection...</div>
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">
+        🎯 AI Match Candidate
+      </h2>
+      <div class="text-[10px] uppercase text-slate-400" id="activeMarketLabel">
+        Market: Waiting
+      </div>
+      <div class="digit-box" id="candidateDigit">–</div>
+      <div class="text-xs text-cyan-400 mb-2" id="candidateInfo">
+        Connect to begin scanning
+      </div>
 
-        <div class="text-left mt-2">
-          <div class="flex justify-between text-[10px] uppercase text-slate-400 mb-1.5">
-            <span>Recent digit frequency</span>
-            <span>0–9</span>
-          </div>
-          <div class="grid grid-cols-5 gap-1.5" id="statsGrid"></div>
-        </div>
-
-        <div class="mt-4 text-left bg-slate-950 border border-slate-800 rounded-xl p-3">
-          <div class="text-[10px] text-slate-400 uppercase">AI selected digits</div>
-          <div id="chosenDigits" class="mt-2 flex flex-wrap gap-1">
-            <span class="text-xs text-slate-500">Waiting for tick history</span>
-          </div>
-        </div>
+      <div class="mt-4 text-left bg-slate-950 border border-slate-800 rounded-xl p-3">
+        <div class="text-[10px] text-slate-400 uppercase">Last observed digit</div>
+        <div class="text-2xl font-black mt-1" id="lastDigit">–</div>
+        <div class="text-xs text-slate-500" id="digitInfo">No tick data yet</div>
       </div>
 
       <div class="space-y-2 mt-4">
         <button onclick="startTrading()" id="startBtn"
-          class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider" disabled>
-          ▶ START 5 MATCHES TRADES
+          class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs"
+          disabled>
+          ▶ START AUTO TRADING
         </button>
         <button onclick="stopTrading()"
           class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2 rounded-xl text-xs">
           ■ STOP NEW TRADES
         </button>
       </div>
+      <p class="text-[10px] text-slate-500 mt-3">
+        Stop New Trades prevents new purchases. A contract already purchased
+        can still settle.
+      </p>
     </div>
 
     <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">
-        ⚙️ Matches Parameters &amp; Risk
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold">
+        ⚙️ Trading &amp; Risk Settings
       </h2>
 
-      <label class="text-[10px] uppercase tracking-wider text-slate-400">Market selection</label>
+      <label class="text-[10px] uppercase text-slate-400">Market mode</label>
       <select id="marketMode">
-        <option value="AUTO">AI selects market and digits</option>
-        <option value="SELECTED">Use selected market and AI digits</option>
+        <option value="AUTO">AI selects market and one digit</option>
+        <option value="SELECTED">Use selected market</option>
       </select>
 
-      <p class="text-xs text-slate-400 mt-2">
-        Each batch uses five different DIGITMATCH barriers, for example 4, 7, 9, 2, 1.
-      </p>
+      <label class="text-[10px] uppercase text-slate-400 mt-3 block">
+        Selected market
+      </label>
+      <select id="selectedMarket">
+        <option value="R_10">Volatility 10 Index</option>
+        <option value="R_25">Volatility 25 Index</option>
+        <option value="R_50" selected>Volatility 50 Index</option>
+        <option value="R_75">Volatility 75 Index</option>
+        <option value="R_100">Volatility 100 Index</option>
+      </select>
 
-      <div class="grid grid-cols-2 gap-2 mt-3">
+      <div class="grid grid-cols-2 gap-3 mt-3">
         <div>
-          <label class="text-[10px] uppercase text-slate-400">Trades per signal</label>
-          <input id="bulkCount" type="number" value="5" min="5" max="5" step="1" readonly>
+          <label class="text-[10px] uppercase text-slate-400">Stake</label>
+          <input id="stake" type="number" value="0.35" min="0.35" step="0.01">
         </div>
         <div>
-          <label class="text-[10px] uppercase text-slate-400">Stake per trade</label>
-          <input id="stake" type="number" value="0.35" min="0.35" step="0.01">
+          <label class="text-[10px] uppercase text-slate-400">Contract duration</label>
+          <input value="1 tick" disabled>
         </div>
       </div>
 
       <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 mt-3">
-        <div class="flex justify-between text-xs gap-2">
-          <span class="text-slate-400">Planned stake per batch</span>
-          <strong id="batchCost">USD 1.75</strong>
+        <div class="flex justify-between text-xs">
+          <span class="text-slate-400">Maximum planned stake</span>
+          <strong id="plannedStake">USD 0.35</strong>
         </div>
-        <div class="flex justify-between text-xs mt-2 gap-2">
-          <span class="text-slate-400">Batch status</span>
-          <strong id="batchStatus" class="text-cyan-400">Idle</strong>
+        <div class="flex justify-between text-xs mt-2">
+          <span class="text-slate-400">Current trade</span>
+          <strong id="tradeStatus" class="text-cyan-400">Idle</strong>
         </div>
-        <div class="flex justify-between text-xs mt-2 gap-2">
-          <span class="text-slate-400">Settled in current batch</span>
-          <strong id="batchProgress">0 / 5</strong>
+        <div class="flex justify-between text-xs mt-2">
+          <span class="text-slate-400">Martingale</span>
+          <strong class="text-emerald-400">OFF</strong>
         </div>
       </div>
 
-      <div class="mt-3">
-        <label class="text-[10px] uppercase text-slate-400">Recovery Mode</label>
-        <input type="text" value="OFF — FIXED STAKE" disabled>
-      </div>
-
-      <div class="grid grid-cols-3 gap-2 mt-3">
+      <div class="grid grid-cols-2 gap-3 mt-3">
         <div>
           <label class="text-[10px] uppercase text-emerald-400">Take Profit</label>
           <input id="tp" type="number" value="5.00" min="0.01" step="0.01">
@@ -254,24 +254,27 @@ button:disabled {opacity:.4;cursor:not-allowed}
           <label class="text-[10px] uppercase text-rose-400">Stop Loss</label>
           <input id="sl" type="number" value="20.00" min="0.01" step="0.01">
         </div>
-        <div>
-          <label class="text-[10px] uppercase text-yellow-400">Max Loss Streak</label>
-          <input id="maxLossStreak" type="number" value="5" min="1" step="1">
-        </div>
       </div>
+
+      <div class="mt-3">
+        <label class="text-[10px] uppercase text-yellow-400">Maximum loss streak</label>
+        <input id="maxLossStreak" type="number" value="5" min="1" step="1">
+      </div>
+
       <p class="text-[10px] text-slate-500 mt-3">
-        Five contracts can lose together. Historical frequency does not predict the next tick.
-        Risk limits stop new trades but cannot undo purchases already accepted by Deriv.
+        Risk limits stop new purchases after a settled trade reaches a limit.
+        They cannot reverse losses or cancel an already purchased contract.
       </p>
     </div>
   </div>
 
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">
-      📜 System Execution Log
+      📜 Execution Log
     </h2>
-    <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Digit Matches terminal initialized. Demo testing recommended.</div>
+    <div id="log"
+      class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-48 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
+      <div>TITAN single-trade engine initialized. Demo testing recommended.</div>
     </div>
   </div>
 </main>
@@ -287,18 +290,17 @@ let pingInterval = null;
 let requestSequence = 1000;
 let activeSymbol = "R_50";
 let accountCurrency = "USD";
-let lastTickKey = "";
-let signalHoldCounter = 0;
-let lastHoldKey = "";
-let currentBatch = null;
-let batchSequence = 0;
+let currentTrade = null;
 let unknownPurchase = false;
+let candidateKey = "";
+let candidateConfirmations = 0;
+let lastTickKey = "";
+let tradeSequence = 0;
 
 const pendingRequests = new Map();
 const settledContracts = new Set();
-const contractToTrade = new Map();
-
 const marketData = {};
+
 symbols.forEach(symbol => {
   marketData[symbol] = {
     history: [],
@@ -309,12 +311,12 @@ symbols.forEach(symbol => {
 
 const state = {
   balance: 0,
+  profit: 0,
   total: 0,
   wins: 0,
   losses: 0,
   consecutiveLosses: 0,
   running: false,
-  profit: 0,
   accountType: "",
   accountId: null
 };
@@ -323,17 +325,22 @@ window.addEventListener("DOMContentLoaded", () => {
   const savedToken = localStorage.getItem("titan_deriv_token");
   if (savedToken) $("apiToken").value = savedToken;
 
-  buildStatsGrid();
-  renderScannerTable();
-  updateBatchCost();
-  $("stake").addEventListener("input", updateBatchCost);
+  $("selectedMarket").addEventListener("change", () => {
+    activeSymbol = $("selectedMarket").value;
+    renderScanner();
+    renderCandidate();
+  });
+
+  $("stake").addEventListener("input", updatePlannedStake);
+  updatePlannedStake();
+  renderScanner();
 });
 
 function log(message) {
   const line = document.createElement("div");
   line.textContent = new Date().toLocaleTimeString() + " — " + message;
   $("log").prepend(line);
-  while ($("log").children.length > 60) $("log").lastElementChild.remove();
+  while ($("log").children.length > 80) $("log").lastElementChild.remove();
 }
 
 function speak(message) {
@@ -342,15 +349,11 @@ function speak(message) {
   window.speechSynthesis.speak(new SpeechSynthesisUtterance(message));
 }
 
-function resetSignalConfirmation() {
-  signalHoldCounter = 0;
-  lastHoldKey = "";
-}
-
-function updateBatchCost() {
+function updatePlannedStake() {
   const stake = Number($("stake").value);
-  const cost = Number.isFinite(stake) && stake > 0 ? stake * 5 : 0;
-  $("batchCost").textContent = accountCurrency + " " + cost.toFixed(2);
+  $("plannedStake").textContent =
+    accountCurrency + " " +
+    (Number.isFinite(stake) && stake > 0 ? stake : 0).toFixed(2);
 }
 
 function sendRaw(payload) {
@@ -387,245 +390,156 @@ function takePendingRequest(data) {
   const rawId = data.req_id ?? data.echo_req?.req_id;
   if (rawId === undefined || rawId === null) return null;
 
-  const entry = pendingRequests.get(Number(rawId));
+  const id = Number(rawId);
+  const entry = pendingRequests.get(id);
   if (!entry) return null;
 
   clearTimeout(entry.timer);
-  pendingRequests.delete(Number(rawId));
+  pendingRequests.delete(id);
   return entry;
 }
 
-function getBatchTrade(entry) {
-  if (!entry || !currentBatch || currentBatch.id !== entry.batchId) return null;
-  return currentBatch.trades[entry.tradeIndex] || null;
-}
-
-function isTerminal(status) {
-  return ["settled", "failed", "cancelled"].includes(status);
-}
-
-function updateBatchDisplay() {
-  if (!currentBatch) {
-    $("batchStatus").textContent = unknownPurchase ? "Verify account" : "Idle";
-    $("batchProgress").textContent = "0 / 5";
-    return;
-  }
-
-  const settled = currentBatch.trades.filter(t => t.status === "settled").length;
-  const purchased = currentBatch.trades.filter(t =>
-    ["open", "settled"].includes(t.status)
-  ).length;
-
-  $("batchStatus").textContent = unknownPurchase
-    ? "Purchase needs verification"
-    : `${purchased} purchased`;
-
-  $("batchProgress").textContent = `${settled} / ${currentBatch.target}`;
-}
-
-function checkBatchCompletion() {
-  if (!currentBatch) {
-    updateBatchDisplay();
-    return;
-  }
-
-  if (currentBatch.trades.every(t => isTerminal(t.status))) {
-    const b = currentBatch;
-    const settled = b.trades.filter(t => t.status === "settled").length;
-    const rejected = b.trades.filter(t => t.status === "failed").length;
-    const cancelled = b.trades.filter(t => t.status === "cancelled").length;
-
-    log(
-      `BATCH ${b.id} COMPLETE — ${settled} settled, ${rejected} rejected, ` +
-      `${cancelled} cancelled. Net P/L: ${accountCurrency} ${b.profit.toFixed(2)}`
-    );
-    currentBatch = null;
-  }
-
-  updateBatchDisplay();
-}
-
 function handleRequestTimeout(entry) {
-  const trade = getBatchTrade(entry);
-
-  if (!trade) {
-    log(`Request timed out (${entry.kind}).`);
+  if (!currentTrade || currentTrade.id !== entry.tradeId) {
+    log("Request timed out: " + entry.kind);
     return;
   }
 
-  if (entry.kind === "proposal" && trade.status === "proposal_pending") {
-    trade.status = "failed";
-    log(`Trade ${entry.tradeIndex + 1}: proposal timed out.`);
-    checkBatchCompletion();
+  if (entry.kind === "proposal" && currentTrade.status === "proposal_pending") {
+    log("Proposal timed out. No purchase was confirmed.");
+    finishUnpurchasedTrade("Proposal timeout");
     return;
   }
 
-  if (entry.kind === "buy" && trade.status === "buy_pending") {
-    trade.status = "unknown";
+  if (entry.kind === "buy" && currentTrade.status === "buy_pending") {
+    currentTrade.status = "unknown";
     unknownPurchase = true;
     state.running = false;
-    log(
-      `URGENT: Trade ${entry.tradeIndex + 1} buy response timed out. ` +
-      `Check Deriv account history before restarting.`
-    );
-    updateBatchDisplay();
+    $("tradeStatus").textContent = "VERIFY ACCOUNT";
+    log("URGENT: Buy response timed out. Check Deriv account history before restarting.");
   }
 }
 
 /*
- * Select five distinct digits with the lowest observed frequencies
- * in the latest 100 ticks. This is a ranking heuristic, not a prediction.
+ * Candidate heuristic:
+ * choose the most frequent digit from the last 100 ticks.
+ * This is not a reliable prediction of the next digit.
  */
-function getCandidateDigits(symbol) {
+function getCandidate(symbol) {
   const history = marketData[symbol].history.slice(-100);
   if (history.length < 100) return null;
 
   const counts = Array(10).fill(0);
-  history.forEach(digit => counts[digit]++);
+  history.forEach(d => counts[d]++);
 
-  return Array.from({ length: 10 }, (_, digit) => ({
+  const ranked = counts.map((count, digit) => ({
     digit,
-    count: counts[digit],
-    frequency: counts[digit] / history.length
-  }))
-  .sort((a, b) => a.count - b.count || a.digit - b.digit)
-  .slice(0, 5)
-  .map(item => item.digit);
+    count,
+    frequency: count / history.length
+  })).sort((a, b) => b.count - a.count || a.digit - b.digit);
+
+  return {
+    symbol,
+    digit: ranked[0].digit,
+    count: ranked[0].count,
+    frequency: ranked[0].frequency,
+    counts
+  };
 }
 
-function buildStatsGrid() {
-  const container = $("statsGrid");
-  if (!container) return;
-  container.innerHTML = "";
+function getBestCandidate() {
+  const candidates = symbols
+    .map(getCandidate)
+    .filter(Boolean);
 
-  const recent = marketData[activeSymbol].history.slice(-30);
-  const counts = Array(10).fill(0);
-  recent.forEach(d => counts[d]++);
+  if (!candidates.length) return null;
 
-  const maxCount = Math.max(...counts);
-  const minCount = Math.min(...counts);
+  candidates.sort((a, b) =>
+    b.frequency - a.frequency ||
+    b.count - a.count ||
+    a.symbol.localeCompare(b.symbol)
+  );
 
-  for (let digit = 0; digit <= 9; digit++) {
-    const pct = recent.length ? Math.round(counts[digit] / recent.length * 100) : 0;
-    let highlight = "";
-    let color = "text-emerald-400";
-
-    if (recent.length >= 10 && maxCount > minCount) {
-      if (counts[digit] === maxCount) {
-        highlight = "stat-box-hot";
-        color = "text-rose-400 font-extrabold";
-      } else if (counts[digit] === minCount) {
-        highlight = "stat-box-cool";
-        color = "text-cyan-400 font-extrabold";
-      }
-    }
-
-    const box = document.createElement("div");
-    box.className = `bg-[#030712] border border-slate-800 rounded-lg p-1.5 text-center text-[10px] ${highlight}`;
-
-    const label = document.createElement("span");
-    label.className = "text-slate-400 font-bold";
-    label.textContent = digit + ": ";
-
-    const value = document.createElement("span");
-    value.className = color + " font-mono";
-    value.textContent = pct + "%";
-
-    box.append(label, value);
-    container.appendChild(box);
-  }
-
-  const candidates = getCandidateDigits(activeSymbol);
-  const chosen = $("chosenDigits");
-  chosen.innerHTML = "";
-
-  if (!candidates) {
-    chosen.textContent = "Collecting 100 ticks...";
-    chosen.className = "mt-2 text-xs text-slate-500";
-  } else {
-    chosen.className = "mt-2 flex flex-wrap gap-1";
-    candidates.forEach(digit => {
-      const chip = document.createElement("span");
-      chip.className = "digit-chip";
-      chip.textContent = digit;
-      chosen.appendChild(chip);
-    });
-  }
+  return candidates[0];
 }
 
-function renderScannerTable() {
+function renderScanner() {
   const tbody = $("scannerTable");
   tbody.innerHTML = "";
 
   symbols.forEach(symbol => {
-    const data = marketData[symbol];
-    const candidates = getCandidateDigits(symbol);
+    const market = marketData[symbol];
+    const candidate = getCandidate(symbol);
     const row = document.createElement("tr");
+    row.className = "hover:bg-slate-800/30";
 
-    row.className = "hover:bg-slate-800/30 cursor-pointer";
-    if (symbol === activeSymbol) row.style.background = "rgba(36,229,154,.06)";
-
-    row.onclick = () => {
-      activeSymbol = symbol;
-      $("activeMarketLabel").textContent = "Symbol: " + symbol;
-      buildStatsGrid();
-      renderScannerTable();
-      log("Selected market: " + symbol);
-    };
+    if (symbol === activeSymbol) {
+      row.style.background = "rgba(36,229,154,.06)";
+    }
 
     const values = [
       symbol,
-      data.lastQuote,
-      data.lastDigit,
-      data.history.length
+      market.lastQuote,
+      market.lastDigit,
+      market.history.length
     ];
 
     values.forEach((value, index) => {
       const cell = document.createElement("td");
-      cell.className = "p-2 " + (index === 0
-        ? "font-bold text-emerald-400"
-        : "text-slate-400");
+      cell.className = "p-2 " +
+        (index === 0 ? "font-bold text-emerald-400" : "text-slate-400");
       cell.textContent = value;
       row.appendChild(cell);
     });
 
-    const candidateCell = document.createElement("td");
-    candidateCell.className = "p-2";
+    const digitCell = document.createElement("td");
+    digitCell.className = "p-2 text-emerald-400 font-bold";
+    digitCell.textContent = candidate ? candidate.digit : "—";
+    row.appendChild(digitCell);
 
-    if (!candidates) {
-      candidateCell.textContent = `COLLECTING ${data.history.length}/100`;
-      candidateCell.className += " text-slate-500";
-    } else {
-      candidates.forEach(digit => {
-        const chip = document.createElement("span");
-        chip.className = "digit-chip";
-        chip.textContent = digit;
-        candidateCell.appendChild(chip);
-      });
-    }
+    const frequencyCell = document.createElement("td");
+    frequencyCell.className = "p-2 text-slate-400";
+    frequencyCell.textContent = candidate
+      ? (candidate.frequency * 100).toFixed(1) + "%"
+      : "Collecting";
+    row.appendChild(frequencyCell);
 
-    row.appendChild(candidateCell);
+    row.addEventListener("click", () => {
+      activeSymbol = symbol;
+      $("selectedMarket").value = symbol;
+      renderScanner();
+      renderCandidate();
+      log("Selected market: " + symbol);
+    });
+
     tbody.appendChild(row);
   });
 }
 
-function getBestMarketOpportunity() {
-  const candidates = [];
+function renderCandidate() {
+  const symbol = $("marketMode").value === "SELECTED"
+    ? $("selectedMarket").value
+    : activeSymbol;
 
-  symbols.forEach(symbol => {
-    const digits = getCandidateDigits(symbol);
-    if (!digits) return;
+  const candidate = getCandidate(symbol);
 
-    const history = marketData[symbol].history.slice(-100);
-    const counts = Array(10).fill(0);
-    history.forEach(d => counts[d]++);
+  $("activeMarketLabel").textContent = "Market: " + symbol;
+  $("lastDigit").textContent = marketData[symbol].lastDigit;
+  $("digitInfo").textContent = marketData[symbol].lastQuote === "-"
+    ? "Waiting for market ticks"
+    : "Quote: " + marketData[symbol].lastQuote;
 
-    const score = digits.reduce((sum, digit) => sum + counts[digit], 0);
-    candidates.push({ symbol, digits, score });
-  });
+  if (!candidate) {
+    $("candidateDigit").textContent = "–";
+    $("candidateInfo").textContent =
+      "Collecting " + marketData[symbol].history.length + "/100 ticks";
+    return;
+  }
 
-  candidates.sort((a, b) => a.score - b.score || a.symbol.localeCompare(b.symbol));
-  return candidates[0] || null;
+  $("candidateDigit").textContent = candidate.digit;
+  $("candidateInfo").textContent =
+    symbol + " · Seen " + candidate.count +
+    "/100 ticks (" + (candidate.frequency * 100).toFixed(1) + "%)";
 }
 
 async function connectDeriv() {
@@ -637,7 +551,7 @@ async function connectDeriv() {
   }
 
   if (unknownPurchase) {
-    alert("A buy request has an unknown result. Verify your Deriv account before reconnecting.");
+    alert("A buy result is unknown. Check your Deriv account history first.");
     return;
   }
 
@@ -645,8 +559,7 @@ async function connectDeriv() {
   $("connectBtn").textContent = "CONNECTING...";
   localStorage.setItem("titan_deriv_token", token);
 
-  log("Requesting secure OTP connection via backend...");
-  speak("Connecting to Deriv.");
+  log("Requesting authenticated WebSocket connection from backend...");
 
   try {
     const response = await fetch("/api/deriv-auth", {
@@ -662,7 +575,7 @@ async function connectDeriv() {
     }
 
     if (!Number.isFinite(Number(data.balance))) {
-      throw new Error("Backend returned an invalid account balance.");
+      throw new Error("Backend returned an invalid balance.");
     }
 
     state.balance = Number(data.balance);
@@ -670,33 +583,36 @@ async function connectDeriv() {
     state.accountType = data.account_type ?? "";
     accountCurrency = data.currency || "USD";
 
-    $("balance").textContent = accountCurrency + " " + state.balance.toFixed(2);
-    updateBatchCost();
-    log(`Authorized account: ${data.account_id} (${data.account_type})`);
+    $("balance").textContent =
+      accountCurrency + " " + state.balance.toFixed(2);
+
+    log("Authorized account: " + state.accountId +
+      " (" + state.accountType + ")");
 
     connectWebSocket(data.ws_url);
   } catch (error) {
-    log("Auth Error: " + error.message);
+    log("Connection error: " + error.message);
     alert("Connection Error: " + error.message);
     $("connectBtn").textContent = "CONNECT TO DERIV";
     $("connectBtn").disabled = false;
-    speak("Connection failed.");
   }
 }
 
-function connectWebSocket(wsUrl) {
+function connectWebSocket(url) {
   if (ws) {
     try { ws.close(); } catch (_) {}
   }
+
   if (pingInterval) clearInterval(pingInterval);
   pingInterval = null;
 
   let socket;
+
   try {
-    socket = new WebSocket(wsUrl);
+    socket = new WebSocket(url);
     ws = socket;
   } catch (error) {
-    log("WebSocket creation failed: " + error.message);
+    log("WebSocket error: " + error.message);
     $("connectBtn").disabled = false;
     return;
   }
@@ -704,15 +620,18 @@ function connectWebSocket(wsUrl) {
   socket.onopen = () => {
     if (ws !== socket) return;
 
-    log("Authenticated WebSocket stream opened.");
-    $("scannerStatus").textContent = "Matches scanner active";
     $("connectionBadge").textContent = "● CONNECTED & AUTHORIZED";
     $("connectionBadge").style.color = "var(--green)";
     $("connectBtn").textContent = "CONNECTED";
     $("connectBtn").disabled = false;
     $("startBtn").disabled = false;
+    $("scannerStatus").textContent = "Collecting ticks";
 
-    symbols.forEach(symbol => sendRaw({ ticks: symbol, subscribe: 1 }));
+    log("Authenticated WebSocket connected.");
+
+    symbols.forEach(symbol => {
+      sendRaw({ ticks: symbol, subscribe: 1 });
+    });
     sendRaw({ balance: 1, subscribe: 1 });
 
     pingInterval = setInterval(() => {
@@ -721,24 +640,22 @@ function connectWebSocket(wsUrl) {
       }
     }, 15000);
 
-    if (currentBatch) {
-      currentBatch.trades.forEach(trade => {
-        if (trade.status === "open" && trade.contractId) {
-          try {
-            sendRaw({
-              proposal_open_contract: 1,
-              contract_id: trade.contractId,
-              subscribe: 1
-            });
-            log("Resubscribed to contract " + trade.contractId);
-          } catch (_) {
-            log("Could not resubscribe to contract " + trade.contractId);
-          }
-        }
-      });
+    if (currentTrade && currentTrade.status === "open" &&
+        currentTrade.contractId) {
+      try {
+        sendRaw({
+          proposal_open_contract: 1,
+          contract_id: currentTrade.contractId,
+          subscribe: 1
+        });
+        log("Resubscribed to open contract " + currentTrade.contractId);
+      } catch (_) {
+        log("Could not resubscribe to the open contract.");
+      }
     }
 
-    speak("Authorized successfully.");
+    renderScanner();
+    renderCandidate();
   };
 
   socket.onmessage = event => {
@@ -748,37 +665,36 @@ function connectWebSocket(wsUrl) {
     try {
       data = JSON.parse(event.data);
     } catch (_) {
-      log("Received invalid WebSocket message.");
+      log("Received invalid WebSocket data.");
       return;
     }
 
     const tracked = takePendingRequest(data);
 
     if (data.error) {
-      log("Deriv API Error: " + (data.error.message || "Unknown error."));
-      const trade = getBatchTrade(tracked);
+      const message = data.error.message || "Unknown Deriv API error";
+      log("Deriv API error: " + message);
 
-      if (trade && tracked.kind === "proposal") {
-        trade.status = "failed";
-        log(`Trade ${tracked.tradeIndex + 1} proposal rejected.`);
-        checkBatchCompletion();
-      } else if (trade && tracked.kind === "buy") {
-        trade.status = "failed";
-        log(`Trade ${tracked.tradeIndex + 1} buy rejected by Deriv.`);
-        checkBatchCompletion();
-      } else {
-        log("If a purchase response was lost, verify the account history.");
+      if (tracked && currentTrade &&
+          currentTrade.id === tracked.tradeId) {
+        if (tracked.kind === "proposal") {
+          finishUnpurchasedTrade("Proposal rejected");
+        } else if (tracked.kind === "buy") {
+          finishUnpurchasedTrade("Buy rejected");
+        }
       }
       return;
     }
 
     if (data.msg_type === "balance" && data.balance) {
       const value = Number(data.balance.balance);
+
       if (Number.isFinite(value)) {
         state.balance = value;
         accountCurrency = data.balance.currency || accountCurrency;
-        $("balance").textContent = accountCurrency + " " + value.toFixed(2);
-        updateBatchCost();
+        $("balance").textContent =
+          accountCurrency + " " + value.toFixed(2);
+        updatePlannedStake();
       }
     }
 
@@ -787,10 +703,15 @@ function connectWebSocket(wsUrl) {
       if (!marketData[symbol]) return;
 
       const precision = Number(data.tick.pip_size);
-      if (!Number.isInteger(precision) || precision < 0 || precision > 10) return;
+      const quoteNumber = Number(data.tick.quote);
 
-      const quote = Number(data.tick.quote).toFixed(precision);
+      if (!Number.isInteger(precision) ||
+          precision < 0 || precision > 10 ||
+          !Number.isFinite(quoteNumber)) return;
+
+      const quote = quoteNumber.toFixed(precision);
       const digit = Number(quote.replace(".", "").slice(-1));
+
       if (!Number.isInteger(digit) || digit < 0 || digit > 9) return;
 
       const tickKey = symbol + "|" + data.tick.epoch + "|" + quote;
@@ -801,87 +722,77 @@ function connectWebSocket(wsUrl) {
       market.lastQuote = quote;
       market.lastDigit = digit;
       market.history.push(digit);
+
       if (market.history.length > 200) market.history.shift();
 
-      if (symbol === activeSymbol) {
-        $("lastDigit").textContent = digit;
-        $("digitInfo").textContent = `Quote: ${quote} | Market: ${symbol}`;
-        $("activeMarketLabel").textContent = "Symbol: " + symbol;
-        buildStatsGrid();
-      }
+      renderScanner();
+      renderCandidate();
 
-      renderScannerTable();
-
-      if (state.running && !currentBatch && !unknownPurchase) {
+      if (state.running && !currentTrade && !unknownPurchase) {
         executeTrade();
       }
     }
 
     if (data.msg_type === "proposal" && tracked?.kind === "proposal") {
-      const trade = getBatchTrade(tracked);
-      if (!trade || trade.status !== "proposal_pending") return;
+      if (!currentTrade || currentTrade.id !== tracked.tradeId ||
+          currentTrade.status !== "proposal_pending") return;
 
       if (!data.proposal || !data.proposal.id) {
-        trade.status = "failed";
-        log(`No valid proposal for trade ${tracked.tradeIndex + 1}.`);
-        checkBatchCompletion();
+        finishUnpurchasedTrade("Invalid proposal response");
         return;
       }
 
       if (!state.running || unknownPurchase) {
-        trade.status = "cancelled";
-        log(`Trade ${tracked.tradeIndex + 1} not bought because automation stopped.`);
-        checkBatchCompletion();
+        finishUnpurchasedTrade("Automation stopped before purchase");
         return;
       }
 
       const askPrice = Number(data.proposal.ask_price);
       if (!Number.isFinite(askPrice) || askPrice <= 0) {
-        trade.status = "failed";
-        log("Invalid proposal price; trade skipped.");
-        checkBatchCompletion();
+        finishUnpurchasedTrade("Invalid proposal price");
         return;
       }
 
-      trade.status = "buy_pending";
-      trade.proposalId = data.proposal.id;
+      currentTrade.status = "buy_pending";
+      currentTrade.proposalId = data.proposal.id;
+      $("tradeStatus").textContent = "Buying";
 
       try {
         sendTracked(
           { buy: data.proposal.id, price: askPrice },
-          { kind: "buy", batchId: tracked.batchId, tradeIndex: tracked.tradeIndex },
+          { kind: "buy", tradeId: currentTrade.id },
           20000
         );
-        log(`Buy request sent: digit ${trade.digit}, trade ${tracked.tradeIndex + 1}/5.`);
+
+        log("Buy request sent for digit " + currentTrade.digit +
+          " on " + currentTrade.symbol + ".");
       } catch (error) {
-        trade.status = "failed";
-        log("Buy request failed: " + error.message);
-        checkBatchCompletion();
+        finishUnpurchasedTrade("Buy request failed: " + error.message);
       }
     }
 
     if (data.msg_type === "buy" && data.buy && tracked?.kind === "buy") {
-      const trade = getBatchTrade(tracked);
-      if (!trade || trade.status !== "buy_pending") return;
+      if (!currentTrade || currentTrade.id !== tracked.tradeId ||
+          currentTrade.status !== "buy_pending") return;
 
       const contractId = data.buy.contract_id;
+
       if (!contractId) {
-        trade.status = "unknown";
+        currentTrade.status = "unknown";
         unknownPurchase = true;
         state.running = false;
-        log("Buy response has no contract ID. Verify your Deriv account.");
-        updateBatchDisplay();
+        $("tradeStatus").textContent = "VERIFY ACCOUNT";
+        log("Buy response missing contract ID. Check Deriv account history.");
         return;
       }
 
-      trade.status = "open";
-      trade.contractId = String(contractId);
-      contractToTrade.set(String(contractId), trade);
+      currentTrade.contractId = String(contractId);
+      currentTrade.status = "open";
+      $("tradeStatus").textContent = "Open #" + contractId;
 
-      log(
-        `PURCHASED: batch ${tracked.batchId}, digit ${trade.digit}, ` +
-        `trade ${tracked.tradeIndex + 1}/5, contract ${contractId}.`
-      );
+      log("PURCHASE CONFIRMED: DIGITMATCH " + currentTrade.digit +
+        ", market " + currentTrade.symbol +
+        ", contract " + contractId + ".");
 
       try {
         sendRaw({
@@ -889,21 +800,20 @@ function connectWebSocket(wsUrl) {
           contract_id: contractId,
           subscribe: 1
         });
-      } catch (_) {
+      } catch (error) {
         state.running = false;
-        log(`Could not subscribe to contract ${contractId}. Verify it in Deriv.`);
+        log("Could not subscribe to contract result. Check Deriv account.");
       }
-
-      updateBatchDisplay();
     }
 
-    if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
+    if (data.msg_type === "proposal_open_contract" &&
+        data.proposal_open_contract) {
       handleContractUpdate(data.proposal_open_contract);
     }
   };
 
   socket.onerror = () => {
-    if (ws === socket) log("WebSocket error. Check connection and backend authorization.");
+    if (ws === socket) log("WebSocket error. Check the connection and backend.");
   };
 
   socket.onclose = () => {
@@ -913,19 +823,20 @@ function connectWebSocket(wsUrl) {
     pingInterval = null;
     state.running = false;
 
-    for (const [reqId, entry] of pendingRequests.entries()) {
+    for (const [id, entry] of pendingRequests.entries()) {
       clearTimeout(entry.timer);
-      pendingRequests.delete(reqId);
+      pendingRequests.delete(id);
 
-      const trade = getBatchTrade(entry);
-      if (!trade) continue;
-
-      if (entry.kind === "proposal" && trade.status === "proposal_pending") {
-        trade.status = "failed";
-      } else if (entry.kind === "buy" && trade.status === "buy_pending") {
-        trade.status = "unknown";
-        unknownPurchase = true;
-        log("Connection dropped during a buy request. Check Deriv account history.");
+      if (currentTrade && currentTrade.id === entry.tradeId) {
+        if (entry.kind === "buy" && currentTrade.status === "buy_pending") {
+          currentTrade.status = "unknown";
+          unknownPurchase = true;
+          log("Connection dropped during purchase. Verify Deriv account history.");
+        } else if (entry.kind === "proposal" &&
+                   currentTrade.status === "proposal_pending") {
+          currentTrade = null;
+          $("tradeStatus").textContent = "Idle";
+        }
       }
     }
 
@@ -937,20 +848,24 @@ function connectWebSocket(wsUrl) {
     $("scannerStatus").textContent = "Disconnected";
 
     log("WebSocket closed. New trading stopped.");
-    checkBatchCompletion();
   };
 }
 
-function handleContractUpdate(contract) {
-  const id = String(contract.contract_id || "");
-  if (!id) return;
+function finishUnpurchasedTrade(reason) {
+  log(reason + ". No confirmed purchase recorded.");
+  currentTrade = null;
+  $("tradeStatus").textContent = state.running ? "Scanning" : "Idle";
+}
 
-  const trade = contractToTrade.get(id);
-  if (!trade || trade.status !== "open") return;
+function handleContractUpdate(contract) {
+  if (!currentTrade || !currentTrade.contractId) return;
+  if (String(contract.contract_id) !== currentTrade.contractId) return;
+  if (currentTrade.status !== "open") return;
 
   if (!(contract.is_sold || contract.status === "sold")) return;
+
+  const id = String(contract.contract_id);
   if (settledContracts.has(id)) return;
-  settledContracts.add(id);
 
   const resultProfit = Number(contract.profit);
   if (!Number.isFinite(resultProfit)) {
@@ -959,59 +874,55 @@ function handleContractUpdate(contract) {
     return;
   }
 
-  trade.status = "settled";
-  trade.profit = resultProfit;
+  settledContracts.add(id);
+
+  const tradeDigit = currentTrade.digit;
+  const tradeSymbol = currentTrade.symbol;
+
+  currentTrade.status = "settled";
   state.profit += resultProfit;
   state.total++;
-
-  if (currentBatch && currentBatch.id === trade.batchId) {
-    currentBatch.profit += resultProfit;
-  }
 
   if (resultProfit > 0) {
     state.wins++;
     state.consecutiveLosses = 0;
-    log(`WIN: digit ${trade.digit}, contract ${id}, +${accountCurrency} ${resultProfit.toFixed(2)}`);
+    log("WIN: digit " + tradeDigit + ", " + tradeSymbol +
+      ", P/L " + accountCurrency + " " + resultProfit.toFixed(2));
   } else {
     state.losses++;
     state.consecutiveLosses++;
-    log(
-      `LOSS: digit ${trade.digit}, contract ${id}, ${accountCurrency} ${resultProfit.toFixed(2)}. ` +
-      `Loss streak: ${state.consecutiveLosses}`
-    );
+    log("LOSS: digit " + tradeDigit + ", " + tradeSymbol +
+      ", P/L " + accountCurrency + " " + resultProfit.toFixed(2) +
+      ". Loss streak: " + state.consecutiveLosses);
   }
 
   renderMetrics();
 
   const tp = Number($("tp").value);
   const sl = Number($("sl").value);
-  const maxLossStreak = Number($("maxLossStreak").value);
+  const maxLoss = Number($("maxLossStreak").value);
 
   if (tp > 0 && state.profit >= tp) {
     state.running = false;
-    log("TAKE PROFIT reached. No new trades will be opened.");
+    log("TAKE PROFIT reached. New purchases stopped.");
   } else if (sl > 0 && state.profit <= -sl) {
     state.running = false;
-    log("STOP LOSS reached. No new trades will be opened.");
-  } else if (
-    Number.isInteger(maxLossStreak) &&
-    maxLossStreak > 0 &&
-    state.consecutiveLosses >= maxLossStreak
-  ) {
+    log("STOP LOSS reached. New purchases stopped.");
+  } else if (Number.isInteger(maxLoss) && maxLoss > 0 &&
+             state.consecutiveLosses >= maxLoss) {
     state.running = false;
-    log("Maximum consecutive-loss limit reached. No new trades will be opened.");
+    log("Maximum loss streak reached. New purchases stopped.");
   }
 
-  updateBatchDisplay();
-  checkBatchCompletion();
+  currentTrade = null;
+  $("tradeStatus").textContent = state.running ? "Scanning" : "Stopped";
 }
 
 function executeTrade() {
-  if (!state.running || currentBatch || unknownPurchase) return;
-
+  if (!state.running || currentTrade || unknownPurchase) return;
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     state.running = false;
-    log("No live connection. Trading stopped.");
+    log("No live connection. Automation stopped.");
     return;
   }
 
@@ -1020,116 +931,106 @@ function executeTrade() {
   const sl = Number($("sl").value);
   const maxLoss = Number($("maxLossStreak").value);
 
-  if (
-    !Number.isFinite(stake) || stake < 0.35 ||
-    !Number.isFinite(tp) || tp <= 0 ||
-    !Number.isFinite(sl) || sl <= 0 ||
-    !Number.isInteger(maxLoss) || maxLoss < 1
-  ) {
+  if (!Number.isFinite(stake) || stake < 0.35 ||
+      !Number.isFinite(tp) || tp <= 0 ||
+      !Number.isFinite(sl) || sl <= 0 ||
+      !Number.isInteger(maxLoss) || maxLoss < 1) {
     state.running = false;
-    log("Invalid settings. Stake must be at least 0.35 and risk limits must be positive.");
+    log("Invalid settings. Check stake, take profit, stop loss and loss streak.");
     return;
   }
 
-  const plannedStake = stake * 5;
-  if (plannedStake > state.balance) {
+  if (state.profit >= tp || state.profit <= -sl ||
+      state.consecutiveLosses >= maxLoss) {
     state.running = false;
-    log(`Insufficient displayed balance for five stakes of ${accountCurrency} ${stake.toFixed(2)}.`);
+    log("A session risk limit has already been reached.");
     return;
   }
 
-  let symbol = activeSymbol;
-  let digits = getCandidateDigits(symbol);
-
-  if ($("marketMode").value === "AUTO") {
-    const opportunity = getBestMarketOpportunity();
-
-    if (!opportunity) {
-      resetSignalConfirmation();
-      $("scannerStatus").textContent = "Collecting 100 ticks per market";
-      return;
-    }
-
-    const confirmationKey = opportunity.symbol + "|" + opportunity.digits.join("");
-    if (confirmationKey === lastHoldKey) {
-      signalHoldCounter++;
-    } else {
-      lastHoldKey = confirmationKey;
-      signalHoldCounter = 1;
-    }
-
-    if (signalHoldCounter < 3) {
-      $("scannerStatus").textContent = `Confirming candidate batch ${signalHoldCounter}/3`;
-      return;
-    }
-
-    symbol = opportunity.symbol;
-    digits = opportunity.digits;
-    resetSignalConfirmation();
-
-    log(`AI selected ${symbol}; candidate digits: ${digits.join(", ")}. This is historical ranking, not a guaranteed signal.`);
-  }
-
-  if (!symbols.includes(symbol) || !Array.isArray(digits) || digits.length !== 5 ||
-      new Set(digits).size !== 5 || digits.some(d => !Number.isInteger(d) || d < 0 || d > 9)) {
-    $("scannerStatus").textContent = "Collecting digit history";
+  if (stake > state.balance) {
+    state.running = false;
+    log("Insufficient displayed balance for one stake.");
     return;
   }
 
-  const batchId = ++batchSequence;
-  const batch = {
-    id: batchId,
-    symbol,
-    type: "DIGITMATCH",
-    digits: [...digits],
+  let candidate;
+
+  if ($("marketMode").value === "SELECTED") {
+    candidate = getCandidate($("selectedMarket").value);
+  } else {
+    candidate = getBestCandidate();
+  }
+
+  if (!candidate) {
+    $("scannerStatus").textContent = "Collecting 100 ticks";
+    return;
+  }
+
+  /*
+   * Require the same candidate to remain the top-ranked choice
+   * across three scanner evaluations. This is a filter, not proof
+   * of a profitable signal.
+   */
+  const key = candidate.symbol + "|" + candidate.digit;
+
+  if (key === candidateKey) {
+    candidateConfirmations++;
+  } else {
+    candidateKey = key;
+    candidateConfirmations = 1;
+  }
+
+  $("candidateDigit").textContent = candidate.digit;
+  $("activeMarketLabel").textContent = "Market: " + candidate.symbol;
+  $("candidateInfo").textContent =
+    "Historical frequency: " + (candidate.frequency * 100).toFixed(1) +
+    "% · Confirmation " + candidateConfirmations + "/3";
+
+  if (candidateConfirmations < 3) {
+    $("scannerStatus").textContent = "Confirming one candidate";
+    return;
+  }
+
+  candidateConfirmations = 0;
+  activeSymbol = candidate.symbol;
+
+  const tradeId = ++tradeSequence;
+
+  currentTrade = {
+    id: tradeId,
+    symbol: candidate.symbol,
+    digit: candidate.digit,
     stake,
-    target: 5,
-    profit: 0,
-    trades: digits.map((digit, index) => ({
-      index,
-      batchId,
-      digit,
-      status: "proposal_pending",
-      proposalId: null,
-      contractId: null,
-      profit: 0
-    }))
+    status: "proposal_pending",
+    proposalId: null,
+    contractId: null
   };
 
-  currentBatch = batch;
-  updateBatchDisplay();
+  $("tradeStatus").textContent = "Requesting proposal";
+  $("scannerStatus").textContent = "Preparing one trade";
 
-  $("scannerStatus").textContent = `Submitting matches batch ${batch.id}`;
-  log(
-    `BATCH ${batch.id}: 5 DIGITMATCH contracts on ${symbol}; ` +
-    `digits ${digits.join(", ")}; ${accountCurrency} ${stake.toFixed(2)} each; ` +
-    `planned total ${accountCurrency} ${plannedStake.toFixed(2)}.`
-  );
+  log("Candidate selected: " + candidate.symbol +
+    ", digit " + candidate.digit +
+    ". Requesting ONE Digit Matches contract.");
 
-  batch.trades.forEach(trade => {
-    try {
-      sendTracked(
-        {
-          proposal: 1,
-          amount: stake,
-          basis: "stake",
-          contract_type: "DIGITMATCH",
-          currency: accountCurrency,
-          underlying_symbol: symbol,
-          barrier: String(trade.digit),
-          duration: 1,
-          duration_unit: "t"
-        },
-        { kind: "proposal", batchId: batch.id, tradeIndex: trade.index },
-        15000
-      );
-    } catch (error) {
-      trade.status = "failed";
-      log(`Digit ${trade.digit} proposal could not be sent: ${error.message}`);
-    }
-  });
-
-  checkBatchCompletion();
+  try {
+    sendTracked({
+      proposal: 1,
+      amount: stake,
+      basis: "stake",
+      contract_type: "DIGITMATCH",
+      currency: accountCurrency,
+      underlying_symbol: candidate.symbol,
+      barrier: String(candidate.digit),
+      duration: 1,
+      duration_unit: "t"
+    }, {
+      kind: "proposal",
+      tradeId
+    }, 15000);
+  } catch (error) {
+    finishUnpurchasedTrade("Could not request proposal: " + error.message);
+  }
 }
 
 function startTrading() {
@@ -1144,7 +1045,7 @@ function startTrading() {
   }
 
   if (state.running) {
-    alert("Automation is already running.");
+    alert("Automatic trading is already running.");
     return;
   }
 
@@ -1153,44 +1054,51 @@ function startTrading() {
   const sl = Number($("sl").value);
   const maxLoss = Number($("maxLossStreak").value);
 
-  if (
-    !Number.isFinite(stake) || stake < 0.35 ||
-    !Number.isFinite(tp) || tp <= 0 ||
-    !Number.isFinite(sl) || sl <= 0 ||
-    !Number.isInteger(maxLoss) || maxLoss < 1
-  ) {
-    alert("Enter a stake of at least 0.35 and valid positive risk limits.");
+  if (!Number.isFinite(stake) || stake < 0.35 ||
+      !Number.isFinite(tp) || tp <= 0 ||
+      !Number.isFinite(sl) || sl <= 0 ||
+      !Number.isInteger(maxLoss) || maxLoss < 1) {
+    alert("Check the stake and risk settings.");
     return;
   }
 
-  if (stake * 5 > state.balance) {
-    alert("Your displayed balance does not cover five planned stakes.");
+  if (stake > state.balance) {
+    alert("Your displayed balance does not cover one stake.");
     return;
   }
 
   if (state.accountType && !/demo/i.test(String(state.accountType))) {
-    if (!confirm("This account may be REAL. Five contracts can lose together. Continue?")) return;
+    if (!confirm("This account may be REAL. Digit Matches can lose the full stake. Continue?")) {
+      return;
+    }
+  } else if (!state.accountType) {
+    if (!confirm("Confirm that you are using a DEMO account before starting.")) {
+      return;
+    }
   }
 
   state.running = true;
-  resetSignalConfirmation();
+  candidateKey = "";
+  candidateConfirmations = 0;
 
-  log("Matches automation started: five distinct digits per batch; fixed stake; Martingale OFF.");
-  log("AI ranks recent digit frequencies; it cannot guarantee the next digit.");
+  $("scannerStatus").textContent = "Scanning markets";
+  $("tradeStatus").textContent = currentTrade ? currentTrade.status : "Scanning";
 
-  $("scannerStatus").textContent = "Matches scanner active";
-  speak("Digit Matches automation started.");
+  log("Automatic single-trade mode started. Fixed stake, Martingale OFF.");
+  log("One contract maximum. Scanner history is not a guaranteed prediction.");
 
-  if (currentBatch) {
-    log("Existing batch is still being tracked. No new batch starts until it finishes.");
-  }
+  speak("TITAN automatic Matches scanner started.");
 }
 
 function stopTrading() {
   state.running = false;
-  resetSignalConfirmation();
-  log("Stopped new trades. Purchases already accepted will continue to be monitored.");
+  candidateKey = "";
+  candidateConfirmations = 0;
+
   $("scannerStatus").textContent = "New trades stopped";
+  if (!currentTrade) $("tradeStatus").textContent = "Stopped";
+
+  log("Stopped new trades. Any purchased contract will still be monitored.");
   speak("New trades stopped.");
 }
 
@@ -1200,7 +1108,7 @@ function renderMetrics() {
     Math.abs(state.profit).toFixed(2);
 
   $("profit").className =
-    "text-2xl font-black mt-1 " +
+    "text-lg font-black mt-1 " +
     (state.profit >= 0 ? "text-emerald-400" : "text-rose-400");
 
   $("runs").textContent = state.total;
@@ -1210,19 +1118,19 @@ function renderMetrics() {
 }
 
 function clearMemory() {
-  const unresolved = currentBatch && currentBatch.trades.some(t =>
-    ["proposal_pending", "buy_pending", "open", "unknown"].includes(t.status)
-  );
-
-  if (state.running || unresolved || unknownPurchase) {
-    alert("Stop new trades and resolve all pending or open contracts before clearing credentials.");
+  if (state.running || currentTrade || unknownPurchase) {
+    alert("Stop trading and resolve any open or uncertain contract before clearing credentials.");
     return;
   }
 
   localStorage.removeItem("titan_deriv_token");
   $("apiToken").value = "";
-  log("Saved credentials cleared.");
-  speak("Credentials cleared.");
+
+  if (ws) {
+    try { ws.close(); } catch (_) {}
+  }
+
+  log("Saved token cleared from this browser.");
 }
 </script>
 </body>
