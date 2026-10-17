@@ -46,7 +46,6 @@ header {
   background:rgba(36,229,154,.05);border:2px solid var(--green);
   border-radius:20px;font-size:48px;font-weight:900;
   color:var(--green);box-shadow:0 0 25px var(--green-glow);
-  transition:all .3s ease;
 }
 .scanline {
   position:absolute;top:0;left:-100%;width:50%;height:2px;
@@ -57,18 +56,12 @@ header {
 .digit-btn {
   background:#030712;border:1px solid var(--border);color:var(--text);
   padding:10px 0;border-radius:8px;font-weight:700;font-size:14px;
-  cursor:pointer;
-}
-.digit-btn.active {
-  background:rgba(36,229,154,.15);border-color:var(--green);color:var(--green);
 }
 .stat-box-hot {
   border-color:var(--red)!important;background:rgba(255,71,87,.12)!important;
-  box-shadow:0 0 12px var(--red-glow)!important;
 }
 .stat-box-cool {
   border-color:var(--ice)!important;background:rgba(56,189,248,.12)!important;
-  box-shadow:0 0 12px var(--ice-glow)!important;
 }
 input,select {
   width:100%;background:#030712;color:var(--text);
@@ -92,36 +85,36 @@ button:disabled {opacity:.4;cursor:not-allowed}
 <main class="max-w-4xl mx-auto px-4 mt-5">
 
   <div class="card">
-    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold">🔐 Deriv API Credentials &amp; Connection</h2>
-    <div class="mb-3">
-      <label class="text-[10px] uppercase tracking-wider text-slate-400">Personal Access Token (PAT)</label>
-      <input id="apiToken" type="password" autocomplete="off" placeholder="Paste your token here">
-    </div>
+    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold">
+      🔐 Deriv API Credentials &amp; Connection
+    </h2>
+    <label class="text-[10px] uppercase tracking-wider text-slate-400">Personal Access Token (PAT)</label>
+    <input id="apiToken" type="password" autocomplete="off" placeholder="Paste your token here">
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
       <button onclick="connectDeriv()" id="connectBtn"
-        class="w-full bg-[#24e59a] text-[#030712] font-extrabold py-3 rounded-xl text-xs tracking-wider shadow-lg shadow-emerald-500/20 hover:brightness-110">
+        class="w-full bg-[#24e59a] text-[#030712] font-extrabold py-3 rounded-xl text-xs tracking-wider">
         CONNECT TO DERIV
       </button>
       <button onclick="clearMemory()"
-        class="bg-rose-500/10 text-rose-500 border border-rose-500/30 font-bold py-3 rounded-xl text-xs hover:bg-rose-500/20">
+        class="bg-rose-500/10 text-rose-500 border border-rose-500/30 font-bold py-3 rounded-xl text-xs">
         CLEAR TOKEN
       </button>
     </div>
-    <div class="flex flex-wrap items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-800 text-[11px]">
-      <div class="flex gap-2 w-full md:w-auto">
-        <a href="https://app.deriv.com" target="_blank" rel="noopener"
-          class="flex-1 text-center bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-3 py-2 rounded-lg font-bold">
-          📝 Open Deriv
-        </a>
-        <a href="https://app.deriv.com" target="_blank" rel="noopener"
-          class="flex-1 text-center bg-slate-800 text-slate-300 border border-slate-700 px-3 py-2 rounded-lg font-bold">
-          🎮 Demo Account Hub
-        </a>
-      </div>
-      <div class="text-[10px] text-slate-400 w-full md:w-auto text-center md:text-right">
-        <span>Generate your token in Deriv API Settings.</span>
-      </div>
+
+    <div class="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-800 text-[11px]">
+      <a href="https://app.deriv.com" target="_blank" rel="noopener"
+        class="flex-1 text-center bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-3 py-2 rounded-lg font-bold">
+        📝 Open Deriv
+      </a>
+      <a href="https://app.deriv.com" target="_blank" rel="noopener"
+        class="flex-1 text-center bg-slate-800 text-slate-300 border border-slate-700 px-3 py-2 rounded-lg font-bold">
+        🎮 Demo Account Hub
+      </a>
     </div>
+    <p class="text-[10px] text-slate-400 mt-3">
+      Generate your token in Deriv API Settings. Use a demo account for testing.
+    </p>
   </div>
 
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
@@ -144,7 +137,7 @@ button:disabled {opacity:.4;cursor:not-allowed}
   </div>
 
   <div class="card">
-    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between items-center">
+    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between">
       <span>📡 Multi-Volatility EVEN/ODD Scanner</span>
       <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
     </h2>
@@ -167,12 +160,14 @@ button:disabled {opacity:.4;cursor:not-allowed}
     <div class="card text-center flex flex-col justify-between">
       <div class="scanline"></div>
       <div>
-        <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📊 Active Focus Stream</h2>
+        <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">
+          📊 Active Focus Stream
+        </h2>
         <div class="text-[10px] uppercase text-slate-400" id="activeMarketLabel">Symbol: R_50</div>
         <div class="digit-box" id="lastDigit">–</div>
         <div class="text-xs text-cyan-400 mb-4" id="digitInfo">Awaiting connection...</div>
         <div class="text-left mt-2">
-          <div class="flex justify-between items-center text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">
+          <div class="flex justify-between text-[10px] uppercase text-slate-400 mb-1.5">
             <span>Digit Stats (Last 30 Ticks)</span>
             <span><b class="text-rose-400">■ Hot</b> | <b class="text-cyan-400">■ Cool</b></span>
           </div>
@@ -181,59 +176,86 @@ button:disabled {opacity:.4;cursor:not-allowed}
       </div>
       <div class="space-y-2 mt-4">
         <button onclick="startTrading()" id="startBtn"
-          class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider disabled:opacity-40" disabled>
-          ▶ START EVEN/ODD TRADING
+          class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider" disabled>
+          ▶ START 5-TRADE BATCHES
         </button>
         <button onclick="stopTrading()"
           class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2 rounded-xl text-xs">
-          ■ STOP AUTOMATION
+          ■ STOP NEW TRADES
         </button>
       </div>
     </div>
 
     <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Entry Parameters &amp; Risk</h2>
-      <div class="mb-3">
-        <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
-        <select id="direction" onchange="toggleBarrier()">
-          <option value="SCANNER">Auto-Select EVEN/ODD Signal</option>
-          <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
-          <option value="DIGITODD">DIGITODD (Odd digit)</option>
-        </select>
-      </div>
-      <div id="barrierContainer">
-        <label class="text-[10px] uppercase tracking-wider text-slate-400">Target Barrier Digit (Not used for EVEN/ODD)</label>
-        <div class="grid grid-cols-5 gap-2 my-2" id="digitButtons"></div>
-      </div>
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">
+        ⚙️ Batch Parameters &amp; Risk
+      </h2>
+
+      <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
+      <select id="direction">
+        <option value="SCANNER">Auto-Select EVEN/ODD Signal</option>
+        <option value="DIGITEVEN">DIGITEVEN (Even digit)</option>
+        <option value="DIGITODD">DIGITODD (Odd digit)</option>
+      </select>
+
+      <label class="text-[10px] uppercase tracking-wider text-slate-400 mt-3 block">Selected market</label>
+      <p class="text-xs text-slate-400 mt-1">Tap a market row in the scanner to select it for manual EVEN/ODD trading.</p>
+
       <div class="grid grid-cols-2 gap-2 mt-3">
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Fixed Stake</label>
-          <input id="stake" type="number" value="2.00" min="0.35" step="0.01">
+          <label class="text-[10px] uppercase text-slate-400">Trades per signal</label>
+          <input id="bulkCount" type="number" value="5" min="5" max="5" step="1" readonly>
         </div>
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Recovery Mode</label>
-          <input id="martingale" type="text" value="OFF — FIXED STAKE" disabled>
+          <label class="text-[10px] uppercase text-slate-400">Stake per trade</label>
+          <input id="stake" type="number" value="0.35" min="0.35" step="0.01">
         </div>
       </div>
+
+      <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 mt-3">
+        <div class="flex justify-between text-xs">
+          <span class="text-slate-400">Planned stake per batch</span>
+          <strong id="batchCost">$1.75</strong>
+        </div>
+        <div class="flex justify-between text-xs mt-2">
+          <span class="text-slate-400">Batch status</span>
+          <strong id="batchStatus" class="text-cyan-400">Idle</strong>
+        </div>
+        <div class="flex justify-between text-xs mt-2">
+          <span class="text-slate-400">Settled in current batch</span>
+          <strong id="batchProgress">0 / 5</strong>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <label class="text-[10px] uppercase text-slate-400">Recovery Mode</label>
+        <input type="text" value="OFF — FIXED STAKE" disabled>
+      </div>
+
       <div class="grid grid-cols-3 gap-2 mt-3">
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-emerald-400">Take Profit</label>
-          <input id="tp" type="number" value="5.00" min="0.01" class="border-emerald-500/50">
+          <label class="text-[10px] uppercase text-emerald-400">Take Profit</label>
+          <input id="tp" type="number" value="5.00" min="0.01" step="0.01">
         </div>
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-rose-400">Stop Loss</label>
-          <input id="sl" type="number" value="20.00" min="0.01" class="border-rose-500/50">
+          <label class="text-[10px] uppercase text-rose-400">Stop Loss</label>
+          <input id="sl" type="number" value="20.00" min="0.01" step="0.01">
         </div>
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-yellow-400">Max Loss Streak</label>
-          <input id="maxLossStreak" type="number" value="5" min="1" step="1" class="border-yellow-500/50">
+          <label class="text-[10px] uppercase text-yellow-400">Max Loss Streak</label>
+          <input id="maxLossStreak" type="number" value="5" min="1" step="1">
         </div>
       </div>
+      <p class="text-[10px] text-slate-500 mt-3">
+        Five trades can lose together. Historical digit frequencies do not guarantee the next outcome.
+      </p>
     </div>
   </div>
 
   <div class="card">
-    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
+    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">
+      📜 System Execution Log
+    </h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
       <div>Terminal initialized. Demo testing recommended.</div>
     </div>
@@ -243,27 +265,36 @@ button:disabled {opacity:.4;cursor:not-allowed}
 <script>
 "use strict";
 
+const symbols = ["R_10", "R_25", "R_50", "R_75", "R_100"];
+const $ = id => document.getElementById(id);
+
 let ws = null;
 let pingInterval = null;
+let requestSequence = 1000;
+let activeSymbol = "R_50";
+let accountCurrency = "USD";
+let lastTickKey = "";
+let signalHoldCounter = 0;
+let lastHoldSymbol = null;
+let lastHoldType = null;
+let currentBatch = null;
+let batchSequence = 0;
 let intentionalClose = false;
+let unknownPurchase = false;
 
-const symbols = ["R_10", "R_25", "R_50", "R_75", "R_100"];
+const pendingRequests = new Map();
+const settledContracts = new Set();
+const contractToTrade = new Map();
+
 const marketData = {};
-
 symbols.forEach(symbol => {
   marketData[symbol] = {
     history: [],
-    quotes: [],
     counts: Array(10).fill(0),
     lastQuote: "-",
     lastDigit: "-"
   };
 });
-
-let activeSymbol = "R_50";
-let accountCurrency = "USD";
-let lastTickKey = "";
-const settledContracts = new Set();
 
 const state = {
   balance: 0,
@@ -272,63 +303,32 @@ const state = {
   wins: 0,
   losses: 0,
   consecutiveLosses: 0,
-  selectedDigit: 4,
   running: false,
-  pendingBuy: false,
-  awaitingResult: false,
-  nextStake: 2,
   profit: 0,
-  contractId: null,
-  proposalPending: false,
   accountType: "",
-  accountId: null,
-  requestTimeout: null,
-  contractTimeout: null
+  accountId: null
 };
-
-let signalHoldCounter = 0;
-let lastHoldSymbol = null;
-let lastHoldType = null;
-
-const $ = id => document.getElementById(id);
 
 window.addEventListener("DOMContentLoaded", () => {
   const savedToken = localStorage.getItem("titan_deriv_token");
   if (savedToken) $("apiToken").value = savedToken;
-
-  buildDigitButtons();
   buildStatsGrid();
   renderScannerTable();
-  toggleBarrier();
+  updateBatchCost();
+  $("stake").addEventListener("input", updateBatchCost);
 });
 
 function log(message) {
   const line = document.createElement("div");
   line.textContent = new Date().toLocaleTimeString() + " — " + message;
   $("log").prepend(line);
-
-  while ($("log").children.length > 50) {
-    $("log").lastElementChild.remove();
-  }
+  while ($("log").children.length > 60) $("log").lastElementChild.remove();
 }
 
 function speak(message) {
   if (!("speechSynthesis" in window)) return;
-
   window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(
-    new SpeechSynthesisUtterance(message)
-  );
-}
-
-function clearRequestTimeout() {
-  if (state.requestTimeout) clearTimeout(state.requestTimeout);
-  state.requestTimeout = null;
-}
-
-function clearContractTimeout() {
-  if (state.contractTimeout) clearTimeout(state.contractTimeout);
-  state.contractTimeout = null;
+  window.speechSynthesis.speak(new SpeechSynthesisUtterance(message));
 }
 
 function resetSignalConfirmation() {
@@ -337,73 +337,172 @@ function resetSignalConfirmation() {
   lastHoldType = null;
 }
 
-function sendRequest(payload) {
+function updateBatchCost() {
+  const stake = Number($("stake").value);
+  const cost = Number.isFinite(stake) && stake > 0 ? stake * 5 : 0;
+  $("batchCost").textContent = accountCurrency + " " + cost.toFixed(2);
+}
+
+function sendRaw(payload) {
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     throw new Error("WebSocket is not connected.");
   }
-
   ws.send(JSON.stringify(payload));
 }
 
-function buildDigitButtons() {
-  const container = $("digitButtons");
-  container.innerHTML = "";
+function sendTracked(payload, meta, timeoutMs = 15000) {
+  const reqId = ++requestSequence;
+  const entry = { ...meta, reqId, timer: null };
 
-  for (let digit = 0; digit <= 9; digit++) {
-    const button = document.createElement("button");
+  entry.timer = setTimeout(() => {
+    if (!pendingRequests.has(reqId)) return;
+    pendingRequests.delete(reqId);
+    handleRequestTimeout(entry);
+  }, timeoutMs);
 
-    button.className = "digit-btn" +
-      (digit === state.selectedDigit ? " active" : "");
+  pendingRequests.set(reqId, entry);
 
-    button.textContent = digit;
-    button.disabled = true;
-    container.appendChild(button);
+  try {
+    sendRaw({ ...payload, req_id: reqId });
+  } catch (error) {
+    clearTimeout(entry.timer);
+    pendingRequests.delete(reqId);
+    throw error;
+  }
+
+  return reqId;
+}
+
+function takePendingRequest(data) {
+  const rawId = data.req_id ?? data.echo_req?.req_id;
+  if (rawId === undefined || rawId === null) return null;
+
+  const reqId = Number(rawId);
+  const entry = pendingRequests.get(reqId);
+  if (!entry) return null;
+
+  clearTimeout(entry.timer);
+  pendingRequests.delete(reqId);
+  return entry;
+}
+
+function getBatchTrade(entry) {
+  if (!entry || !currentBatch || currentBatch.id !== entry.batchId) return null;
+  return currentBatch.trades[entry.tradeIndex] || null;
+}
+
+function isTerminal(status) {
+  return ["settled", "failed", "cancelled"].includes(status);
+}
+
+function updateBatchDisplay() {
+  if (!currentBatch) {
+    $("batchStatus").textContent = unknownPurchase ? "Verify account" : "Idle";
+    $("batchProgress").textContent = "0 / 5";
+    return;
+  }
+
+  const settled = currentBatch.trades.filter(t => t.status === "settled").length;
+  const purchased = currentBatch.trades.filter(t =>
+    ["open", "settled"].includes(t.status)
+  ).length;
+
+  $("batchStatus").textContent = unknownPurchase
+    ? "Purchase needs verification"
+    : `${purchased} purchased`;
+
+  $("batchProgress").textContent = `${settled} / ${currentBatch.target}`;
+}
+
+function checkBatchCompletion() {
+  if (!currentBatch) {
+    updateBatchDisplay();
+    return;
+  }
+
+  const finished = currentBatch.trades.every(t => isTerminal(t.status));
+  if (finished) {
+    const b = currentBatch;
+    const settled = b.trades.filter(t => t.status === "settled").length;
+    const rejected = b.trades.filter(t => t.status === "failed").length;
+    const cancelled = b.trades.filter(t => t.status === "cancelled").length;
+
+    log(
+      `BATCH ${b.id} COMPLETE — ${settled} settled, ` +
+      `${rejected} rejected, ${cancelled} cancelled. ` +
+      `Batch net P/L: ${accountCurrency} ${b.profit.toFixed(2)}`
+    );
+
+    currentBatch = null;
+  }
+
+  updateBatchDisplay();
+}
+
+function handleRequestTimeout(entry) {
+  const trade = getBatchTrade(entry);
+
+  if (!trade) {
+    log(`Request timed out (${entry.kind}).`);
+    return;
+  }
+
+  if (entry.kind === "proposal" && trade.status === "proposal_pending") {
+    trade.status = "failed";
+    log(`Batch ${entry.batchId}, trade ${entry.tradeIndex + 1}: proposal timed out; no buy confirmation received.`);
+    checkBatchCompletion();
+    return;
+  }
+
+  if (entry.kind === "buy" && trade.status === "buy_pending") {
+    trade.status = "unknown";
+    unknownPurchase = true;
+    state.running = false;
+    $("scannerStatus").textContent = "Verify Deriv account";
+    log(
+      `URGENT: Batch ${entry.batchId}, trade ${entry.tradeIndex + 1}: ` +
+      `buy response timed out. Purchase status is unknown. Check Deriv before restarting.`
+    );
+    updateBatchDisplay();
   }
 }
 
 function buildStatsGrid() {
   const container = $("statsGrid");
   if (!container) return;
-
   container.innerHTML = "";
 
   const recent = marketData[activeSymbol].history.slice(-30);
   const counts = Array(10).fill(0);
-
-  recent.forEach(digit => counts[digit]++);
+  recent.forEach(d => counts[d]++);
 
   const maxCount = Math.max(...counts);
   const minCount = Math.min(...counts);
 
   for (let digit = 0; digit <= 9; digit++) {
-    const count = counts[digit];
-    const pct = recent.length
-      ? ((count / recent.length) * 100).toFixed(0)
-      : "0";
-
+    const pct = recent.length ? Math.round(counts[digit] / recent.length * 100) : 0;
     let highlight = "";
-    let textStyle = "text-emerald-400";
+    let color = "text-emerald-400";
 
     if (recent.length >= 10 && maxCount > minCount) {
-      if (count === maxCount) {
+      if (counts[digit] === maxCount) {
         highlight = "stat-box-hot";
-        textStyle = "text-rose-400 font-extrabold";
-      } else if (count === minCount) {
+        color = "text-rose-400 font-extrabold";
+      } else if (counts[digit] === minCount) {
         highlight = "stat-box-cool";
-        textStyle = "text-cyan-400 font-extrabold";
+        color = "text-cyan-400 font-extrabold";
       }
     }
 
     const box = document.createElement("div");
-    box.className =
-      `bg-[#030712] border border-slate-800 rounded-lg p-1.5 text-center text-[10px] ${highlight}`;
+    box.className = `bg-[#030712] border border-slate-800 rounded-lg p-1.5 text-center text-[10px] ${highlight}`;
 
     const label = document.createElement("span");
     label.className = "text-slate-400 font-bold";
     label.textContent = digit + ": ";
 
     const value = document.createElement("span");
-    value.className = textStyle + " font-mono";
+    value.className = color + " font-mono";
     value.textContent = pct + "%";
 
     box.append(label, value);
@@ -413,23 +512,17 @@ function buildStatsGrid() {
 
 function getStats(symbol, windowSize = 30) {
   const history = marketData[symbol].history.slice(-windowSize);
-  const count = history.length;
-  const evenCount = history.filter(digit => digit % 2 === 0).length;
-
-  let overCount = 0;
-  let underCount = 0;
-
-  history.forEach(digit => {
-    if (digit > state.selectedDigit) overCount++;
-    if (digit < state.selectedDigit) underCount++;
-  });
+  const n = history.length;
+  const even = history.filter(d => d % 2 === 0).length;
+  const over = history.filter(d => d > 4).length;
+  const under = history.filter(d => d < 4).length;
 
   return {
-    n: count,
-    evenPct: count ? evenCount / count * 100 : 0,
-    oddPct: count ? (count - evenCount) / count * 100 : 0,
-    overPct: count ? overCount / count * 100 : 0,
-    underPct: count ? underCount / count * 100 : 0
+    n,
+    evenPct: n ? even / n * 100 : 0,
+    oddPct: n ? (n - even) / n * 100 : 0,
+    overPct: n ? over / n * 100 : 0,
+    underPct: n ? under / n * 100 : 0
   };
 }
 
@@ -440,8 +533,6 @@ function renderScannerTable() {
   symbols.forEach(symbol => {
     const data = marketData[symbol];
     const stats = getStats(symbol, 30);
-
-    // The scanner displays EVEN/ODD signals only.
     const best = stats.evenPct >= stats.oddPct
       ? { type: "DIGITEVEN", conf: stats.evenPct }
       : { type: "DIGITODD", conf: stats.oddPct };
@@ -453,17 +544,16 @@ function renderScannerTable() {
 
     const row = document.createElement("tr");
     row.className = "hover:bg-slate-800/30 cursor-pointer";
-
     row.onclick = () => {
       activeSymbol = symbol;
-      buildStatsGrid();
       $("activeMarketLabel").textContent = "Symbol: " + symbol;
+      buildStatsGrid();
+      renderScannerTable();
+      log("Selected market: " + symbol);
     };
 
     const values = [
-      symbol,
-      data.lastQuote,
-      data.lastDigit,
+      symbol, data.lastQuote, data.lastDigit,
       Math.round(stats.evenPct) + "%",
       Math.round(stats.oddPct) + "%",
       Math.round(stats.overPct) + "%",
@@ -472,57 +562,41 @@ function renderScannerTable() {
 
     values.forEach((value, index) => {
       const cell = document.createElement("td");
-
-      cell.className = "p-2 " +
-        (index === 0
-          ? (symbol === activeSymbol
-              ? "font-bold text-emerald-400"
-              : "font-bold text-slate-300")
-          : "text-slate-400");
-
+      cell.className = "p-2 " + (index === 0
+        ? (symbol === activeSymbol ? "font-bold text-emerald-400" : "font-bold text-slate-300")
+        : "text-slate-400");
       cell.textContent = value;
       row.appendChild(cell);
     });
 
-    const signalCell = document.createElement("td");
-    signalCell.className = "p-2";
-
+    const cell = document.createElement("td");
+    cell.className = "p-2";
     const badge = document.createElement("span");
     badge.className = "px-2 py-0.5 rounded text-[9px] font-bold " +
       (ready && best.conf >= 60
         ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
         : "bg-slate-800 text-slate-400");
-
     badge.textContent = label;
-    signalCell.appendChild(badge);
-    row.appendChild(signalCell);
+    cell.appendChild(badge);
+    row.appendChild(cell);
     tbody.appendChild(row);
   });
 }
 
-function toggleBarrier() {
-  const container = $("barrierContainer");
-  container.style.opacity = "0.3";
-  container.style.pointerEvents = "none";
-}
-
 async function connectDeriv() {
   const token = $("apiToken").value.trim();
-
   if (!token) {
     alert("Please paste your Deriv API token.");
     return;
   }
 
-  if (state.pendingBuy || state.awaitingResult) {
-    alert("Wait for the current contract to finish before reconnecting.");
+  if (unknownPurchase) {
+    alert("A buy request has an unknown result. Verify your Deriv account before reconnecting or restarting.");
     return;
   }
 
   $("connectBtn").disabled = true;
   $("connectBtn").textContent = "CONNECTING...";
-
-  // Keep the existing token-memory key and backend flow.
   localStorage.setItem("titan_deriv_token", token);
 
   log("Requesting secure OTP connection via backend...");
@@ -536,11 +610,9 @@ async function connectDeriv() {
     });
 
     const data = await response.json();
-
     if (!response.ok || !data.ok || !data.ws_url) {
       throw new Error(data.error || "Authentication failed.");
     }
-
     if (!Number.isFinite(Number(data.balance))) {
       throw new Error("Backend returned an invalid account balance.");
     }
@@ -550,20 +622,15 @@ async function connectDeriv() {
     state.accountId = data.account_id ?? null;
     state.accountType = data.account_type ?? "";
     accountCurrency = data.currency || "USD";
-    state.nextStake = Number($("stake").value) || 2;
 
-    $("balance").textContent =
-      accountCurrency + " " + state.balance.toFixed(2);
-
+    $("balance").textContent = accountCurrency + " " + state.balance.toFixed(2);
     log(`Authorized account: ${data.account_id} (${data.account_type})`);
     connectWebSocket(data.ws_url);
   } catch (error) {
     log("Auth Error: " + error.message);
     alert("Connection Error: " + error.message);
-
     $("connectBtn").textContent = "CONNECT TO DERIV";
     $("connectBtn").disabled = false;
-
     speak("Connection failed.");
   }
 }
@@ -572,16 +639,12 @@ function connectWebSocket(wsUrl) {
   intentionalClose = false;
 
   if (ws) {
-    try {
-      ws.close();
-    } catch (error) {}
+    try { ws.close(); } catch (_) {}
   }
-
   if (pingInterval) clearInterval(pingInterval);
   pingInterval = null;
 
   let socket;
-
   try {
     socket = new WebSocket(wsUrl);
     ws = socket;
@@ -595,7 +658,6 @@ function connectWebSocket(wsUrl) {
     if (ws !== socket) return;
 
     log("Authenticated WebSocket stream opened.");
-
     $("scannerStatus").textContent = "Scanner Active";
     $("connectionBadge").textContent = "● CONNECTED & AUTHORIZED";
     $("connectionBadge").style.color = "var(--green)";
@@ -603,19 +665,32 @@ function connectWebSocket(wsUrl) {
     $("connectBtn").disabled = false;
     $("startBtn").disabled = false;
 
-    symbols.forEach(symbol => {
-      sendRequest({ ticks: symbol, subscribe: 1 });
-    });
-
-    sendRequest({ balance: 1, subscribe: 1 });
+    symbols.forEach(symbol => sendRaw({ ticks: symbol, subscribe: 1 }));
+    sendRaw({ balance: 1, subscribe: 1 });
 
     pingInterval = setInterval(() => {
       if (ws === socket && socket.readyState === WebSocket.OPEN) {
-        try {
-          sendRequest({ ping: 1 });
-        } catch (error) {}
+        try { sendRaw({ ping: 1 }); } catch (_) {}
       }
     }, 15000);
+
+    // Restore monitoring for contracts still open after a disconnection.
+    if (currentBatch) {
+      currentBatch.trades.forEach(trade => {
+        if (trade.status === "open" && trade.contractId) {
+          try {
+            sendRaw({
+              proposal_open_contract: 1,
+              contract_id: trade.contractId,
+              subscribe: 1
+            });
+            log("Resubscribed to contract " + trade.contractId);
+          } catch (error) {
+            log("Could not resubscribe to contract " + trade.contractId);
+          }
+        }
+      });
+    }
 
     speak("Authorized successfully.");
   };
@@ -624,44 +699,45 @@ function connectWebSocket(wsUrl) {
     if (ws !== socket) return;
 
     let data;
-
     try {
       data = JSON.parse(event.data);
-    } catch (error) {
+    } catch (_) {
       log("Received invalid WebSocket message.");
       return;
     }
+
+    const tracked = takePendingRequest(data);
 
     if (data.error) {
       const message = data.error.message || "Unknown Deriv error.";
       log("Deriv API Error: " + message);
 
-      clearRequestTimeout();
+      const trade = getBatchTrade(tracked);
 
-      if (state.proposalPending || (state.pendingBuy && !state.awaitingResult)) {
-        state.proposalPending = false;
-        state.pendingBuy = false;
+      if (trade && tracked.kind === "proposal") {
+        trade.status = "failed";
+        log(`Batch ${tracked.batchId}, trade ${tracked.tradeIndex + 1} proposal rejected.`);
+        checkBatchCompletion();
+      } else if (trade && tracked.kind === "buy") {
+        trade.status = "failed";
+        log(`Batch ${tracked.batchId}, trade ${tracked.tradeIndex + 1} buy rejected by Deriv.`);
+        checkBatchCompletion();
+      } else if (tracked && tracked.kind === "unknown-monitor") {
         state.running = false;
-        $("scannerStatus").textContent = "Trade request failed";
-      }
-
-      if (state.awaitingResult) {
-        state.running = false;
-        log("Trade monitoring requires verification in Deriv.");
+        log("Contract monitoring error. Verify the contract in Deriv.");
+      } else if (!tracked) {
+        log("Unmatched API error; verify the Deriv account if a trade may be open.");
       }
 
       return;
     }
 
     if (data.msg_type === "balance" && data.balance) {
-      const balance = Number(data.balance.balance);
-
-      if (Number.isFinite(balance)) {
-        state.balance = balance;
+      const value = Number(data.balance.balance);
+      if (Number.isFinite(value)) {
+        state.balance = value;
         accountCurrency = data.balance.currency || accountCurrency;
-
-        $("balance").textContent =
-          accountCurrency + " " + state.balance.toFixed(2);
+        $("balance").textContent = accountCurrency + " " + value.toFixed(2);
       }
     }
 
@@ -670,223 +746,125 @@ function connectWebSocket(wsUrl) {
       if (!marketData[symbol]) return;
 
       const precision = Number(data.tick.pip_size);
-
-      if (!Number.isInteger(precision) || precision < 0 || precision > 10) {
-        log("Invalid tick precision for " + symbol);
-        return;
-      }
+      if (!Number.isInteger(precision) || precision < 0 || precision > 10) return;
 
       const quote = Number(data.tick.quote).toFixed(precision);
       const digit = Number(quote.replace(".", "").slice(-1));
-
       if (!Number.isInteger(digit) || digit < 0 || digit > 9) return;
 
       const tickKey = symbol + "|" + data.tick.epoch + "|" + quote;
-
       if (tickKey === lastTickKey) return;
       lastTickKey = tickKey;
 
       const market = marketData[symbol];
-
       market.lastQuote = quote;
       market.lastDigit = digit;
       market.history.push(digit);
-      market.quotes.push(Number(quote));
-      market.counts[digit]++;
 
-      if (market.history.length > 200) {
-        const removedDigit = market.history.shift();
-        market.quotes.shift();
-        market.counts[removedDigit]--;
-      }
+      if (market.history.length > 200) market.history.shift();
 
       if (symbol === activeSymbol) {
         $("lastDigit").textContent = digit;
-        $("digitInfo").textContent =
-          `Quote: ${quote} | Symbol: ${symbol}`;
-
+        $("digitInfo").textContent = `Quote: ${quote} | Symbol: ${symbol}`;
         $("activeMarketLabel").textContent = "Symbol: " + symbol;
         buildStatsGrid();
       }
 
       renderScannerTable();
 
-      if (
-        state.running &&
-        !state.pendingBuy &&
-        !state.awaitingResult &&
-        !state.proposalPending
-      ) {
+      if (state.running && !currentBatch && !unknownPurchase) {
         executeTrade();
       }
     }
 
-    if (data.msg_type === "proposal" && state.proposalPending) {
-      state.proposalPending = false;
-      clearRequestTimeout();
+    if (data.msg_type === "proposal" && tracked?.kind === "proposal") {
+      const trade = getBatchTrade(tracked);
+      if (!trade || trade.status !== "proposal_pending") return;
 
       if (!data.proposal || !data.proposal.id) {
-        state.pendingBuy = false;
-        log("No valid proposal received. Waiting for another signal.");
+        trade.status = "failed";
+        log("Invalid proposal returned for batch trade " + (tracked.tradeIndex + 1));
+        checkBatchCompletion();
+        return;
+      }
+
+      // Do not buy a proposal if the user stopped automation or a risk limit was hit.
+      if (!state.running || unknownPurchase) {
+        trade.status = "cancelled";
+        log(`Batch ${tracked.batchId}, trade ${tracked.tradeIndex + 1}: proposal not bought because automation stopped.`);
+        checkBatchCompletion();
         return;
       }
 
       const askPrice = Number(data.proposal.ask_price);
-
       if (!Number.isFinite(askPrice) || askPrice <= 0) {
-        state.pendingBuy = false;
-        log("Invalid proposal price. Trade cancelled.");
+        trade.status = "failed";
+        log("Invalid proposal ask price; trade skipped.");
+        checkBatchCompletion();
         return;
       }
 
+      trade.status = "buy_pending";
+      trade.proposalId = data.proposal.id;
+
       try {
-        sendRequest({
-          buy: data.proposal.id,
-          price: askPrice
-        });
-
-        state.requestTimeout = setTimeout(() => {
-          if (state.pendingBuy && !state.awaitingResult) {
-            state.running = false;
-            state.pendingBuy = false;
-
-            log("Buy confirmation timed out. Check your Deriv account before restarting.");
-            $("scannerStatus").textContent = "Verify account before restarting";
-          }
-        }, 20000);
+        sendTracked(
+          { buy: data.proposal.id, price: askPrice },
+          { kind: "buy", batchId: tracked.batchId, tradeIndex: tracked.tradeIndex },
+          20000
+        );
+        log(`Batch ${tracked.batchId}: buy request sent for trade ${tracked.tradeIndex + 1}/5.`);
       } catch (error) {
-        state.pendingBuy = false;
-        state.running = false;
+        trade.status = "failed";
         log("Buy request failed: " + error.message);
+        checkBatchCompletion();
       }
     }
 
-    if (data.msg_type === "buy" && data.buy) {
-      clearRequestTimeout();
+    if (data.msg_type === "buy" && data.buy && tracked?.kind === "buy") {
+      const trade = getBatchTrade(tracked);
+      if (!trade || trade.status !== "buy_pending") return;
 
-      state.pendingBuy = false;
-      state.awaitingResult = true;
-      state.contractId = data.buy.contract_id;
+      const contractId = data.buy.contract_id;
+      if (!contractId) {
+        trade.status = "unknown";
+        unknownPurchase = true;
+        state.running = false;
+        log("Buy response did not contain a contract ID. Verify your Deriv account.");
+        updateBatchDisplay();
+        return;
+      }
 
-      log("Contract purchased. ID: " + state.contractId);
-      speak("Contract placed.");
+      trade.status = "open";
+      trade.contractId = String(contractId);
+      contractToTrade.set(String(contractId), trade);
+
+      log(
+        `PURCHASED: batch ${tracked.batchId}, trade ${tracked.tradeIndex + 1}/5, ` +
+        `contract ${contractId}.`
+      );
 
       try {
-        sendRequest({
+        sendRaw({
           proposal_open_contract: 1,
-          contract_id: state.contractId,
+          contract_id: contractId,
           subscribe: 1
         });
-
-        state.contractTimeout = setTimeout(() => {
-          if (state.awaitingResult) {
-            state.running = false;
-
-            log("Result monitoring timed out. Verify the contract in Deriv.");
-            $("scannerStatus").textContent = "Verify contract in Deriv";
-          }
-        }, 120000);
       } catch (error) {
         state.running = false;
-        log("Could not start contract monitoring: " + error.message);
+        log(`Could not subscribe to contract ${contractId}. Verify it in Deriv.`);
       }
+
+      updateBatchDisplay();
     }
 
-    if (
-      data.msg_type === "proposal_open_contract" &&
-      data.proposal_open_contract
-    ) {
-      const contract = data.proposal_open_contract;
-
-      if (contract.is_sold || contract.status === "sold") {
-        const id = contract.contract_id;
-
-        if (!id || settledContracts.has(id)) return;
-        settledContracts.add(id);
-
-        clearContractTimeout();
-
-        const resultProfit = Number(contract.profit);
-
-        if (!Number.isFinite(resultProfit)) {
-          state.running = false;
-          state.awaitingResult = false;
-
-          log("Invalid contract result. Automation stopped for review.");
-          return;
-        }
-
-        state.profit += resultProfit;
-        state.total++;
-
-        if (resultProfit > 0) {
-          state.wins++;
-          state.consecutiveLosses = 0;
-
-          log(
-            "WIN! Net profit: +" + accountCurrency + " " +
-            resultProfit.toFixed(2)
-          );
-
-          speak("Win.");
-        } else {
-          state.losses++;
-          state.consecutiveLosses++;
-
-          log(
-            "LOSS! Net result: " + accountCurrency + " " +
-            resultProfit.toFixed(2) +
-            " | Streak: " + state.consecutiveLosses
-          );
-
-          speak("Loss.");
-        }
-
-        // Fixed stake only. Never multiply the stake after a loss.
-        state.nextStake = Number($("stake").value);
-
-        renderMetrics();
-
-        const takeProfit = Number($("tp").value);
-        const stopLoss = Number($("sl").value);
-        const maxLossStreak = Number($("maxLossStreak").value);
-
-        if (takeProfit > 0 && state.profit >= takeProfit) {
-          state.running = false;
-          log("Take-profit limit reached. Automation stopped.");
-          speak("Take profit reached.");
-        } else if (stopLoss > 0 && state.profit <= -stopLoss) {
-          state.running = false;
-          log("Stop-loss limit reached. Automation stopped.");
-          speak("Stop loss hit.");
-        } else if (
-          Number.isInteger(maxLossStreak) &&
-          maxLossStreak > 0 &&
-          state.consecutiveLosses >= maxLossStreak
-        ) {
-          state.running = false;
-          log("Loss-streak limit reached. Automation stopped.");
-          speak("Circuit breaker triggered.");
-        }
-
-        state.awaitingResult = false;
-        state.contractId = null;
-        state.pendingBuy = false;
-        state.proposalPending = false;
-
-        resetSignalConfirmation();
-
-        $("scannerStatus").textContent = state.running
-          ? "Waiting for next signal"
-          : "Automation stopped";
-      }
+    if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
+      handleContractUpdate(data.proposal_open_contract);
     }
   };
 
   socket.onerror = () => {
-    if (ws !== socket) return;
-
-    log("WebSocket error. Check connection and backend authorization.");
+    if (ws === socket) log("WebSocket error. Check connection and backend authorization.");
   };
 
   socket.onclose = () => {
@@ -894,8 +872,24 @@ function connectWebSocket(wsUrl) {
 
     if (pingInterval) clearInterval(pingInterval);
     pingInterval = null;
-
     state.running = false;
+
+    // Pending buy requests may have reached Deriv even if their replies were lost.
+    for (const [reqId, entry] of pendingRequests.entries()) {
+      clearTimeout(entry.timer);
+      pendingRequests.delete(reqId);
+
+      const trade = getBatchTrade(entry);
+      if (!trade) continue;
+
+      if (entry.kind === "proposal" && trade.status === "proposal_pending") {
+        trade.status = "failed";
+      } else if (entry.kind === "buy" && trade.status === "buy_pending") {
+        trade.status = "unknown";
+        unknownPurchase = true;
+        log("Connection dropped during a buy request. Check Deriv before trading again.");
+      }
+    }
 
     $("connectionBadge").textContent = "● DISCONNECTED";
     $("connectionBadge").style.color = "var(--red)";
@@ -904,8 +898,75 @@ function connectWebSocket(wsUrl) {
     $("startBtn").disabled = true;
     $("scannerStatus").textContent = "Disconnected";
 
-    log("WebSocket closed. Automation stopped.");
+    log("WebSocket closed. New trading stopped.");
+    checkBatchCompletion();
   };
+}
+
+function handleContractUpdate(contract) {
+  const id = String(contract.contract_id || "");
+  if (!id) return;
+
+  const trade = contractToTrade.get(id);
+  if (!trade || trade.status !== "open") return;
+
+  if (!(contract.is_sold || contract.status === "sold")) return;
+  if (settledContracts.has(id)) return;
+  settledContracts.add(id);
+
+  const resultProfit = Number(contract.profit);
+  if (!Number.isFinite(resultProfit)) {
+    state.running = false;
+    log("Invalid contract result. Verify this contract in Deriv.");
+    return;
+  }
+
+  trade.status = "settled";
+  trade.profit = resultProfit;
+
+  state.profit += resultProfit;
+  state.total++;
+
+  if (currentBatch && currentBatch.id === trade.batchId) {
+    currentBatch.profit += resultProfit;
+  }
+
+  if (resultProfit > 0) {
+    state.wins++;
+    state.consecutiveLosses = 0;
+    log(`WIN contract ${id}: +${accountCurrency} ${resultProfit.toFixed(2)}`);
+  } else {
+    state.losses++;
+    state.consecutiveLosses++;
+    log(
+      `LOSS contract ${id}: ${accountCurrency} ${resultProfit.toFixed(2)}. ` +
+      `Loss streak: ${state.consecutiveLosses}`
+    );
+  }
+
+  renderMetrics();
+
+  const tp = Number($("tp").value);
+  const sl = Number($("sl").value);
+  const maxLossStreak = Number($("maxLossStreak").value);
+
+  if (tp > 0 && state.profit >= tp) {
+    state.running = false;
+    log("TAKE PROFIT reached. No new trades will be opened.");
+  } else if (sl > 0 && state.profit <= -sl) {
+    state.running = false;
+    log("STOP LOSS reached. No new trades will be opened.");
+  } else if (
+    Number.isInteger(maxLossStreak) &&
+    maxLossStreak > 0 &&
+    state.consecutiveLosses >= maxLossStreak
+  ) {
+    state.running = false;
+    log("Maximum consecutive-loss limit reached. No new trades will be opened.");
+  }
+
+  updateBatchDisplay();
+  checkBatchCompletion();
 }
 
 function getBestMarketOpportunity() {
@@ -913,35 +974,25 @@ function getBestMarketOpportunity() {
 
   symbols.forEach(symbol => {
     const history = marketData[symbol].history.slice(-100);
-
     if (history.length < 100) return;
 
-    const evenCount = history.filter(digit => digit % 2 === 0).length;
+    const evenCount = history.filter(d => d % 2 === 0).length;
     const oddCount = history.length - evenCount;
 
-    const options = [
+    [
       { symbol, type: "DIGITEVEN", count: evenCount },
       { symbol, type: "DIGITODD", count: oddCount }
-    ];
-
-    options.forEach(option => {
+    ].forEach(option => {
       const probability = option.count / history.length;
       const baseline = 0.5;
+      const margin = 2 * Math.sqrt(baseline * (1 - baseline) / history.length);
 
-      const margin = 2 * Math.sqrt(
-        baseline * (1 - baseline) / history.length
-      );
-
-      // A historical-frequency filter, not a reliable prediction.
-      if (
-        probability >= 0.60 &&
-        probability > baseline + margin
-      ) {
+      // Historical-frequency filter only; it does not establish a predictive edge.
+      if (probability >= 0.60 && probability > baseline + margin) {
         candidates.push({
           symbol: option.symbol,
           type: option.type,
-          conf: probability * 100,
-          baseline: 50
+          conf: probability * 100
         });
       }
     });
@@ -952,135 +1003,124 @@ function getBestMarketOpportunity() {
 }
 
 function executeTrade() {
-  if (
-    !state.running ||
-    state.pendingBuy ||
-    state.awaitingResult ||
-    state.proposalPending
-  ) return;
-
+  if (!state.running || currentBatch || unknownPurchase) return;
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     state.running = false;
-    log("No live connection. Automation stopped.");
+    log("No live connection. Trading stopped.");
     return;
   }
-
-  const strategy = $("direction").value;
-  let targetSymbol = activeSymbol;
-  let contractType = strategy;
 
   const stake = Number($("stake").value);
-  const takeProfit = Number($("tp").value);
-  const stopLoss = Number($("sl").value);
-  const maxLossStreak = Number($("maxLossStreak").value);
+  const tp = Number($("tp").value);
+  const sl = Number($("sl").value);
+  const maxLoss = Number($("maxLossStreak").value);
 
   if (
-    !Number.isFinite(stake) || stake <= 0 ||
-    !Number.isFinite(takeProfit) || takeProfit <= 0 ||
-    !Number.isFinite(stopLoss) || stopLoss <= 0 ||
-    !Number.isInteger(maxLossStreak) || maxLossStreak < 1
+    !Number.isFinite(stake) || stake < 0.35 ||
+    !Number.isFinite(tp) || tp <= 0 ||
+    !Number.isFinite(sl) || sl <= 0 ||
+    !Number.isInteger(maxLoss) || maxLoss < 1
   ) {
     state.running = false;
-    log("Invalid risk settings. Check stake and risk limits.");
+    log("Invalid settings. Stake must be at least $0.35 and risk limits must be positive.");
     return;
   }
 
-  // Never increase stake to recover a loss.
-  state.nextStake = stake;
+  const plannedStake = stake * 5;
+  if (plannedStake > state.balance) {
+    state.running = false;
+    log(`Insufficient displayed balance for five stakes of ${accountCurrency} ${stake.toFixed(2)}.`);
+    return;
+  }
 
-  if (strategy === "SCANNER") {
+  let symbol = activeSymbol;
+  let type = $("direction").value;
+
+  if (type === "SCANNER") {
     const opportunity = getBestMarketOpportunity();
-
     if (!opportunity) {
       resetSignalConfirmation();
-      $("scannerStatus").textContent =
-        "Scanning EVEN/ODD signals...";
+      $("scannerStatus").textContent = "Collecting 100 ticks per market";
       return;
     }
 
-    const sameSignal =
-      opportunity.symbol === lastHoldSymbol &&
-      opportunity.type === lastHoldType;
+    const same = opportunity.symbol === lastHoldSymbol &&
+                 opportunity.type === lastHoldType;
 
-    signalHoldCounter = sameSignal
-      ? signalHoldCounter + 1
-      : 1;
-
+    signalHoldCounter = same ? signalHoldCounter + 1 : 1;
     lastHoldSymbol = opportunity.symbol;
     lastHoldType = opportunity.type;
 
     if (signalHoldCounter < 3) {
       $("scannerStatus").textContent =
-        `Confirming ${opportunity.type}: ${signalHoldCounter}/3`;
+        `Confirming ${opportunity.symbol} ${opportunity.type}: ${signalHoldCounter}/3`;
       return;
     }
 
-    targetSymbol = opportunity.symbol;
-    contractType = opportunity.type;
-
+    symbol = opportunity.symbol;
+    type = opportunity.type;
     resetSignalConfirmation();
 
-    log(
-      `Candidate: ${targetSymbol} ${contractType}; ` +
-      `historical frequency ${opportunity.conf.toFixed(1)}%, ` +
-      `baseline ${opportunity.baseline.toFixed(1)}%.`
-    );
+    log(`Signal confirmed: ${symbol} ${type}, historical frequency ${opportunity.conf.toFixed(1)}%.`);
   }
 
-  // Enforce EVEN/ODD-only contracts.
-  if (!["DIGITEVEN", "DIGITODD"].includes(contractType)) {
+  if (!symbols.includes(symbol) || !["DIGITEVEN", "DIGITODD"].includes(type)) {
     state.running = false;
-    log("Blocked unsupported strategy. EVEN/ODD only.");
+    log("Invalid market or contract type. Trading stopped.");
     return;
   }
 
-  if (!symbols.includes(targetSymbol)) {
-    state.running = false;
-    log("Invalid market selected.");
-    return;
-  }
-
-  state.pendingBuy = true;
-  state.proposalPending = true;
-
-  $("scannerStatus").textContent = "Requesting EVEN/ODD quote...";
-
-  const request = {
-    proposal: 1,
-    amount: stake,
-    basis: "stake",
-    contract_type: contractType,
-    currency: accountCurrency,
-    underlying_symbol: targetSymbol,
-    duration: 1,
-    duration_unit: "t"
+  const batch = {
+    id: ++batchSequence,
+    symbol,
+    type,
+    stake,
+    target: 5,
+    profit: 0,
+    trades: Array.from({ length: 5 }, (_, index) => ({
+      index,
+      batchId: batchSequence,
+      status: "proposal_pending",
+      proposalId: null,
+      contractId: null,
+      profit: 0
+    }))
   };
 
+  currentBatch = batch;
+  updateBatchDisplay();
+
+  $("scannerStatus").textContent = `Submitting batch ${batch.id}`;
   log(
-    `Requesting ${contractType} on ${targetSymbol}` +
-    ` | Fixed stake: ${accountCurrency} ${stake.toFixed(2)}`
+    `BATCH ${batch.id}: submitting 5 ${type} trades on ${symbol}; ` +
+    `${accountCurrency} ${stake.toFixed(2)} each; planned stake ` +
+    `${accountCurrency} ${plannedStake.toFixed(2)}.`
   );
 
-  try {
-    sendRequest(request);
+  // Submit five separate proposals rapidly for the same market and direction.
+  batch.trades.forEach(trade => {
+    try {
+      sendTracked(
+        {
+          proposal: 1,
+          amount: stake,
+          basis: "stake",
+          contract_type: type,
+          currency: accountCurrency,
+          underlying_symbol: symbol,
+          duration: 1,
+          duration_unit: "t"
+        },
+        { kind: "proposal", batchId: batch.id, tradeIndex: trade.index },
+        15000
+      );
+    } catch (error) {
+      trade.status = "failed";
+      log(`Trade ${trade.index + 1} proposal could not be sent: ${error.message}`);
+    }
+  });
 
-    state.requestTimeout = setTimeout(() => {
-      if (state.proposalPending) {
-        state.proposalPending = false;
-        state.pendingBuy = false;
-        state.running = false;
-
-        $("scannerStatus").textContent = "Quote timeout — stopped";
-        log("Proposal timed out. Automation stopped for safety.");
-      }
-    }, 15000);
-  } catch (error) {
-    state.proposalPending = false;
-    state.pendingBuy = false;
-    state.running = false;
-
-    log("Could not request proposal: " + error.message);
-  }
+  checkBatchCompletion();
 }
 
 function startTrading() {
@@ -1089,68 +1129,66 @@ function startTrading() {
     return;
   }
 
-  if (state.pendingBuy || state.awaitingResult || state.proposalPending) {
-    alert("A trade or request is still pending. Wait for it to resolve.");
+  if (unknownPurchase) {
+    alert("A purchase result is unknown. Check your Deriv account before restarting.");
     return;
   }
 
-  if (
-    state.accountType &&
-    !/demo/i.test(String(state.accountType))
-  ) {
-    const proceed = confirm(
-      "This account may be REAL. Trading can lose money. Continue only if you understand the risk."
-    );
-
-    if (!proceed) return;
+  if (state.running) {
+    alert("Automation is already running.");
+    return;
   }
 
   const stake = Number($("stake").value);
-  const takeProfit = Number($("tp").value);
-  const stopLoss = Number($("sl").value);
-  const maxLossStreak = Number($("maxLossStreak").value);
+  const tp = Number($("tp").value);
+  const sl = Number($("sl").value);
+  const maxLoss = Number($("maxLossStreak").value);
 
   if (
-    !Number.isFinite(stake) || stake <= 0 ||
-    !Number.isFinite(takeProfit) || takeProfit <= 0 ||
-    !Number.isFinite(stopLoss) || stopLoss <= 0 ||
-    !Number.isInteger(maxLossStreak) || maxLossStreak < 1
+    !Number.isFinite(stake) || stake < 0.35 ||
+    !Number.isFinite(tp) || tp <= 0 ||
+    !Number.isFinite(sl) || sl <= 0 ||
+    !Number.isInteger(maxLoss) || maxLoss < 1
   ) {
-    alert("Enter valid positive stake and risk-limit values.");
+    alert("Enter a stake of at least 0.35 and valid positive risk limits.");
     return;
   }
 
-  if (stake > state.balance) {
-    alert("Your stake is higher than the displayed account balance.");
+  if (stake * 5 > state.balance) {
+    alert("Your displayed balance does not cover five planned stakes.");
     return;
+  }
+
+  if (state.accountType && !/demo/i.test(String(state.accountType))) {
+    if (!confirm("This account may be REAL. Five trades can lose together. Continue?")) return;
   }
 
   state.running = true;
-  state.nextStake = stake;
-
   resetSignalConfirmation();
 
-  log("EVEN/ODD automation started. Fixed stake; no recovery mode.");
-  log("Scanner needs 100 ticks per market. Historical frequencies do not guarantee future results.");
+  log("Automation started: five trades per confirmed signal; fixed stake; Martingale OFF.");
+  log("Each trade will be tracked independently. Historical frequencies do not guarantee results.");
 
   $("scannerStatus").textContent = "EVEN/ODD scanner active";
   speak("Automation started.");
+
+  // If a previous batch is still settling, it is monitored first.
+  if (currentBatch) {
+    log("Existing batch is still being tracked. A new batch will not start until it finishes.");
+  }
 }
 
 function stopTrading() {
   state.running = false;
   resetSignalConfirmation();
-
-  log("Automation stopped. An already purchased contract will still be monitored.");
-  $("scannerStatus").textContent = "Automation stopped";
-
-  speak("Automation stopped.");
+  log("Stopped new trades. Any purchases already accepted will continue to be monitored.");
+  $("scannerStatus").textContent = "New trades stopped";
+  speak("New trades stopped.");
 }
 
 function renderMetrics() {
   $("profit").textContent =
-    (state.profit < 0 ? "-" : "") +
-    accountCurrency + " " +
+    (state.profit < 0 ? "-" : "") + accountCurrency + " " +
     Math.abs(state.profit).toFixed(2);
 
   $("profit").className =
@@ -1158,21 +1196,23 @@ function renderMetrics() {
     (state.profit >= 0 ? "text-emerald-400" : "text-rose-400");
 
   $("runs").textContent = state.total;
-
   $("winRate").textContent = state.total
     ? ((state.wins / state.total) * 100).toFixed(1) + "%"
     : "0%";
 }
 
 function clearMemory() {
-  if (state.running || state.pendingBuy || state.awaitingResult) {
-    alert("Stop automation and wait for any open contract to finish before clearing credentials.");
+  const unresolved = currentBatch && currentBatch.trades.some(t =>
+    ["proposal_pending", "buy_pending", "open", "unknown"].includes(t.status)
+  );
+
+  if (state.running || unresolved || unknownPurchase) {
+    alert("Stop new trades and resolve all pending or open contracts before clearing credentials.");
     return;
   }
 
   localStorage.removeItem("titan_deriv_token");
   $("apiToken").value = "";
-
   log("Saved credentials cleared.");
   speak("Credentials cleared.");
 }
