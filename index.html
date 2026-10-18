@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | Volatility Multipliers Terminal</title>
+<title>TITAN AI | Safe Volatility Multipliers Terminal</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -109,7 +109,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    VOLATILITY MULTIPLIERS TERMINAL (HIGH WIN-RATE MODE)
+    SAFE MULTIPLIERS TERMINAL (MAX x400)
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -157,7 +157,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <!-- LIVE SCANNER MATRIX -->
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between items-center">
-      <span>📡 Multi-Volatility Trend Momentum Scanner (70% Confidence Filter)</span>
+      <span>📡 Multi-Volatility Trend Momentum Scanner (Safe Caps)</span>
       <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
     </h2>
     <div class="overflow-x-auto">
@@ -206,7 +206,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
     <!-- ENTRY PARAMETERS & RISK CONTROLS -->
     <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ High Win-Rate Parameters</h2>
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Safe Multiplier Parameters</h2>
       
       <div class="grid grid-cols-2 gap-2 mb-3">
         <div>
@@ -214,12 +214,10 @@ button:disabled { opacity: .4; cursor: not-allowed; }
           <input id="stake" type="number" value="2.00" step="0.50">
         </div>
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Multiplier Leverage</label>
-          <select id="multiplierLeverage" class="bg-slate-900 border-slate-700 text-emerald-400 font-bold">
-            <option value="400" selected>x400 Multiplier</option>
-            <option value="1000">x1000 Multiplier</option>
-            <option value="2000">x2000 Multiplier</option>
-          </select>
+          <label class="text-[10px] uppercase tracking-wider text-slate-400">Leverage Cap</label>
+          <div class="bg-slate-900 border border-slate-800 text-emerald-400 font-bold text-xs p-2.5 rounded-lg mt-1">
+            🛡️ SAFE MAX (≤ x400)
+          </div>
         </div>
       </div>
 
@@ -253,7 +251,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. High Win-Rate Multipliers engine ready.</div>
+      <div>Terminal initialized. Safe Leverage Multipliers engine ready (No x1000).</div>
     </div>
   </div>
 </main>
@@ -262,6 +260,16 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 let ws = null;
 let pingInterval = null;
 const symbols = ["R_10", "R_25", "R_50", "R_75", "R_100"];
+
+// Safe multiplier caps per symbol (strictly avoiding x1000)
+const symbolMultiplierMap = {
+  "R_10": 400,
+  "R_25": 400,
+  "R_50": 300,
+  "R_75": 300,
+  "R_100": 300
+};
+
 let marketData = {};
 
 symbols.forEach(s => {
@@ -419,8 +427,8 @@ function connectWebSocket(wsUrl) {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("Authenticated WebSocket stream opened. High Win-Rate scanner active...");
-    $("scannerStatus").textContent = "Scanner Active (70% Filter)";
+    log("Authenticated WebSocket stream opened. Safe Multipliers scanner active...");
+    $("scannerStatus").textContent = "Scanner Active (Safe Caps)";
     
     symbols.forEach(sym => {
       ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
@@ -612,11 +620,13 @@ function executeTrade() {
   let targetSymbol = opp.symbol;
   let contractType = opp.type;
 
+  // Safe leverage check (Max x400, no x1000)
+  const mult = symbolMultiplierMap[targetSymbol] || 300;
+
   $("scannerStatus").textContent = `CONFIRMED SIGNAL: ${targetSymbol} (${contractType === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
   $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
 
   const stake = Number(Number($("stake").value || 2.00).toFixed(2));
-  const mult = Number($("multiplierLeverage").value || 400);
   const tpVal = Number($("tpAmount").value || 0.50);
   const slVal = Number($("slAmount").value || 0.75);
 
@@ -645,7 +655,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Volatility Multipliers high win-rate automation started.");
+  log("Volatility Multipliers safe automation started.");
   speak("Automation started.");
 }
 
