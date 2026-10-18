@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | Volatility Multipliers x500 Terminal</title>
+<title>TITAN AI | Volatility Multipliers Terminal</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -109,7 +109,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    VOLATILITY MULTIPLIERS x500 TERMINAL
+    VOLATILITY MULTIPLIERS TERMINAL
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -168,7 +168,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
             <th class="p-2">Last Quote</th>
             <th class="p-2">Bull Ticks %</th>
             <th class="p-2">Bear Ticks %</th>
-            <th class="p-2">Multiplier x500 Signal</th>
+            <th class="p-2">Multiplier Signal</th>
           </tr>
         </thead>
         <tbody id="scannerTable" class="divide-y divide-slate-800/50 font-mono">
@@ -196,7 +196,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
       <div class="space-y-2 mt-4">
         <button onclick="startTrading()" id="startBtn" class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider cursor-pointer disabled:opacity-40" disabled>
-          ▶ START MULTIPLIERS x500 AUTOMATION
+          ▶ START MULTIPLIERS AUTOMATION
         </button>
         <button onclick="stopTrading()" class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2 rounded-xl text-xs cursor-pointer">
           ■ STOP AUTOMATION
@@ -206,7 +206,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
     <!-- ENTRY PARAMETERS & RISK CONTROLS -->
     <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ x500 Risk & Target Parameters</h2>
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Multiplier Risk & Target Parameters</h2>
       
       <div class="grid grid-cols-2 gap-2 mb-3">
         <div>
@@ -215,8 +215,10 @@ button:disabled { opacity: .4; cursor: not-allowed; }
         </div>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-slate-400">Multiplier Leverage</label>
-          <select id="multiplierLeverage" disabled class="bg-slate-900 border-slate-700 text-emerald-400 font-bold cursor-not-allowed">
-            <option value="500" selected>x500 Multiplier (Fixed)</option>
+          <select id="multiplierLeverage" class="bg-slate-900 border-slate-700 text-emerald-400 font-bold">
+            <option value="400" selected>x400 Multiplier</option>
+            <option value="1000">x1000 Multiplier</option>
+            <option value="2000">x2000 Multiplier</option>
           </select>
         </div>
       </div>
@@ -251,7 +253,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Volatility Multipliers x500 engine ready.</div>
+      <div>Terminal initialized. Volatility Multipliers engine ready.</div>
     </div>
   </div>
 </main>
@@ -417,8 +419,8 @@ function connectWebSocket(wsUrl) {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("Authenticated WebSocket stream opened. Multipliers x500 scanner active...");
-    $("scannerStatus").textContent = "Scanner Active (x500 Multipliers)";
+    log("Authenticated WebSocket stream opened. Multipliers scanner active...");
+    $("scannerStatus").textContent = "Scanner Active (Multipliers Engine)";
     
     symbols.forEach(sym => {
       ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
@@ -491,7 +493,7 @@ function connectWebSocket(wsUrl) {
       $("activePositionStatus").textContent = `POSITION OPEN (ID: ${state.contractId})`;
       $("activePositionStatus").className = "text-[10px] text-emerald-400 font-bold tracking-wider mt-1 animate-pulse";
       
-      log(`✅ Multiplier Contract Active! ID: ${state.contractId} | Payout: $${data.buy.payout}`);
+      log(`✅ Multiplier Contract Active! ID: ${state.contractId}`);
       speak("Position opened.");
 
       ws.send(JSON.stringify({
@@ -613,12 +615,12 @@ function executeTrade() {
   $("scannerStatus").textContent = `CONFIRMED SIGNAL: ${targetSymbol} (${contractType === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
   $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
 
-  log(`🎯 REQUESTING PROPOSAL: ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x500) on ${targetSymbol}`);
-
   const stake = Number(Number($("stake").value || 2.00).toFixed(2));
-  const mult = 500;
+  const mult = Number($("multiplierLeverage").value || 400);
   const tpVal = Number($("tpAmount").value || 1.00);
   const slVal = Number($("slAmount").value || 0.50);
+
+  log(`🎯 REQUESTING PROPOSAL: ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x${mult}) on ${targetSymbol}`);
 
   state.pendingBuy = true;
   
@@ -643,7 +645,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Volatility Multipliers x500 automation started.");
+  log("Volatility Multipliers automation started.");
   speak("Automation started.");
 }
 
