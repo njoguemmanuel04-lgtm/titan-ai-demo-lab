@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | Pure Over 6 Scanner Terminal</title>
+<title>TITAN AI | Volatility Multipliers Terminal (x500)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -62,20 +62,18 @@ header {
   border-radius: 14px;
   padding: 16px;
 }
-.digit-box {
-  width: 90px;
-  height: 90px;
+.price-box {
+  width: 100%;
+  height: 80px;
   margin: 14px auto;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(36, 229, 154, 0.05);
-  border: 2px solid var(--green);
+  background: rgba(56, 189, 248, 0.05);
+  border: 2px solid var(--ice);
   border-radius: 20px;
-  font-size: 48px;
-  font-weight: 900;
-  color: var(--green);
-  box-shadow: 0 0 25px var(--green-glow);
+  box-shadow: 0 0 25px var(--ice-glow);
   transition: all 0.3s ease;
 }
 .scanline {
@@ -90,16 +88,6 @@ header {
 @keyframes scan {
   0% { left: -50%; }
   100% { left: 100%; }
-}
-.stat-box-hot {
-  border-color: var(--red) !important;
-  background: rgba(255, 71, 87, 0.12) !important;
-  box-shadow: 0 0 12px var(--red-glow) !important;
-}
-.stat-box-cool {
-  border-color: var(--ice) !important;
-  background: rgba(56, 189, 248, 0.12) !important;
-  box-shadow: 0 0 12px var(--ice-glow) !important;
 }
 input, select {
   width: 100%;
@@ -121,7 +109,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    PURE OVER 6 SCANNER TERMINAL
+    VOLATILITY MULTIPLIERS x500 TERMINAL
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -157,7 +145,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
       <div class="text-2xl font-black mt-1" id="profit">$0.00</div>
     </div>
     <div class="metric-card">
-      <div class="text-[10px] uppercase text-slate-400">Contracts</div>
+      <div class="text-[10px] uppercase text-slate-400">Positions</div>
       <div class="text-2xl font-black mt-1" id="runs">0</div>
     </div>
     <div class="metric-card">
@@ -169,7 +157,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <!-- LIVE SCANNER MATRIX -->
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between items-center">
-      <span>📡 Multi-Volatility Over 6 Scanner (30-Tick Window)</span>
+      <span>📡 Multi-Volatility Trend Momentum Scanner (30-Tick Vector)</span>
       <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
     </h2>
     <div class="overflow-x-auto">
@@ -177,10 +165,10 @@ button:disabled { opacity: .4; cursor: not-allowed; }
         <thead>
           <tr class="border-b border-slate-800 text-[10px] text-slate-400 uppercase">
             <th class="p-2">Market</th>
-            <th class="p-2">Last Tick</th>
-            <th class="p-2">Digit</th>
-            <th class="p-2">Over 6 %</th>
-            <th class="p-2">Signal Status</th>
+            <th class="p-2">Last Quote</th>
+            <th class="p-2">Bull Ticks %</th>
+            <th class="p-2">Bear Ticks %</th>
+            <th class="p-2">Multiplier x500 Signal</th>
           </tr>
         </thead>
         <tbody id="scannerTable" class="divide-y divide-slate-800/50 font-mono">
@@ -195,24 +183,20 @@ button:disabled { opacity: .4; cursor: not-allowed; }
     <div class="card text-center flex flex-col justify-between">
       <div class="scanline"></div>
       <div>
-        <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📊 Active Focus Stream</h2>
+        <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📊 Active Market Focus Stream</h2>
         <div class="text-[10px] uppercase text-slate-400" id="activeMarketLabel">Symbol: R_50</div>
-        <div class="digit-box" id="lastDigit">–</div>
-        <div class="text-xs text-cyan-400 mb-4" id="digitInfo">Awaiting connection...</div>
-
-        <!-- STATS PANEL -->
-        <div class="text-left mt-2">
-          <div class="flex justify-between items-center text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">
-            <span>Digit Stats (Last 30 Ticks)</span>
-            <span><b class="text-rose-400">■ Hot</b> | <b class="text-cyan-400">■ Cool</b></span>
-          </div>
-          <div class="grid grid-cols-5 gap-1.5" id="statsGrid"></div>
+        
+        <div class="price-box" id="priceContainer">
+          <div class="text-2xl font-black text-cyan-400 font-mono" id="lastQuote">–</div>
+          <div class="text-[10px] text-slate-400 font-bold tracking-wider mt-1" id="activePositionStatus">No Active Multiplier Position</div>
         </div>
+
+        <div class="text-xs text-slate-400 mb-4" id="marketInfo">Awaiting connection...</div>
       </div>
 
       <div class="space-y-2 mt-4">
         <button onclick="startTrading()" id="startBtn" class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider cursor-pointer disabled:opacity-40" disabled>
-          ▶ START OVER 6 AUTOMATION
+          ▶ START MULTIPLIERS x500 AUTOMATION
         </button>
         <button onclick="stopTrading()" class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2 rounded-xl text-xs cursor-pointer">
           ■ STOP AUTOMATION
@@ -222,33 +206,42 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
     <!-- ENTRY PARAMETERS & RISK CONTROLS -->
     <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Entry Parameters & Risk</h2>
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ x500 Risk & Target Parameters</h2>
       
-      <div class="mb-3">
-        <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
-        <select id="direction">
-          <option value="DIGITOVER">DIGITOVER — Barrier 6 (Wins on 7, 8, 9)</option>
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label class="text-[10px] uppercase tracking-wider text-slate-400">Fixed Base Stake ($)</label>
-        <input id="stake" type="number" value="2.00" step="0.01">
-        <span class="text-[10px] text-emerald-400 font-bold mt-1 block">Payout ~220% | Fixed Staking Active</span>
-      </div>
-
-      <div class="grid grid-cols-3 gap-2 mt-3">
+      <div class="grid grid-cols-2 gap-2 mb-3">
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-emerald-400">Take Profit ($)</label>
-          <input id="tp" type="number" value="5.00" class="border-emerald-500/50">
+          <label class="text-[10px] uppercase tracking-wider text-slate-400">Position Stake ($)</label>
+          <input id="stake" type="number" value="2.00" step="0.50">
         </div>
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-rose-400">Stop Loss ($)</label>
-          <input id="sl" type="number" value="20.00" class="border-rose-500/50">
+          <label class="text-[10px] uppercase tracking-wider text-slate-400">Multiplier Leverage</label>
+          <select id="multiplierLeverage" disabled class="bg-slate-900 border-slate-700 text-emerald-400 font-bold cursor-not-allowed">
+            <option value="500" selected>x500 Multiplier (Fixed)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 mt-3">
+        <div>
+          <label class="text-[10px] uppercase tracking-wider text-emerald-400">Auto Take Profit ($)</label>
+          <input id="tpAmount" type="number" value="1.00" step="0.25" class="border-emerald-500/50">
+          <span class="text-[9px] text-slate-500">Closes position at +$ profit</span>
         </div>
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-yellow-400">Max Loss Streak</label>
-          <input id="maxLossStreak" type="number" value="5" class="border-yellow-500/50">
+          <label class="text-[10px] uppercase tracking-wider text-rose-400">Auto Stop Loss ($)</label>
+          <input id="slAmount" type="number" value="0.50" step="0.25" class="border-rose-500/50">
+          <span class="text-[9px] text-slate-500">Closes position at -$ loss</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 mt-3">
+        <div>
+          <label class="text-[10px] uppercase tracking-wider text-emerald-400">Session Take Profit ($)</label>
+          <input id="tp" type="number" value="10.00" class="border-emerald-500/50">
+        </div>
+        <div>
+          <label class="text-[10px] uppercase tracking-wider text-rose-400">Session Stop Loss ($)</label>
+          <input id="sl" type="number" value="15.00" class="border-rose-500/50">
         </div>
       </div>
     </div>
@@ -258,7 +251,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Pure Over 6 high-payout engine active.</div>
+      <div>Terminal initialized. Volatility Multipliers x500 engine ready.</div>
     </div>
   </div>
 </main>
@@ -270,7 +263,7 @@ const symbols = ["R_10", "R_25", "R_50", "R_75", "R_100"];
 let marketData = {};
 
 symbols.forEach(s => {
-  marketData[s] = { history: [], quotes: [], counts: Array(10).fill(0), lastQuote: "-", lastDigit: "-" };
+  marketData[s] = { history: [], quotes: [], lastQuote: "-", direction: 0 };
 });
 
 let activeSymbol = "R_50";
@@ -291,13 +284,13 @@ let state = {
 
 let signalHoldCounter = 0;
 let lastHoldSymbol = null;
+let lastHoldType = null;
 
 const $ = id => document.getElementById(id);
 
 window.addEventListener('DOMContentLoaded', () => {
   const savedToken = localStorage.getItem('titan_deriv_token');
   if (savedToken) $("apiToken").value = savedToken;
-  buildStatsGrid();
   renderScannerTable();
 });
 
@@ -314,56 +307,38 @@ function speak(msg) {
   window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
 }
 
-function buildStatsGrid() {
-  const container = $("statsGrid");
-  container.innerHTML = "";
-  const data = marketData[activeSymbol];
-  const recentHistory = data.history.slice(-30);
-  const total = recentHistory.length || 1;
-
-  let recentCounts = Array(10).fill(0);
-  recentHistory.forEach(d => recentCounts[d]++);
-
-  const maxCount = Math.max(...recentCounts);
-  const minCount = Math.min(...recentCounts);
-
-  for (let d = 0; d <= 9; d++) {
-    const count = recentCounts[d];
-    const pct = ((count / total) * 100).toFixed(0);
-
-    let classHighlight = "";
-    let textStyle = "text-emerald-400";
-
-    if (recentHistory.length >= 10) {
-      if (count === maxCount && maxCount > minCount) {
-        classHighlight = "stat-box-hot";
-        textStyle = "text-rose-400 font-extrabold";
-      } else if (count === minCount && maxCount > minCount) {
-        classHighlight = "stat-box-cool";
-        textStyle = "text-cyan-400 font-extrabold";
-      }
-    }
-
-    const box = document.createElement("div");
-    box.className = `bg-[#030712] border border-slate-800 rounded-lg p-1.5 text-center text-[10px] transition-all duration-300 ${classHighlight}`;
-    box.innerHTML = `<span class="text-slate-400 font-bold">${d}:</span> <span class="${textStyle} font-mono">${pct}%</span>`;
-    container.appendChild(box);
-  }
-}
-
-function evaluateOver6(sym) {
+function evaluateMarketMomentum(sym) {
   const data = marketData[sym];
-  const recentHistory = data.history.slice(-30);
-  const total = recentHistory.length || 1;
+  const quotes = data.quotes.slice(-30);
 
-  if (recentHistory.length < 15) return 0;
+  if (quotes.length < 15) {
+    return { type: "NEUTRAL", conf: 0, bullPct: 0, bearPct: 0 };
+  }
 
-  let overCount = 0;
-  recentHistory.forEach(d => {
-    if (d > 6) overCount++;
-  });
+  let bullCount = 0;
+  let bearCount = 0;
 
-  return Math.round((overCount / total) * 100);
+  for (let i = 1; i < quotes.length; i++) {
+    if (quotes[i] > quotes[i - 1]) bullCount++;
+    else if (quotes[i] < quotes[i - 1]) bearCount++;
+  }
+
+  const total = quotes.length - 1;
+  const bullPct = Math.round((bullCount / total) * 100);
+  const bearPct = Math.round((bearCount / total) * 100);
+
+  let type = "NEUTRAL";
+  let conf = 0;
+
+  if (bullPct >= 60) {
+    type = "MULTUP";
+    conf = bullPct;
+  } else if (bearPct >= 60) {
+    type = "MULTDOWN";
+    conf = bearPct;
+  }
+
+  return { type, conf, bullPct, bearPct };
 }
 
 function renderScannerTable() {
@@ -372,19 +347,19 @@ function renderScannerTable() {
 
   symbols.forEach(sym => {
     const data = marketData[sym];
-    const overPct = evaluateOver6(sym);
+    const mom = evaluateMarketMomentum(sym);
 
     const tr = document.createElement("tr");
     tr.className = "hover:bg-slate-800/30 cursor-pointer";
-    tr.onclick = () => { activeSymbol = sym; buildStatsGrid(); };
+    tr.onclick = () => { activeSymbol = sym; };
     tr.innerHTML = `
       <td class="p-2 font-bold ${sym === activeSymbol ? 'text-emerald-400' : 'text-slate-300'}">${sym}</td>
-      <td class="p-2 text-slate-400">${data.lastQuote}</td>
-      <td class="p-2 text-yellow-400 font-bold">${data.lastDigit}</td>
-      <td class="p-2 text-emerald-400 font-bold">${overPct}%</td>
+      <td class="p-2 text-slate-400 font-mono">${data.lastQuote}</td>
+      <td class="p-2 text-emerald-400 font-bold">${mom.bullPct}%</td>
+      <td class="p-2 text-rose-400 font-bold">${mom.bearPct}%</td>
       <td class="p-2">
-        <span class="px-2 py-0.5 rounded text-[9px] font-bold ${overPct >= 60 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">
-          ${overPct >= 60 ? `OVER 6 READY (${overPct}%)` : "Scanning..."}
+        <span class="px-2 py-0.5 rounded text-[9px] font-bold ${mom.conf >= 60 ? (mom.type === 'MULTUP' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40') : 'bg-slate-800 text-slate-400'}">
+          ${mom.type !== "NEUTRAL" ? `${mom.type === 'MULTUP' ? 'BULL MULT (UP)' : 'BEAR MULT (DOWN)'} (${mom.conf}%)` : "Scanning..."}
         </span>
       </td>
     `;
@@ -442,15 +417,14 @@ function connectWebSocket(wsUrl) {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("Authenticated WebSocket stream opened. Pure Over 6 scanner active...");
-    $("scannerStatus").textContent = "Scanner Active (30-Tick Window)";
+    log("Authenticated WebSocket stream opened. Multipliers x500 scanner active...");
+    $("scannerStatus").textContent = "Scanner Active (x500 Multipliers)";
     
     symbols.forEach(sym => {
       ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
     });
     ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
 
-    // WebSocket Heartbeat Ping every 15 seconds
     pingInterval = setInterval(() => {
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ ping: 1 }));
@@ -470,26 +444,19 @@ function connectWebSocket(wsUrl) {
       const sym = data.tick.symbol;
       const quoteVal = Number(data.tick.quote);
       const quote = data.tick.quote.toString();
-      const digit = parseInt(quote.slice(-1));
       
       if (marketData[sym]) {
         marketData[sym].lastQuote = quote;
-        marketData[sym].lastDigit = digit;
-        marketData[sym].history.push(digit);
         marketData[sym].quotes.push(quoteVal);
-        marketData[sym].counts[digit]++;
-        if (marketData[sym].history.length > 100) {
-          let removed = marketData[sym].history.shift();
+        if (marketData[sym].quotes.length > 100) {
           marketData[sym].quotes.shift();
-          marketData[sym].counts[removed]--;
         }
       }
 
       if (sym === activeSymbol) {
-        $("lastDigit").textContent = digit;
-        $("digitInfo").textContent = `Quote: ${quote} | Symbol: ${sym}`;
+        $("lastQuote").textContent = quote;
+        $("marketInfo").textContent = `Quote: ${quote} | Symbol: ${sym}`;
         $("activeMarketLabel").textContent = `Symbol: ${sym}`;
-        buildStatsGrid();
       }
 
       renderScannerTable();
@@ -502,10 +469,9 @@ function connectWebSocket(wsUrl) {
     if (data.msg_type === "proposal" && state.pendingBuy) {
       if (data.proposal && data.proposal.id) {
         let askPrice = Number(data.proposal.ask_price || 0);
-        let maxPrice = Number((askPrice * 1.10).toFixed(2));
         ws.send(JSON.stringify({
           buy: data.proposal.id,
-          price: maxPrice
+          price: askPrice
         }));
       }
     }
@@ -514,8 +480,12 @@ function connectWebSocket(wsUrl) {
       state.pendingBuy = false;
       state.contractId = data.buy.contract_id;
       state.awaitingResult = true;
-      log(`Contract purchased! ID: ${state.contractId}`);
-      speak("Contract placed.");
+      
+      $("activePositionStatus").textContent = `POSITION OPEN (ID: ${state.contractId})`;
+      $("activePositionStatus").className = "text-[10px] text-emerald-400 font-bold tracking-wider mt-1 animate-pulse";
+      
+      log(`x500 Multiplier Position Opened! ID: ${state.contractId}`);
+      speak("Multiplier opened.");
 
       ws.send(JSON.stringify({
         proposal_open_contract: 1,
@@ -526,24 +496,32 @@ function connectWebSocket(wsUrl) {
 
     if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
       let contract = data.proposal_open_contract;
+
+      if (contract.profit !== undefined && state.awaitingResult) {
+        let currentPnl = Number(contract.profit);
+        $("activePositionStatus").textContent = `PNL: ${currentPnl >= 0 ? '+' : ''}$${currentPnl.toFixed(2)}`;
+        $("activePositionStatus").className = `text-[10px] font-bold tracking-wider mt-1 ${currentPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      }
+
       if (contract.is_sold || contract.status === "sold") {
         let p = Number(contract.profit || 0);
         state.profit += p;
         state.total++;
 
-        let maxLossStreak = Number($("maxLossStreak").value) || 5;
-
         if (p > 0) {
           state.wins++;
           state.consecutiveLosses = 0; 
-          log(`WIN! +$${p.toFixed(2)} — High payout secured.`);
+          log(`WIN! +$${p.toFixed(2)} — Target hit.`);
           speak("Win.");
         } else {
           state.losses++;
           state.consecutiveLosses++;
-          log(`LOSS! -$${Math.abs(p).toFixed(2)} (Streak: ${state.consecutiveLosses}).`);
+          log(`LOSS! -$${Math.abs(p).toFixed(2)}.`);
           speak("Loss.");
         }
+
+        $("activePositionStatus").textContent = "No Active Multiplier Position";
+        $("activePositionStatus").className = "text-[10px] text-slate-400 font-bold tracking-wider mt-1";
 
         renderMetrics();
 
@@ -552,18 +530,13 @@ function connectWebSocket(wsUrl) {
 
         if (state.profit >= tp) {
           state.running = false;
-          log(`🎯 Take Profit reached ($${state.profit.toFixed(2)}). Stopped.`);
+          log(`🎯 Session Take Profit reached ($${state.profit.toFixed(2)}). Stopped.`);
           speak("Take profit reached.");
         }
         else if (state.profit <= -sl) {
           state.running = false;
-          log(`🛑 Stop Loss hit ($${state.profit.toFixed(2)}). Stopped.`);
+          log(`🛑 Session Stop Loss hit ($${state.profit.toFixed(2)}). Stopped.`);
           speak("Stop loss hit.");
-        }
-        else if (state.consecutiveLosses >= maxLossStreak) {
-          state.running = false;
-          log(`🚨 Circuit Breaker Triggered: ${state.consecutiveLosses} consecutive losses reached.`);
-          speak("Circuit breaker triggered.");
         }
 
         state.awaitingResult = false;
@@ -585,17 +558,19 @@ function connectWebSocket(wsUrl) {
 
 function getBestMarketOpportunity() {
   let bestSymbol = null;
+  let bestType = null;
   let bestConf = 0;
 
   symbols.forEach(sym => {
-    const pct = evaluateOver6(sym);
-    if (pct > bestConf && pct >= 60) {
-      bestConf = pct;
+    const res = evaluateMarketMomentum(sym);
+    if (res.conf > bestConf && res.conf >= 60) {
+      bestConf = res.conf;
       bestSymbol = sym;
+      bestType = res.type;
     }
   });
 
-  return { symbol: bestSymbol, conf: bestConf };
+  return { symbol: bestSymbol, type: bestType, conf: bestConf };
 }
 
 function executeTrade() {
@@ -604,48 +579,55 @@ function executeTrade() {
   if (!opp.symbol || opp.conf < 60) {
     signalHoldCounter = 0;
     lastHoldSymbol = null;
-    $("scannerStatus").textContent = "Scanning... (Waiting for Over 6 >= 60%)";
+    lastHoldType = null;
+    $("scannerStatus").textContent = "Scanning... (Waiting for Momentum >= 60%)";
     $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
     return;
   }
 
-  if (opp.symbol === lastHoldSymbol) {
+  if (opp.symbol === lastHoldSymbol && opp.type === lastHoldType) {
     signalHoldCounter++;
   } else {
     signalHoldCounter = 1;
     lastHoldSymbol = opp.symbol;
+    lastHoldType = opp.type;
   }
 
   if (signalHoldCounter < 2) {
-    $("scannerStatus").textContent = `Spooling Signal (1/2): ${opp.symbol} (Over 6 @ ${opp.conf}%)`;
+    $("scannerStatus").textContent = `Spooling Signal (1/2): ${opp.symbol} (${opp.type === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
     $("scannerStatus").className = "text-cyan-400 text-[10px] font-mono animate-pulse";
     return; 
   }
 
   signalHoldCounter = 0;
   let targetSymbol = opp.symbol;
+  let contractType = opp.type;
 
-  $("scannerStatus").textContent = `CONFIRMED SIGNAL: ${targetSymbol} (Over 6 @ ${opp.conf}%)`;
+  $("scannerStatus").textContent = `CONFIRMED SIGNAL: ${targetSymbol} (${contractType === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
   $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
 
-  log(`🎯 CONFIRMED OVER 6 SIGNAL (2/2 Ticks) on ${targetSymbol} (${opp.conf}% Confidence)`);
+  log(`🎯 CONFIRMED x500 MULTIPLIER SIGNAL (2/2 Ticks) on ${targetSymbol} (${opp.conf}% Confidence)`);
 
   const stake = Number(Number($("stake").value || 2.00).toFixed(2));
+  const mult = 500;
+  const tpVal = Number($("tpAmount").value || 1.00);
+  const slVal = Number($("slAmount").value || 0.50);
+
   state.pendingBuy = true;
   
   let req = {
     proposal: 1,
     amount: stake,
     basis: "stake",
-    contract_type: "DIGITOVER",
+    contract_type: contractType,
     currency: "USD",
     underlying_symbol: targetSymbol,
-    duration: 5,
-    duration_unit: "t",
-    barrier: "6"
+    multiplier: mult,
+    take_profit: tpVal,
+    stop_loss: slVal
   };
 
-  log(`Executing DIGITOVER 6 on ${targetSymbol} | Fixed Stake: $${stake}`);
+  log(`Executing Multiplier ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x500) on ${targetSymbol} | Stake: $${stake}`);
   ws.send(JSON.stringify(req));
 }
 
@@ -653,7 +635,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Pure Over 6 automation started.");
+  log("Volatility Multipliers x500 automation started.");
   speak("Automation started.");
 }
 
