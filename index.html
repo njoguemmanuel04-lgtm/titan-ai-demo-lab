@@ -435,6 +435,13 @@ function connectWebSocket(wsUrl) {
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
 
+    if (data.error) {
+      log(`Deriv API Error: ${data.error.message}`);
+      state.pendingBuy = false;
+      state.awaitingResult = false;
+      return;
+    }
+
     if (data.msg_type === "balance" && data.balance) {
       state.balance = Number(data.balance.balance);
       $("balance").textContent = "$" + state.balance.toFixed(2);
@@ -623,8 +630,10 @@ function executeTrade() {
     currency: "USD",
     underlying_symbol: targetSymbol,
     multiplier: mult,
-    take_profit: tpVal,
-    stop_loss: slVal
+    limit_order: {
+      take_profit: tpVal,
+      stop_loss: slVal
+    }
   };
 
   log(`Executing Multiplier ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x500) on ${targetSymbol} | Stake: $${stake}`);
