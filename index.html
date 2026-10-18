@@ -109,7 +109,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    VOLATILITY MULTIPLIERS TERMINAL
+    VOLATILITY MULTIPLIERS TERMINAL (HIGH WIN-RATE MODE)
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -157,7 +157,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <!-- LIVE SCANNER MATRIX -->
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between items-center">
-      <span>📡 Multi-Volatility Trend Momentum Scanner (30-Tick Vector)</span>
+      <span>📡 Multi-Volatility Trend Momentum Scanner (70% Confidence Filter)</span>
       <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
     </h2>
     <div class="overflow-x-auto">
@@ -206,7 +206,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
     <!-- ENTRY PARAMETERS & RISK CONTROLS -->
     <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Multiplier Risk & Target Parameters</h2>
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ High Win-Rate Parameters</h2>
       
       <div class="grid grid-cols-2 gap-2 mb-3">
         <div>
@@ -226,13 +226,13 @@ button:disabled { opacity: .4; cursor: not-allowed; }
       <div class="grid grid-cols-2 gap-2 mt-3">
         <div>
           <label class="text-[10px] uppercase tracking-wider text-emerald-400">Auto Take Profit ($)</label>
-          <input id="tpAmount" type="number" value="1.00" step="0.25" class="border-emerald-500/50">
-          <span class="text-[9px] text-slate-500">Closes position at +$ profit</span>
+          <input id="tpAmount" type="number" value="0.50" step="0.10" class="border-emerald-500/50">
+          <span class="text-[9px] text-slate-500">Quick-hit profit target</span>
         </div>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-rose-400">Auto Stop Loss ($)</label>
-          <input id="slAmount" type="number" value="0.50" step="0.25" class="border-rose-500/50">
-          <span class="text-[9px] text-slate-500">Closes position at -$ loss</span>
+          <input id="slAmount" type="number" value="0.75" step="0.25" class="border-rose-500/50">
+          <span class="text-[9px] text-slate-500">Downside risk protection</span>
         </div>
       </div>
 
@@ -253,7 +253,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Volatility Multipliers engine ready.</div>
+      <div>Terminal initialized. High Win-Rate Multipliers engine ready.</div>
     </div>
   </div>
 </main>
@@ -332,10 +332,10 @@ function evaluateMarketMomentum(sym) {
   let type = "NEUTRAL";
   let conf = 0;
 
-  if (bullPct >= 60) {
+  if (bullPct >= 70) {
     type = "MULTUP";
     conf = bullPct;
-  } else if (bearPct >= 60) {
+  } else if (bearPct >= 70) {
     type = "MULTDOWN";
     conf = bearPct;
   }
@@ -360,7 +360,7 @@ function renderScannerTable() {
       <td class="p-2 text-emerald-400 font-bold">${mom.bullPct}%</td>
       <td class="p-2 text-rose-400 font-bold">${mom.bearPct}%</td>
       <td class="p-2">
-        <span class="px-2 py-0.5 rounded text-[9px] font-bold ${mom.conf >= 60 ? (mom.type === 'MULTUP' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40') : 'bg-slate-800 text-slate-400'}">
+        <span class="px-2 py-0.5 rounded text-[9px] font-bold ${mom.conf >= 70 ? (mom.type === 'MULTUP' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40') : 'bg-slate-800 text-slate-400'}">
           ${mom.type !== "NEUTRAL" ? `${mom.type === 'MULTUP' ? 'BULL MULT (UP)' : 'BEAR MULT (DOWN)'} (${mom.conf}%)` : "Scanning..."}
         </span>
       </td>
@@ -419,8 +419,8 @@ function connectWebSocket(wsUrl) {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("Authenticated WebSocket stream opened. Multipliers scanner active...");
-    $("scannerStatus").textContent = "Scanner Active (Multipliers Engine)";
+    log("Authenticated WebSocket stream opened. High Win-Rate scanner active...");
+    $("scannerStatus").textContent = "Scanner Active (70% Filter)";
     
     symbols.forEach(sym => {
       ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
@@ -572,7 +572,7 @@ function getBestMarketOpportunity() {
 
   symbols.forEach(sym => {
     const res = evaluateMarketMomentum(sym);
-    if (res.conf > bestConf && res.conf >= 60) {
+    if (res.conf > bestConf && res.conf >= 70) {
       bestConf = res.conf;
       bestSymbol = sym;
       bestType = res.type;
@@ -585,11 +585,11 @@ function getBestMarketOpportunity() {
 function executeTrade() {
   let opp = getBestMarketOpportunity();
   
-  if (!opp.symbol || opp.conf < 60) {
+  if (!opp.symbol || opp.conf < 70) {
     signalHoldCounter = 0;
     lastHoldSymbol = null;
     lastHoldType = null;
-    $("scannerStatus").textContent = "Scanning... (Waiting for Momentum >= 60%)";
+    $("scannerStatus").textContent = "Scanning... (Waiting for Momentum >= 70%)";
     $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
     return;
   }
@@ -602,8 +602,8 @@ function executeTrade() {
     lastHoldType = opp.type;
   }
 
-  if (signalHoldCounter < 2) {
-    $("scannerStatus").textContent = `Spooling Signal (1/2): ${opp.symbol} (${opp.type === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
+  if (signalHoldCounter < 3) {
+    $("scannerStatus").textContent = `Spooling Signal (${signalHoldCounter}/3 Ticks): ${opp.symbol} (${opp.type === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
     $("scannerStatus").className = "text-cyan-400 text-[10px] font-mono animate-pulse";
     return; 
   }
@@ -617,10 +617,10 @@ function executeTrade() {
 
   const stake = Number(Number($("stake").value || 2.00).toFixed(2));
   const mult = Number($("multiplierLeverage").value || 400);
-  const tpVal = Number($("tpAmount").value || 1.00);
-  const slVal = Number($("slAmount").value || 0.50);
+  const tpVal = Number($("tpAmount").value || 0.50);
+  const slVal = Number($("slAmount").value || 0.75);
 
-  log(`🎯 REQUESTING PROPOSAL: ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x${mult}) on ${targetSymbol}`);
+  log(`🎯 REQUESTING PROPOSAL: ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x${mult}) on ${targetSymbol} | TP: $${tpVal}`);
 
   state.pendingBuy = true;
   
@@ -645,7 +645,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  log("Volatility Multipliers automation started.");
+  log("Volatility Multipliers high win-rate automation started.");
   speak("Automation started.");
 }
 
