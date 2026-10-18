@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | Safe Volatility Multipliers Terminal</title>
+<title>TITAN AI | EMA Multipliers Terminal (3:1 RR)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -109,7 +109,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    SAFE MULTIPLIERS TERMINAL (MAX x400)
+    EMA MULTIPLIERS TERMINAL ($3 TP / $1 SL)
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -157,7 +157,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <!-- LIVE SCANNER MATRIX -->
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between items-center">
-      <span>📡 Multi-Volatility Trend Momentum Scanner (Safe Caps)</span>
+      <span>📡 EMA Trend Momentum Scanner (70% Confidence)</span>
       <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
     </h2>
     <div class="overflow-x-auto">
@@ -168,7 +168,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
             <th class="p-2">Last Quote</th>
             <th class="p-2">Bull Ticks %</th>
             <th class="p-2">Bear Ticks %</th>
-            <th class="p-2">Multiplier Signal</th>
+            <th class="p-2">EMA Filter Signal</th>
           </tr>
         </thead>
         <tbody id="scannerTable" class="divide-y divide-slate-800/50 font-mono">
@@ -206,17 +206,17 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
     <!-- ENTRY PARAMETERS & RISK CONTROLS -->
     <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Safe Multiplier Parameters</h2>
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ 3:1 Risk/Reward Parameters</h2>
       
       <div class="grid grid-cols-2 gap-2 mb-3">
         <div>
           <label class="text-[10px] uppercase tracking-wider text-slate-400">Position Stake ($)</label>
-          <input id="stake" type="number" value="2.00" step="0.50">
+          <input id="stake" type="number" value="1.00" step="0.50">
         </div>
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Leverage Cap</label>
+          <label class="text-[10px] uppercase tracking-wider text-slate-400">Leverage Protection</label>
           <div class="bg-slate-900 border border-slate-800 text-emerald-400 font-bold text-xs p-2.5 rounded-lg mt-1">
-            🛡️ SAFE MAX (≤ x400)
+            🛡️ SAFE SYMBOL ROUTING
           </div>
         </div>
       </div>
@@ -224,20 +224,20 @@ button:disabled { opacity: .4; cursor: not-allowed; }
       <div class="grid grid-cols-2 gap-2 mt-3">
         <div>
           <label class="text-[10px] uppercase tracking-wider text-emerald-400">Auto Take Profit ($)</label>
-          <input id="tpAmount" type="number" value="0.50" step="0.10" class="border-emerald-500/50">
-          <span class="text-[9px] text-slate-500">Quick-hit profit target</span>
+          <input id="tpAmount" type="number" value="3.00" step="0.50" class="border-emerald-500/50">
+          <span class="text-[9px] text-slate-500">Target reward (+3x)</span>
         </div>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-rose-400">Auto Stop Loss ($)</label>
-          <input id="slAmount" type="number" value="0.75" step="0.25" class="border-rose-500/50">
-          <span class="text-[9px] text-slate-500">Downside risk protection</span>
+          <input id="slAmount" type="number" value="1.00" step="0.25" class="border-rose-500/50">
+          <span class="text-[9px] text-slate-500">Max risk threshold (-1x)</span>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-2 mt-3">
         <div>
           <label class="text-[10px] uppercase tracking-wider text-emerald-400">Session Take Profit ($)</label>
-          <input id="tp" type="number" value="10.00" class="border-emerald-500/50">
+          <input id="tp" type="number" value="9.00" class="border-emerald-500/50">
         </div>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-rose-400">Session Stop Loss ($)</label>
@@ -251,7 +251,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Safe Leverage Multipliers engine ready (No x1000).</div>
+      <div>Terminal initialized. EMA + 3:1 Risk Profile ready.</div>
     </div>
   </div>
 </main>
@@ -261,7 +261,6 @@ let ws = null;
 let pingInterval = null;
 const symbols = ["R_10", "R_25", "R_50", "R_75", "R_100"];
 
-// Safe multiplier caps per symbol (strictly avoiding x1000)
 const symbolMultiplierMap = {
   "R_10": 400,
   "R_25": 400,
@@ -271,20 +270,17 @@ const symbolMultiplierMap = {
 };
 
 let marketData = {};
-
 symbols.forEach(s => {
-  marketData[s] = { history: [], quotes: [], lastQuote: "-", direction: 0 };
+  marketData[s] = { quotes: [], lastQuote: "-" };
 });
 
 let activeSymbol = "R_50";
-
 let state = {
   balance: 0,
   startingBalance: 0,
   total: 0,
   wins: 0,
   losses: 0,
-  consecutiveLosses: 0,
   running: false,
   pendingBuy: false,
   awaitingResult: false,
@@ -305,8 +301,8 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function log(msg) {
-  const line = document.createElement("div");
-  line.textContent = new Date().toLocaleTimeString() + " — " + msg;
+  let line = document.createElement("div");
+  line.textContent = "[" + new Date().toLocaleTimeString() + "] " + msg;
   $("log").prepend(line);
   while ($("log").children.length > 50) $("log").lastElementChild.remove();
 }
@@ -317,17 +313,24 @@ function speak(msg) {
   window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
 }
 
-function evaluateMarketMomentum(sym) {
-  const data = marketData[sym];
-  const quotes = data.quotes.slice(-30);
+function calcEMA(arr, length) {
+  if (arr.length < length) return arr[arr.length - 1] || 0;
+  let k = 2 / (length + 1);
+  let ema = arr.slice(0, length).reduce((a, b) => a + b, 0) / length;
+  for (let i = length; i < arr.length; i++) {
+    ema = arr[i] * k + ema * (1 - k);
+  }
+  return ema;
+}
 
+function evaluateMarketMomentum(sym) {
+  const quotes = marketData[sym].quotes.slice(-30);
   if (quotes.length < 15) {
     return { type: "NEUTRAL", conf: 0, bullPct: 0, bearPct: 0 };
   }
 
   let bullCount = 0;
   let bearCount = 0;
-
   for (let i = 1; i < quotes.length; i++) {
     if (quotes[i] > quotes[i - 1]) bullCount++;
     else if (quotes[i] < quotes[i - 1]) bearCount++;
@@ -337,13 +340,16 @@ function evaluateMarketMomentum(sym) {
   const bullPct = Math.round((bullCount / total) * 100);
   const bearPct = Math.round((bearCount / total) * 100);
 
+  let ema = calcEMA(quotes, 20);
+  let last = quotes[quotes.length - 1];
+
   let type = "NEUTRAL";
   let conf = 0;
 
-  if (bullPct >= 70) {
+  if (bullPct >= 70 && last > ema) {
     type = "MULTUP";
     conf = bullPct;
-  } else if (bearPct >= 70) {
+  } else if (bearPct >= 70 && last < ema) {
     type = "MULTDOWN";
     conf = bearPct;
   }
@@ -369,7 +375,7 @@ function renderScannerTable() {
       <td class="p-2 text-rose-400 font-bold">${mom.bearPct}%</td>
       <td class="p-2">
         <span class="px-2 py-0.5 rounded text-[9px] font-bold ${mom.conf >= 70 ? (mom.type === 'MULTUP' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40') : 'bg-slate-800 text-slate-400'}">
-          ${mom.type !== "NEUTRAL" ? `${mom.type === 'MULTUP' ? 'BULL MULT (UP)' : 'BEAR MULT (DOWN)'} (${mom.conf}%)` : "Scanning..."}
+          ${mom.type !== "NEUTRAL" ? `${mom.type === 'MULTUP' ? 'EMA BULL (UP)' : 'EMA BEAR (DOWN)'} (${mom.conf}%)` : "Scanning..."}
         </span>
       </td>
     `;
@@ -427,8 +433,8 @@ function connectWebSocket(wsUrl) {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("Authenticated WebSocket stream opened. Safe Multipliers scanner active...");
-    $("scannerStatus").textContent = "Scanner Active (Safe Caps)";
+    log("Authenticated WebSocket stream opened. Scanner active...");
+    $("scannerStatus").textContent = "Scanner Active (EMA + 70% Filter)";
     
     symbols.forEach(sym => {
       ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
@@ -485,10 +491,12 @@ function connectWebSocket(wsUrl) {
 
     if (data.msg_type === "proposal" && state.pendingBuy) {
       if (data.proposal && data.proposal.id) {
-        log(`Proposal received (ID: ${data.proposal.id.slice(0, 8)}...). Executing Buy order...`);
+        let askPrice = Number(data.proposal.ask_price || 1.00);
+        let maxPrice = Number((askPrice * 1.10).toFixed(2));
+        log(`Proposal received. Executing Buy order (Max: $${maxPrice})...`);
         ws.send(JSON.stringify({
           buy: data.proposal.id,
-          price: Number(data.proposal.ask_price || 2.00)
+          price: maxPrice
         }));
       }
     }
@@ -527,12 +535,10 @@ function connectWebSocket(wsUrl) {
 
         if (p > 0) {
           state.wins++;
-          state.consecutiveLosses = 0; 
           log(`🎯 WIN! Position closed with +$${p.toFixed(2)} profit.`);
           speak("Win.");
         } else {
           state.losses++;
-          state.consecutiveLosses++;
           log(`🛑 LOSS! Position closed at -$${Math.abs(p).toFixed(2)}.`);
           speak("Loss.");
         }
@@ -597,7 +603,7 @@ function executeTrade() {
     signalHoldCounter = 0;
     lastHoldSymbol = null;
     lastHoldType = null;
-    $("scannerStatus").textContent = "Scanning... (Waiting for Momentum >= 70%)";
+    $("scannerStatus").textContent = "Scanning... (Waiting for EMA Trend + 70% Conf)";
     $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
     return;
   }
@@ -620,17 +626,16 @@ function executeTrade() {
   let targetSymbol = opp.symbol;
   let contractType = opp.type;
 
-  // Safe leverage check (Max x400, no x1000)
   const mult = symbolMultiplierMap[targetSymbol] || 300;
 
-  $("scannerStatus").textContent = `CONFIRMED SIGNAL: ${targetSymbol} (${contractType === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
+  $("scannerStatus").textContent = `CONFIRMED EMA SIGNAL: ${targetSymbol} (${contractType === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
   $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
 
-  const stake = Number(Number($("stake").value || 2.00).toFixed(2));
-  const tpVal = Number($("tpAmount").value || 0.50);
-  const slVal = Number($("slAmount").value || 0.75);
+  const stake = Number(Number($("stake").value || 1.00).toFixed(2));
+  const tpVal = Number($("tpAmount").value || 3.00);
+  const slVal = Number($("slAmount").value || 1.00);
 
-  log(`🎯 REQUESTING PROPOSAL: ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x${mult}) on ${targetSymbol} | TP: $${tpVal}`);
+  log(`🎯 REQUESTING PROPOSAL: ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x${mult}) on ${targetSymbol} | TP: $${tpVal} | SL: $${slVal}`);
 
   state.pendingBuy = true;
   
@@ -654,8 +659,7 @@ function executeTrade() {
 function startTrading() {
   if (!ws) return;
   state.running = true;
-  state.consecutiveLosses = 0;
-  log("Volatility Multipliers safe automation started.");
+  log("EMA Multipliers automation started.");
   speak("Automation started.");
 }
 
