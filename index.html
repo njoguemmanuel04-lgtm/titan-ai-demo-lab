@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | 1-Tick Reversal Over/Under Terminal</title>
+<title>TITAN AI | Pure Over 5 / Under 5 Terminal</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -121,7 +121,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    1-TICK REVERSAL OVER/UNDER TERMINAL
+    PURE OVER 5 / UNDER 5 TERMINAL (FIXED STAKE)
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -169,7 +169,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <!-- LIVE SCANNER MATRIX -->
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between items-center">
-      <span>📡 Multi-Volatility 1-Tick Scanner (30-Tick Window)</span>
+      <span>📡 Multi-Volatility Over 5 / Under 5 Scanner (30-Tick Window)</span>
       <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
     </h2>
     <div class="overflow-x-auto">
@@ -213,7 +213,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
       <div class="space-y-2 mt-4">
         <button onclick="startTrading()" id="startBtn" class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider cursor-pointer disabled:opacity-40" disabled>
-          ▶ START 1-TICK REVERSAL AUTOMATION
+          ▶ START OVER 5 / UNDER 5 AUTOMATION
         </button>
         <button onclick="stopTrading()" class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2 rounded-xl text-xs cursor-pointer">
           ■ STOP AUTOMATION
@@ -226,16 +226,16 @@ button:disabled { opacity: .4; cursor: not-allowed; }
       <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Entry Parameters & Risk</h2>
       
       <div class="mb-3">
-        <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Mode</label>
+        <label class="text-[10px] uppercase tracking-wider text-slate-400">Execution Strategy</label>
         <select id="direction">
-          <option value="REVERSAL">1-Tick Reversal Mode (Flips direction on loss)</option>
+          <option value="SCANNER">Auto-Select Best Signal: Over 5 or Under 5 (&gt;= 60%)</option>
         </select>
       </div>
 
       <div class="mb-3">
         <label class="text-[10px] uppercase tracking-wider text-slate-400">Fixed Stake ($)</label>
         <input id="stake" type="number" value="2.00" step="0.01">
-        <span class="text-[10px] text-cyan-400 font-bold mt-1 block">Duration: 1 Tick | Zero Martingale</span>
+        <span class="text-[10px] text-emerald-400 font-bold mt-1 block">Martingale Disabled (Flat Staking)</span>
       </div>
 
       <div class="grid grid-cols-3 gap-2 mt-3">
@@ -259,7 +259,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. 1-Tick Reversal engine active.</div>
+      <div>Terminal initialized. Pure Over 5 / Under 5 engine active (Fixed stake, No Martingale).</div>
     </div>
   </div>
 </main>
@@ -283,7 +283,6 @@ let state = {
   wins: 0,
   losses: 0,
   consecutiveLosses: 0,
-  forcedDirection: null, // Flips on loss: 'DIGITOVER' or 'DIGITUNDER'
   running: false,
   pendingBuy: false,
   awaitingResult: false,
@@ -465,8 +464,8 @@ function connectWebSocket(wsUrl) {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("Authenticated WebSocket stream opened. 1-Tick Reversal scanner active...");
-    $("scannerStatus").textContent = "Scanner Active (1-Tick Reversal)";
+    log("Authenticated WebSocket stream opened. Over 5 / Under 5 scanner active...");
+    $("scannerStatus").textContent = "Scanner Active (30-Tick Window)";
     
     symbols.forEach(sym => {
       ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
@@ -536,7 +535,7 @@ function connectWebSocket(wsUrl) {
       state.pendingBuy = false;
       state.contractId = data.buy.contract_id;
       state.awaitingResult = true;
-      log(`1-Tick Contract purchased! ID: ${state.contractId}`);
+      log(`Contract purchased! ID: ${state.contractId}`);
       speak("Contract placed.");
 
       ws.send(JSON.stringify({
@@ -558,22 +557,12 @@ function connectWebSocket(wsUrl) {
         if (p > 0) {
           state.wins++;
           state.consecutiveLosses = 0; 
-          // Reset forced direction on win to let scanner take over again
-          state.forcedDirection = null;
-          log(`WIN! +$${p.toFixed(2)}. Reversal state reset.`);
+          log(`WIN! +$${p.toFixed(2)}.`);
           speak("Win.");
         } else {
           state.losses++;
           state.consecutiveLosses++;
-          
-          // REVERSAL LOGIC: Flip direction immediately on loss
-          if (state.forcedDirection === 'DIGITOVER') {
-            state.forcedDirection = 'DIGITUNDER';
-          } else {
-            state.forcedDirection = 'DIGITOVER';
-          }
-
-          log(`LOSS! -$${Math.abs(p).toFixed(2)}. Flipped recovery direction to: ${state.forcedDirection === 'DIGITOVER' ? 'Over 5' : 'Under 5'}`);
+          log(`LOSS! -$${Math.abs(p).toFixed(2)} (Streak: ${state.consecutiveLosses}).`);
           speak("Loss.");
         }
 
@@ -633,50 +622,39 @@ function getBestMarketOpportunity() {
 }
 
 function executeTrade() {
-  let targetSymbol = activeSymbol;
-  let contractType = null;
-
-  // If we are in a loss reversal streak, maintain the active market but flip the contract type
-  if (state.forcedDirection) {
-    contractType = state.forcedDirection;
-    $("scannerStatus").textContent = `REVERSAL RECOVERY: Fired ${contractType === 'DIGITOVER' ? 'Over 5' : 'Under 5'}`;
-    $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
-  } else {
-    let opp = getBestMarketOpportunity();
-    if (!opp.symbol || opp.conf < 60) {
-      signalHoldCounter = 0;
-      lastHoldSymbol = null;
-      lastHoldType = null;
-      $("scannerStatus").textContent = "Scanning... (Waiting for Signal >= 60%)";
-      $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
-      return;
-    }
-
-    if (opp.symbol === lastHoldSymbol && opp.type === lastHoldType) {
-      signalHoldCounter++;
-    } else {
-      signalHoldCounter = 1;
-      lastHoldSymbol = opp.symbol;
-      lastHoldType = opp.type;
-    }
-
-    if (signalHoldCounter < 2) {
-      $("scannerStatus").textContent = `Spooling Signal (1/2): ${opp.symbol} (${opp.type === 'DIGITOVER' ? 'Over 5' : 'Under 5'} @ ${opp.conf}%)`;
-      $("scannerStatus").className = "text-cyan-400 text-[10px] font-mono animate-pulse";
-      return; 
-    }
-
+  let opp = getBestMarketOpportunity();
+  
+  if (!opp.symbol || opp.conf < 60) {
     signalHoldCounter = 0;
-    targetSymbol = opp.symbol;
-    contractType = opp.type;
-    activeSymbol = targetSymbol;
-
-    // Set initial reversal state for future losses
-    state.forcedDirection = contractType;
-
-    $("scannerStatus").textContent = `CONFIRMED SIGNAL: ${targetSymbol} (${contractType === 'DIGITOVER' ? 'Over 5' : 'Under 5'} @ ${opp.conf}%)`;
-    $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
+    lastHoldSymbol = null;
+    lastHoldType = null;
+    $("scannerStatus").textContent = "Scanning... (Waiting for Signal >= 60%)";
+    $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
+    return;
   }
+
+  if (opp.symbol === lastHoldSymbol && opp.type === lastHoldType) {
+    signalHoldCounter++;
+  } else {
+    signalHoldCounter = 1;
+    lastHoldSymbol = opp.symbol;
+    lastHoldType = opp.type;
+  }
+
+  if (signalHoldCounter < 2) {
+    $("scannerStatus").textContent = `Spooling Signal (1/2): ${opp.symbol} (${opp.type === 'DIGITOVER' ? 'Over 5' : 'Under 5'} @ ${opp.conf}%)`;
+    $("scannerStatus").className = "text-cyan-400 text-[10px] font-mono animate-pulse";
+    return; 
+  }
+
+  signalHoldCounter = 0;
+  let targetSymbol = opp.symbol;
+  let contractType = opp.type;
+
+  $("scannerStatus").textContent = `CONFIRMED SIGNAL: ${targetSymbol} (${contractType === 'DIGITOVER' ? 'Over 5' : 'Under 5'} @ ${opp.conf}%)`;
+  $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
+
+  log(`🎯 CONFIRMED ${contractType === 'DIGITOVER' ? 'OVER 5' : 'UNDER 5'} SIGNAL (2/2 Ticks) on ${targetSymbol} (${opp.conf}% Confidence)`);
 
   const stake = Number(Number($("stake").value || 2.00).toFixed(2));
   state.pendingBuy = true;
@@ -688,12 +666,12 @@ function executeTrade() {
     contract_type: contractType,
     currency: "USD",
     underlying_symbol: targetSymbol,
-    duration: 1,
+    duration: 5,
     duration_unit: "t",
     barrier: "5"
   };
 
-  log(`Executing 1-Tick ${contractType === 'DIGITOVER' ? 'OVER 5' : 'UNDER 5'} on ${targetSymbol} | Fixed Stake: $${stake}`);
+  log(`Executing ${contractType} 5 on ${targetSymbol} | Fixed Stake: $${stake}`);
   ws.send(JSON.stringify(req));
 }
 
@@ -701,8 +679,7 @@ function startTrading() {
   if (!ws) return;
   state.running = true;
   state.consecutiveLosses = 0;
-  state.forcedDirection = null;
-  log("1-Tick Reversal automation started.");
+  log("Pure Over 5 / Under 5 automation started (Fixed Stake).");
   speak("Automation started.");
 }
 
