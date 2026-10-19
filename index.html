@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | EMA Multipliers Terminal ($0.50 TP)</title>
+<title>TITAN AI | EMA Multipliers Terminal ($0.20 TP)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -109,7 +109,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    EMA MULTIPLIERS TERMINAL ($1 STAKE / $0.50 TP)
+    EMA MULTIPLIERS TERMINAL ($1 STAKE / $0.20 TP)
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -206,7 +206,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
     <!-- ENTRY PARAMETERS & RISK CONTROLS -->
     <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ High Win-Rate Parameters</h2>
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Ultra Scalp Parameters</h2>
       
       <div class="grid grid-cols-2 gap-2 mb-3">
         <div>
@@ -224,12 +224,12 @@ button:disabled { opacity: .4; cursor: not-allowed; }
       <div class="grid grid-cols-2 gap-2 mt-3">
         <div>
           <label class="text-[10px] uppercase tracking-wider text-emerald-400">Auto Take Profit ($)</label>
-          <input id="tpAmount" type="number" value="0.50" step="0.10" class="border-emerald-500/50">
-          <span class="text-[9px] text-slate-500">Quick-hit profit target</span>
+          <input id="tpAmount" type="number" value="0.20" step="0.05" class="border-emerald-500/50">
+          <span class="text-[9px] text-slate-500">Ultra-fast scalp target</span>
         </div>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-rose-400">Auto Stop Loss ($)</label>
-          <input id="slAmount" type="number" value="0.75" step="0.25" class="border-rose-500/50">
+          <input id="slAmount" type="number" value="0.50" step="0.05" class="border-rose-500/50">
           <span class="text-[9px] text-slate-500">Max risk threshold</span>
         </div>
       </div>
@@ -251,7 +251,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Stake: $1.00 | TP: $0.50 | SL: $0.75 ready.</div>
+      <div>Terminal initialized. Stake: $1.00 | TP: $0.20 | SL: $0.50 ready.</div>
     </div>
   </div>
 </main>
@@ -609,80 +609,4 @@ function executeTrade() {
   }
 
   if (opp.symbol === lastHoldSymbol && opp.type === lastHoldType) {
-    signalHoldCounter++;
-  } else {
-    signalHoldCounter = 1;
-    lastHoldSymbol = opp.symbol;
-    lastHoldType = opp.type;
-  }
-
-  if (signalHoldCounter < 3) {
-    $("scannerStatus").textContent = `Spooling Signal (${signalHoldCounter}/3 Ticks): ${opp.symbol} (${opp.type === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
-    $("scannerStatus").className = "text-cyan-400 text-[10px] font-mono animate-pulse";
-    return; 
-  }
-
-  signalHoldCounter = 0;
-  let targetSymbol = opp.symbol;
-  let contractType = opp.type;
-
-  const mult = symbolMultiplierMap[targetSymbol] || 300;
-
-  $("scannerStatus").textContent = `CONFIRMED EMA SIGNAL: ${targetSymbol} (${contractType === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
-  $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
-
-  const stake = Number(Number($("stake").value || 1.00).toFixed(2));
-  const tpVal = Number($("tpAmount").value || 0.50);
-  const slVal = Number($("slAmount").value || 0.75);
-
-  log(`🎯 REQUESTING PROPOSAL: ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x${mult}) on ${targetSymbol} | TP: $${tpVal} | SL: $${slVal}`);
-
-  state.pendingBuy = true;
-  
-  let req = {
-    proposal: 1,
-    amount: stake,
-    basis: "stake",
-    contract_type: contractType,
-    currency: "USD",
-    underlying_symbol: targetSymbol,
-    multiplier: mult,
-    limit_order: {
-      take_profit: tpVal,
-      stop_loss: slVal
-    }
-  };
-
-  ws.send(JSON.stringify(req));
-}
-
-function startTrading() {
-  if (!ws) return;
-  state.running = true;
-  log("EMA Multipliers automation started.");
-  speak("Automation started.");
-}
-
-function stopTrading() {
-  state.running = false;
-  state.pendingBuy = false;
-  log("Automation stopped.");
-  speak("Automation stopped.");
-}
-
-function renderMetrics() {
-  $("profit").textContent = (state.profit < 0 ? "-$" : "$") + Math.abs(state.profit).toFixed(2);
-  $("profit").className = "text-2xl font-black mt-1 " + (state.profit >= 0 ? "text-emerald-400" : "text-rose-400");
-  $("runs").textContent = state.total;
-  $("winRate").textContent = state.total ? ((state.wins / state.total) * 100).toFixed(1) + "%" : "0%";
-}
-
-function clearMemory() {
-  localStorage.removeItem('titan_deriv_token');
-  $("apiToken").value = "";
-  log("Saved credentials wiped.");
-  speak("Credentials cleared.");
-}
-</script>
-</body>
-</html>
+    signal
