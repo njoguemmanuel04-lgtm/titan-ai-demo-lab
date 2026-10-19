@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | EMA Multipliers Terminal (3:1 RR)</title>
+<title>TITAN AI | EMA Multipliers Terminal ($0.50 TP)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -109,7 +109,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    EMA MULTIPLIERS TERMINAL ($3 TP / $1 SL)
+    EMA MULTIPLIERS TERMINAL ($1 STAKE / $0.50 TP)
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -206,7 +206,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
     <!-- ENTRY PARAMETERS & RISK CONTROLS -->
     <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ 3:1 Risk/Reward Parameters</h2>
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ High Win-Rate Parameters</h2>
       
       <div class="grid grid-cols-2 gap-2 mb-3">
         <div>
@@ -224,13 +224,13 @@ button:disabled { opacity: .4; cursor: not-allowed; }
       <div class="grid grid-cols-2 gap-2 mt-3">
         <div>
           <label class="text-[10px] uppercase tracking-wider text-emerald-400">Auto Take Profit ($)</label>
-          <input id="tpAmount" type="number" value="3.00" step="0.50" class="border-emerald-500/50">
-          <span class="text-[9px] text-slate-500">Target reward (+3x)</span>
+          <input id="tpAmount" type="number" value="0.50" step="0.10" class="border-emerald-500/50">
+          <span class="text-[9px] text-slate-500">Quick-hit profit target</span>
         </div>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-rose-400">Auto Stop Loss ($)</label>
-          <input id="slAmount" type="number" value="1.00" step="0.25" class="border-rose-500/50">
-          <span class="text-[9px] text-slate-500">Max risk threshold (-1x)</span>
+          <input id="slAmount" type="number" value="0.75" step="0.25" class="border-rose-500/50">
+          <span class="text-[9px] text-slate-500">Max risk threshold</span>
         </div>
       </div>
 
@@ -251,7 +251,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. EMA + 3:1 Risk Profile ready.</div>
+      <div>Terminal initialized. Stake: $1.00 | TP: $0.50 | SL: $0.75 ready.</div>
     </div>
   </div>
 </main>
@@ -632,8 +632,8 @@ function executeTrade() {
   $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
 
   const stake = Number(Number($("stake").value || 1.00).toFixed(2));
-  const tpVal = Number($("tpAmount").value || 3.00);
-  const slVal = Number($("slAmount").value || 1.00);
+  const tpVal = Number($("tpAmount").value || 0.50);
+  const slVal = Number($("slAmount").value || 0.75);
 
   log(`🎯 REQUESTING PROPOSAL: ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x${mult}) on ${targetSymbol} | TP: $${tpVal} | SL: $${slVal}`);
 
