@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | EMA Multipliers Terminal ($2 Stake / $0.20 TP / $1 SL)</title>
+<title>TITAN AI | EMA Multipliers Terminal (Dual Position Mode)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -109,7 +109,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    EMA MULTIPLIERS TERMINAL ($2 STAKE / $0.20 TP / $1 SL)
+    EMA MULTIPLIERS TERMINAL (DUAL POSITION MODE)
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -145,7 +145,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
       <div class="text-2xl font-black mt-1" id="profit">$0.00</div>
     </div>
     <div class="metric-card">
-      <div class="text-[10px] uppercase text-slate-400">Positions</div>
+      <div class="text-[10px] uppercase text-slate-400">Total Trades</div>
       <div class="text-2xl font-black mt-1" id="runs">0</div>
     </div>
     <div class="metric-card">
@@ -188,7 +188,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
         
         <div class="price-box" id="priceContainer">
           <div class="text-2xl font-black text-cyan-400 font-mono" id="lastQuote">–</div>
-          <div class="text-[10px] text-slate-400 font-bold tracking-wider mt-1" id="activePositionStatus">No Active Multiplier Position</div>
+          <div class="text-[10px] text-slate-400 font-bold tracking-wider mt-1" id="activePositionStatus">No Active Multiplier Positions</div>
         </div>
 
         <div class="text-xs text-slate-400 mb-4" id="marketInfo">Awaiting connection...</div>
@@ -206,7 +206,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
     <!-- ENTRY PARAMETERS & RISK CONTROLS -->
     <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ High Win-Rate Parameters</h2>
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Dual Position Parameters</h2>
       
       <div class="grid grid-cols-2 gap-2 mb-3">
         <div>
@@ -214,9 +214,9 @@ button:disabled { opacity: .4; cursor: not-allowed; }
           <input id="stake" type="number" value="2.00" step="0.50">
         </div>
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Leverage Protection</label>
+          <label class="text-[10px] uppercase tracking-wider text-slate-400">Max Open Positions</label>
           <div class="bg-slate-900 border border-slate-800 text-emerald-400 font-bold text-xs p-2.5 rounded-lg mt-1">
-            🛡️ SAFE SYMBOL ROUTING
+            ⚡ 2 CONCURRENT CONTRACTS
           </div>
         </div>
       </div>
@@ -251,7 +251,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Stake: $2.00 | TP: $0.20 | SL: $1.00 | Session TP: $2.00 ready.</div>
+      <div>Terminal initialized. Stake: $2.00 | TP: $0.20 | SL: $1.00 | Max 2 Positions ready.</div>
     </div>
   </div>
 </main>
@@ -282,12 +282,11 @@ let state = {
   wins: 0,
   losses: 0,
   running: false,
-  pendingBuy: false,
-  awaitingResult: false,
-  profit: 0,
-  contractId: null
+  pendingBuys: 0,
+  profit: 0
 };
 
+let activeContracts = []; // Stores up to 2 concurrent open positions
 let signalHoldCounter = 0;
 let lastHoldSymbol = null;
 let lastHoldType = null;
@@ -433,8 +432,8 @@ function connectWebSocket(wsUrl) {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("Authenticated WebSocket stream opened. Scanner active...");
-    $("scannerStatus").textContent = "Scanner Active (EMA + 70% Filter)";
+    log("Authenticated WebSocket stream opened. Dual position scanner active...");
+    $("scannerStatus").textContent = "Scanner Active (Max 2 Contracts)";
     
     symbols.forEach(sym => {
       ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
@@ -453,8 +452,7 @@ function connectWebSocket(wsUrl) {
 
     if (data.error) {
       log(`Deriv API Error: ${data.error.message} [${data.error.code}]`);
-      state.pendingBuy = false;
-      state.awaitingResult = false;
+      state.pendingBuys = Math.max(0, state.pendingBuys - 1);
       return;
     }
 
@@ -484,12 +482,13 @@ function connectWebSocket(wsUrl) {
 
       renderScannerTable();
 
-      if (state.running && !state.awaitingResult && !state.pendingBuy) {
+      // Check if we can open a trade (allows up to 2 active positions + pending orders < 2)
+      if (state.running && (activeContracts.length + state.pendingBuys) < 2) {
         executeTrade();
       }
     }
 
-    if (data.msg_type === "proposal" && state.pendingBuy) {
+    if (data.msg_type === "proposal") {
       if (data.proposal && data.proposal.id) {
         let askPrice = Number(data.proposal.ask_price || 2.00);
         let maxPrice = Number((askPrice * 1.10).toFixed(2));
@@ -502,30 +501,37 @@ function connectWebSocket(wsUrl) {
     }
 
     if (data.msg_type === "buy" && data.buy) {
-      state.pendingBuy = false;
-      state.contractId = data.buy.contract_id;
-      state.awaitingResult = true;
+      state.pendingBuys = Math.max(0, state.pendingBuys - 1);
+      let contractId = data.buy.contract_id;
       
-      $("activePositionStatus").textContent = `POSITION OPEN (ID: ${state.contractId})`;
+      activeContracts.push({ contractId: contractId });
+      
+      $("activePositionStatus").textContent = `ACTIVE POSITIONS: ${activeContracts.length}/2`;
       $("activePositionStatus").className = "text-[10px] text-emerald-400 font-bold tracking-wider mt-1 animate-pulse";
       
-      log(`✅ Multiplier Contract Active! ID: ${state.contractId}`);
+      log(`✅ Multiplier Contract Active! ID: ${contractId}`);
       speak("Position opened.");
 
       ws.send(JSON.stringify({
         proposal_open_contract: 1,
-        contract_id: state.contractId,
+        contract_id: contractId,
         subscribe: 1
       }));
     }
 
     if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
       let contract = data.proposal_open_contract;
+      let cid = contract.contract_id;
 
-      if (contract.profit !== undefined && state.awaitingResult) {
-        let currentPnl = Number(contract.profit);
-        $("activePositionStatus").textContent = `PNL: ${currentPnl >= 0 ? '+' : ''}$${currentPnl.toFixed(2)}`;
-        $("activePositionStatus").className = `text-[10px] font-bold tracking-wider mt-1 ${currentPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      let targetContract = activeContracts.find(c => c.contractId === cid);
+
+      if (targetContract && contract.profit !== undefined) {
+        targetContract.lastPnl = Number(contract.profit);
+        
+        // Sum total live PnL across active positions for UI display
+        let totalLivePnl = activeContracts.reduce((sum, c) => sum + (c.lastPnl || 0), 0);
+        $("activePositionStatus").textContent = `POSITIONS: ${activeContracts.length}/2 | PNL: ${totalLivePnl >= 0 ? '+' : ''}$${totalLivePnl.toFixed(2)}`;
+        $("activePositionStatus").className = `text-[10px] font-bold tracking-wider mt-1 ${totalLivePnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
       }
 
       if (contract.is_sold || contract.status === "sold") {
@@ -543,8 +549,13 @@ function connectWebSocket(wsUrl) {
           speak("Loss.");
         }
 
-        $("activePositionStatus").textContent = "No Active Multiplier Position";
-        $("activePositionStatus").className = "text-[10px] text-slate-400 font-bold tracking-wider mt-1";
+        // Remove closed contract from active array
+        activeContracts = activeContracts.filter(c => c.contractId !== cid);
+
+        if (activeContracts.length === 0) {
+          $("activePositionStatus").textContent = "No Active Multiplier Positions";
+          $("activePositionStatus").className = "text-[10px] text-slate-400 font-bold tracking-wider mt-1";
+        }
 
         renderMetrics();
 
@@ -561,9 +572,6 @@ function connectWebSocket(wsUrl) {
           log(`🛑 Session Stop Loss hit ($${state.profit.toFixed(2)}). Stopped.`);
           speak("Stop loss hit.");
         }
-
-        state.awaitingResult = false;
-        state.contractId = null;
       }
     }
   };
@@ -637,7 +645,7 @@ function executeTrade() {
 
   log(`🎯 REQUESTING PROPOSAL: ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x${mult}) on ${targetSymbol} | TP: $${tpVal} | SL: $${slVal}`);
 
-  state.pendingBuy = true;
+  state.pendingBuys++;
   
   let req = {
     proposal: 1,
@@ -659,13 +667,13 @@ function executeTrade() {
 function startTrading() {
   if (!ws) return;
   state.running = true;
-  log("EMA Multipliers automation started.");
+  log("EMA Multipliers Dual-Position automation started.");
   speak("Automation started.");
 }
 
 function stopTrading() {
   state.running = false;
-  state.pendingBuy = false;
+  state.pendingBuys = 0;
   log("Automation stopped.");
   speak("Automation stopped.");
 }
