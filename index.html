@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | EMA Multipliers Terminal ($0.20 TP / $2.00 Session TP)</title>
+<title>TITAN AI | EMA Multipliers Terminal ($2 Stake / $0.20 TP / $1 SL)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -109,7 +109,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    EMA MULTIPLIERS TERMINAL ($1 STAKE / $0.20 TP / $2 SESSION TP)
+    EMA MULTIPLIERS TERMINAL ($2 STAKE / $0.20 TP / $1 SL)
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -211,7 +211,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
       <div class="grid grid-cols-2 gap-2 mb-3">
         <div>
           <label class="text-[10px] uppercase tracking-wider text-slate-400">Position Stake ($)</label>
-          <input id="stake" type="number" value="1.00" step="0.50">
+          <input id="stake" type="number" value="2.00" step="0.50">
         </div>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-slate-400">Leverage Protection</label>
@@ -229,7 +229,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
         </div>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-rose-400">Auto Stop Loss ($)</label>
-          <input id="slAmount" type="number" value="0.75" step="0.25" class="border-rose-500/50">
+          <input id="slAmount" type="number" value="1.00" step="0.25" class="border-rose-500/50">
           <span class="text-[9px] text-slate-500">Max risk threshold</span>
         </div>
       </div>
@@ -251,7 +251,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Stake: $1.00 | TP: $0.20 | Session TP: $2.00 ready.</div>
+      <div>Terminal initialized. Stake: $2.00 | TP: $0.20 | SL: $1.00 | Session TP: $2.00 ready.</div>
     </div>
   </div>
 </main>
@@ -491,7 +491,7 @@ function connectWebSocket(wsUrl) {
 
     if (data.msg_type === "proposal" && state.pendingBuy) {
       if (data.proposal && data.proposal.id) {
-        let askPrice = Number(data.proposal.ask_price || 1.00);
+        let askPrice = Number(data.proposal.ask_price || 2.00);
         let maxPrice = Number((askPrice * 1.10).toFixed(2));
         log(`Proposal received. Executing Buy order (Max: $${maxPrice})...`);
         ws.send(JSON.stringify({
@@ -631,9 +631,9 @@ function executeTrade() {
   $("scannerStatus").textContent = `CONFIRMED EMA SIGNAL: ${targetSymbol} (${contractType === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
   $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
 
-  const stake = Number(Number($("stake").value || 1.00).toFixed(2));
+  const stake = Number(Number($("stake").value || 2.00).toFixed(2));
   const tpVal = Number($("tpAmount").value || 0.20);
-  const slVal = Number($("slAmount").value || 0.75);
+  const slVal = Number($("slAmount").value || 1.00);
 
   log(`🎯 REQUESTING PROPOSAL: ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x${mult}) on ${targetSymbol} | TP: $${tpVal} | SL: $${slVal}`);
 
