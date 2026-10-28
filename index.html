@@ -184,7 +184,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
       <div class="scanline"></div>
       <div>
         <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📊 Active Accumulator Stream</h2>
-        <div class="text-[10px] uppercase text-slate-400" id="activeMarketLabel">Symbol: R_10</div>
+        <div class="text-[10px] uppercase text-slate-400" id="activeMarketLabel">Symbol: R_50</div>
         
         <div class="price-box" id="priceContainer">
           <div class="text-2xl font-black text-cyan-400 font-mono" id="lastQuote">–</div>
@@ -291,7 +291,6 @@ symbols.forEach(s => {
 });
 
 let activeSymbol = "R_50";
-let initialStake = 2.00;
 let currentStake = 2.00;
 
 let state = {
@@ -524,7 +523,7 @@ function connectWebSocket(wsUrl, token) {
           state.wins++;
           log(`🎯 WIN! Accumulator closed with +$${p.toFixed(2)} profit.`);
           speak("Win.");
-          currentStake = Number($("stake").value || 2.00); // Reset stake after win
+          currentStake = Number($("stake").value || 2.00);
         } else {
           state.losses++;
           log(`🛑 ACCUMULATOR KNOCKOUT! Loss -$${Math.abs(p).toFixed(2)}.`);
