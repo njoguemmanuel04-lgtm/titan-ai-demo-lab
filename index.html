@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | Accumulator Terminal (CodePulse Strategy)</title>
+<title>TITAN AI | EMA Multipliers Terminal (Dual Position Mode)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -109,7 +109,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    CODEPULSE ACCUMULATORS TERMINAL
+    EMA MULTIPLIERS TERMINAL (DUAL POSITION MODE)
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -157,7 +157,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <!-- LIVE SCANNER MATRIX -->
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between items-center">
-      <span>📡 Market Warm-up Monitor</span>
+      <span>📡 EMA Trend Momentum Scanner (70% Confidence)</span>
       <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
     </h2>
     <div class="overflow-x-auto">
@@ -166,9 +166,9 @@ button:disabled { opacity: .4; cursor: not-allowed; }
           <tr class="border-b border-slate-800 text-[10px] text-slate-400 uppercase">
             <th class="p-2">Market</th>
             <th class="p-2">Last Quote</th>
-            <th class="p-2">Calibration</th>
-            <th class="p-2">Range Score (0-99)</th>
-            <th class="p-2">Accumulator Status</th>
+            <th class="p-2">Bull Ticks %</th>
+            <th class="p-2">Bear Ticks %</th>
+            <th class="p-2">EMA Filter Signal</th>
           </tr>
         </thead>
         <tbody id="scannerTable" class="divide-y divide-slate-800/50 font-mono">
@@ -183,12 +183,12 @@ button:disabled { opacity: .4; cursor: not-allowed; }
     <div class="card text-center flex flex-col justify-between">
       <div class="scanline"></div>
       <div>
-        <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📊 Active Accumulator Stream</h2>
+        <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📊 Active Market Focus Stream</h2>
         <div class="text-[10px] uppercase text-slate-400" id="activeMarketLabel">Symbol: R_50</div>
         
         <div class="price-box" id="priceContainer">
           <div class="text-2xl font-black text-cyan-400 font-mono" id="lastQuote">–</div>
-          <div class="text-[10px] text-slate-400 font-bold tracking-wider mt-1" id="activePositionStatus">No Active Positions</div>
+          <div class="text-[10px] text-slate-400 font-bold tracking-wider mt-1" id="activePositionStatus">No Active Multiplier Positions</div>
         </div>
 
         <div class="text-xs text-slate-400 mb-4" id="marketInfo">Awaiting connection...</div>
@@ -196,7 +196,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
       <div class="space-y-2 mt-4">
         <button onclick="startTrading()" id="startBtn" class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider cursor-pointer disabled:opacity-40" disabled>
-          ▶ START ACCUMULATOR STRATEGY
+          ▶ START MULTIPLIERS AUTOMATION
         </button>
         <button onclick="stopTrading()" class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2 rounded-xl text-xs cursor-pointer">
           ■ STOP AUTOMATION
@@ -206,55 +206,31 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 
     <!-- ENTRY PARAMETERS & RISK CONTROLS -->
     <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Accumulator Strategy Settings</h2>
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Dual Position Parameters</h2>
       
       <div class="grid grid-cols-2 gap-2 mb-3">
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Target Market</label>
-          <select id="marketSelect" onchange="activeSymbol = this.value">
-            <option value="R_10">Volatility 10 (1Hz)</option>
-            <option value="R_25">Volatility 25 (1Hz)</option>
-            <option value="R_50" selected>Volatility 50 (1Hz)</option>
-          </select>
+          <label class="text-[10px] uppercase tracking-wider text-slate-400">Position Stake ($)</label>
+          <input id="stake" type="number" value="2.00" step="0.50">
         </div>
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Strategy Mode</label>
-          <select id="strategyMode">
-            <option value="Conservative">Conservative</option>
-            <option value="Realistic">Realistic</option>
-            <option value="Formula" selected>Formula (IV)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2 mb-3">
-        <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Growth Rate</label>
-          <select id="growthRate">
-            <option value="0.01">1%</option>
-            <option value="0.02">2%</option>
-            <option value="0.03">3%</option>
-            <option value="0.04">4%</option>
-            <option value="0.05" selected>5%</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Martingale Recovery</label>
-          <select id="martingale">
-            <option value="On">On</option>
-            <option value="Off">Off</option>
-          </select>
+          <label class="text-[10px] uppercase tracking-wider text-slate-400">Max Open Positions</label>
+          <div class="bg-slate-900 border border-slate-800 text-emerald-400 font-bold text-xs p-2.5 rounded-lg mt-1">
+            ⚡ 2 CONCURRENT CONTRACTS
+          </div>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-2 mt-3">
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-emerald-400">Initial Stake ($)</label>
-          <input id="stake" type="number" value="2.00" step="0.50">
-        </div>
-        <div>
           <label class="text-[10px] uppercase tracking-wider text-emerald-400">Auto Take Profit ($)</label>
           <input id="tpAmount" type="number" value="0.20" step="0.05" class="border-emerald-500/50">
+          <span class="text-[9px] text-slate-500">Quick-hit profit target</span>
+        </div>
+        <div>
+          <label class="text-[10px] uppercase tracking-wider text-rose-400">Auto Stop Loss ($)</label>
+          <input id="slAmount" type="number" value="1.00" step="0.25" class="border-rose-500/50">
+          <span class="text-[9px] text-slate-500">Max risk threshold</span>
         </div>
       </div>
 
@@ -275,7 +251,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Accumulator Growth Engine ready.</div>
+      <div>Terminal initialized. Stake: $2.00 | TP: $0.20 | SL: $1.00 | Max 2 Positions ready.</div>
     </div>
   </div>
 </main>
@@ -283,16 +259,22 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <script>
 let ws = null;
 let pingInterval = null;
-const symbols = ["R_10", "R_25", "R_50"];
+const symbols = ["R_10", "R_25", "R_50", "R_75", "R_100"];
+
+const symbolMultiplierMap = {
+  "R_10": 400,
+  "R_25": 400,
+  "R_50": 300,
+  "R_75": 300,
+  "R_100": 300
+};
 
 let marketData = {};
 symbols.forEach(s => {
-  marketData[s] = { quotes: [], lastQuote: "-", ticks: [] };
+  marketData[s] = { quotes: [], lastQuote: "-" };
 });
 
 let activeSymbol = "R_50";
-let currentStake = 2.00;
-
 let state = {
   balance: 0,
   startingBalance: 0,
@@ -304,7 +286,10 @@ let state = {
   profit: 0
 };
 
-let activeContract = null;
+let activeContracts = []; // Stores up to 2 concurrent open positions
+let signalHoldCounter = 0;
+let lastHoldSymbol = null;
+let lastHoldType = null;
 
 const $ = id => document.getElementById(id);
 
@@ -327,26 +312,48 @@ function speak(msg) {
   window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
 }
 
-function evaluateAccumulatorFormula(sym) {
-  const quotes = marketData[sym].quotes.slice(-20);
-  if (quotes.length < 10) {
-    return { ready: false, score: 0, calib: `${quotes.length}/20` };
+function calcEMA(arr, length) {
+  if (arr.length < length) return arr[arr.length - 1] || 0;
+  let k = 2 / (length + 1);
+  let ema = arr.slice(0, length).reduce((a, b) => a + b, 0) / length;
+  for (let i = length; i < arr.length; i++) {
+    ema = arr[i] * k + ema * (1 - k);
+  }
+  return ema;
+}
+
+function evaluateMarketMomentum(sym) {
+  const quotes = marketData[sym].quotes.slice(-30);
+  if (quotes.length < 15) {
+    return { type: "NEUTRAL", conf: 0, bullPct: 0, bearPct: 0 };
   }
 
+  let bullCount = 0;
+  let bearCount = 0;
+  for (let i = 1; i < quotes.length; i++) {
+    if (quotes[i] > quotes[i - 1]) bullCount++;
+    else if (quotes[i] < quotes[i - 1]) bearCount++;
+  }
+
+  const total = quotes.length - 1;
+  const bullPct = Math.round((bullCount / total) * 100);
+  const bearPct = Math.round((bearCount / total) * 100);
+
+  let ema = calcEMA(quotes, 20);
   let last = quotes[quotes.length - 1];
-  let min = Math.min(...quotes);
-  let max = Math.max(...quotes);
-  let range = max - min;
-  
-  let score = range === 0 ? 50 : Math.round(((last - min) / range) * 99);
-  let mode = $("strategyMode").value;
 
-  let ready = false;
-  if (mode === "Conservative" && score >= 20 && score <= 80) ready = true;
-  else if (mode === "Realistic" && score >= 10 && score <= 90) ready = true;
-  else if (mode === "Formula" && (score <= 30 || score >= 70)) ready = true;
+  let type = "NEUTRAL";
+  let conf = 0;
 
-  return { ready, score, calib: "20/20" };
+  if (bullPct >= 70 && last > ema) {
+    type = "MULTUP";
+    conf = bullPct;
+  } else if (bearPct >= 70 && last < ema) {
+    type = "MULTDOWN";
+    conf = bearPct;
+  }
+
+  return { type, conf, bullPct, bearPct };
 }
 
 function renderScannerTable() {
@@ -355,22 +362,19 @@ function renderScannerTable() {
 
   symbols.forEach(sym => {
     const data = marketData[sym];
-    const acc = evaluateAccumulatorFormula(sym);
+    const mom = evaluateMarketMomentum(sym);
 
     const tr = document.createElement("tr");
     tr.className = "hover:bg-slate-800/30 cursor-pointer";
-    tr.onclick = () => { 
-      activeSymbol = sym; 
-      $("marketSelect").value = sym;
-    };
+    tr.onclick = () => { activeSymbol = sym; };
     tr.innerHTML = `
       <td class="p-2 font-bold ${sym === activeSymbol ? 'text-emerald-400' : 'text-slate-300'}">${sym}</td>
       <td class="p-2 text-slate-400 font-mono">${data.lastQuote}</td>
-      <td class="p-2 text-emerald-400 font-bold">${acc.calib}</td>
-      <td class="p-2 text-cyan-400 font-bold">${acc.score}</td>
+      <td class="p-2 text-emerald-400 font-bold">${mom.bullPct}%</td>
+      <td class="p-2 text-rose-400 font-bold">${mom.bearPct}%</td>
       <td class="p-2">
-        <span class="px-2 py-0.5 rounded text-[9px] font-bold ${acc.ready ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">
-          ${acc.ready ? 'ACCUMULATOR READY' : 'CALIBRATING'}
+        <span class="px-2 py-0.5 rounded text-[9px] font-bold ${mom.conf >= 70 ? (mom.type === 'MULTUP' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40') : 'bg-slate-800 text-slate-400'}">
+          ${mom.type !== "NEUTRAL" ? `${mom.type === 'MULTUP' ? 'EMA BULL (UP)' : 'EMA BEAR (DOWN)'} (${mom.conf}%)` : "Scanning..."}
         </span>
       </td>
     `;
@@ -386,29 +390,55 @@ async function connectDeriv() {
   }
 
   localStorage.setItem('titan_deriv_token', token);
-  log("Connecting to Deriv WebSocket...");
+  log("Requesting secure OTP connection via backend...");
   speak("Connecting to Deriv.");
   $("connectBtn").textContent = "CONNECTING...";
 
   try {
-    let wsUrl = "wss://ws.derivws.com/websockets/v3?app_id=1089";
-    connectWebSocket(wsUrl, token);
+    let response = await fetch("/api/deriv-auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: token })
+    });
+
+    let data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Authentication failed");
+
+    log(`Authorized account: ${data.account_id} (${data.account_type})`);
+    state.balance = data.balance;
+    state.startingBalance = data.balance;
+    
+    $("balance").textContent = "$" + Number(data.balance).toFixed(2);
+    $("connectionBadge").textContent = "● CONNECTED & AUTHORIZED";
+    $("connectionBadge").style.color = "var(--green)";
+    $("connectBtn").textContent = "CONNECTED";
+    $("startBtn").disabled = false;
+    speak("Authorized successfully.");
+
+    connectWebSocket(data.ws_url);
+
   } catch (err) {
     log("Auth Error: " + err.message);
+    alert("Connection Error: " + err.message);
     $("connectBtn").textContent = "CONNECT TO DERIV";
     speak("Connection failed.");
   }
 }
 
-function connectWebSocket(wsUrl, token) {
+function connectWebSocket(wsUrl) {
   if (ws) { try { ws.close(); } catch(e) {} }
   if (pingInterval) clearInterval(pingInterval);
 
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("WebSocket stream connected. Authorizing PAT...");
-    ws.send(JSON.stringify({ authorize: token }));
+    log("Authenticated WebSocket stream opened. Dual position scanner active...");
+    $("scannerStatus").textContent = "Scanner Active (Max 2 Contracts)";
+    
+    symbols.forEach(sym => {
+      ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
+    });
+    ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
 
     pingInterval = setInterval(() => {
       if (ws && ws.readyState === WebSocket.OPEN) {
@@ -421,26 +451,9 @@ function connectWebSocket(wsUrl, token) {
     const data = JSON.parse(event.data);
 
     if (data.error) {
-      log(`Deriv API Error: ${data.error.message}`);
-      state.pendingBuys = 0;
+      log(`Deriv API Error: ${data.error.message} [${data.error.code}]`);
+      state.pendingBuys = Math.max(0, state.pendingBuys - 1);
       return;
-    }
-
-    if (data.msg_type === "authorize") {
-      log(`Authorized: ${data.authorize.email}`);
-      state.balance = Number(data.authorize.balance);
-      state.startingBalance = state.balance;
-      $("balance").textContent = "$" + state.balance.toFixed(2);
-      $("connectionBadge").textContent = "● CONNECTED & AUTHORIZED";
-      $("connectionBadge").style.color = "var(--green)";
-      $("connectBtn").textContent = "CONNECTED";
-      $("startBtn").disabled = false;
-      speak("Authorized successfully.");
-
-      symbols.forEach(sym => {
-        ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
-      });
-      ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
     }
 
     if (data.msg_type === "balance" && data.balance) {
@@ -456,7 +469,9 @@ function connectWebSocket(wsUrl, token) {
       if (marketData[sym]) {
         marketData[sym].lastQuote = quote;
         marketData[sym].quotes.push(quoteVal);
-        if (marketData[sym].quotes.length > 50) marketData[sym].quotes.shift();
+        if (marketData[sym].quotes.length > 100) {
+          marketData[sym].quotes.shift();
+        }
       }
 
       if (sym === activeSymbol) {
@@ -467,31 +482,35 @@ function connectWebSocket(wsUrl, token) {
 
       renderScannerTable();
 
-      if (state.running && !activeContract && state.pendingBuys === 0) {
-        executeAccumulatorTrade();
+      // Check if we can open a trade (allows up to 2 active positions + pending orders < 2)
+      if (state.running && (activeContracts.length + state.pendingBuys) < 2) {
+        executeTrade();
       }
     }
 
     if (data.msg_type === "proposal") {
       if (data.proposal && data.proposal.id) {
-        log(`Proposal acquired. Buying Accumulator Contract...`);
+        let askPrice = Number(data.proposal.ask_price || 2.00);
+        let maxPrice = Number((askPrice * 1.10).toFixed(2));
+        log(`Proposal received. Executing Buy order (Max: $${maxPrice})...`);
         ws.send(JSON.stringify({
           buy: data.proposal.id,
-          price: data.proposal.ask_price
+          price: maxPrice
         }));
       }
     }
 
     if (data.msg_type === "buy" && data.buy) {
-      state.pendingBuys = 0;
+      state.pendingBuys = Math.max(0, state.pendingBuys - 1);
       let contractId = data.buy.contract_id;
-      activeContract = { contractId: contractId };
-
-      $("activePositionStatus").textContent = `ACCUMULATOR ACTIVE (ID: ${contractId})`;
+      
+      activeContracts.push({ contractId: contractId });
+      
+      $("activePositionStatus").textContent = `ACTIVE POSITIONS: ${activeContracts.length}/2`;
       $("activePositionStatus").className = "text-[10px] text-emerald-400 font-bold tracking-wider mt-1 animate-pulse";
       
-      log(`✅ Accumulator Trade Opened! Contract ID: ${contractId}`);
-      speak("Accumulator position opened.");
+      log(`✅ Multiplier Contract Active! ID: ${contractId}`);
+      speak("Position opened.");
 
       ws.send(JSON.stringify({
         proposal_open_contract: 1,
@@ -502,16 +521,17 @@ function connectWebSocket(wsUrl, token) {
 
     if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
       let contract = data.proposal_open_contract;
+      let cid = contract.contract_id;
 
-      if (activeContract && contract.profit !== undefined) {
-        let pnl = Number(contract.profit);
-        $("activePositionStatus").textContent = `ACCUMULATOR TICK RUN | PnL: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
+      let targetContract = activeContracts.find(c => c.contractId === cid);
+
+      if (targetContract && contract.profit !== undefined) {
+        targetContract.lastPnl = Number(contract.profit);
         
-        let tpVal = Number($("tpAmount").value || 0.20);
-        if (pnl >= tpVal && !contract.is_sold) {
-          log(`🎯 Auto Take Profit Triggered (+$${pnl.toFixed(2)}). Selling...`);
-          ws.send(JSON.stringify({ sell: contract.contract_id, price: 0 }));
-        }
+        // Sum total live PnL across active positions for UI display
+        let totalLivePnl = activeContracts.reduce((sum, c) => sum + (c.lastPnl || 0), 0);
+        $("activePositionStatus").textContent = `POSITIONS: ${activeContracts.length}/2 | PNL: ${totalLivePnl >= 0 ? '+' : ''}$${totalLivePnl.toFixed(2)}`;
+        $("activePositionStatus").className = `text-[10px] font-bold tracking-wider mt-1 ${totalLivePnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
       }
 
       if (contract.is_sold || contract.status === "sold") {
@@ -521,23 +541,21 @@ function connectWebSocket(wsUrl, token) {
 
         if (p > 0) {
           state.wins++;
-          log(`🎯 WIN! Accumulator closed with +$${p.toFixed(2)} profit.`);
+          log(`🎯 WIN! Position closed with +$${p.toFixed(2)} profit.`);
           speak("Win.");
-          currentStake = Number($("stake").value || 2.00);
         } else {
           state.losses++;
-          log(`🛑 ACCUMULATOR KNOCKOUT! Loss -$${Math.abs(p).toFixed(2)}.`);
+          log(`🛑 LOSS! Position closed at -$${Math.abs(p).toFixed(2)}.`);
           speak("Loss.");
-          
-          if ($("martingale").value === "On") {
-            currentStake = Number((currentStake * 2.1).toFixed(2));
-            log(`⚡ Martingale applied. Next stake: $${currentStake}`);
-          }
         }
 
-        activeContract = null;
-        $("activePositionStatus").textContent = "No Active Positions";
-        $("activePositionStatus").className = "text-[10px] text-slate-400 font-bold tracking-wider mt-1";
+        // Remove closed contract from active array
+        activeContracts = activeContracts.filter(c => c.contractId !== cid);
+
+        if (activeContracts.length === 0) {
+          $("activePositionStatus").textContent = "No Active Multiplier Positions";
+          $("activePositionStatus").className = "text-[10px] text-slate-400 font-bold tracking-wider mt-1";
+        }
 
         renderMetrics();
 
@@ -548,7 +566,8 @@ function connectWebSocket(wsUrl, token) {
           state.running = false;
           log(`🎯 Session Take Profit reached ($${state.profit.toFixed(2)}). Stopped.`);
           speak("Take profit reached.");
-        } else if (state.profit <= -sl) {
+        }
+        else if (state.profit <= -sl) {
           state.running = false;
           log(`🛑 Session Stop Loss hit ($${state.profit.toFixed(2)}). Stopped.`);
           speak("Stop loss hit.");
@@ -568,31 +587,78 @@ function connectWebSocket(wsUrl, token) {
   };
 }
 
-function executeAccumulatorTrade() {
-  let acc = evaluateAccumulatorFormula(activeSymbol);
+function getBestMarketOpportunity() {
+  let bestSymbol = null;
+  let bestType = null;
+  let bestConf = 0;
+
+  symbols.forEach(sym => {
+    const res = evaluateMarketMomentum(sym);
+    if (res.conf > bestConf && res.conf >= 70) {
+      bestConf = res.conf;
+      bestSymbol = sym;
+      bestType = res.type;
+    }
+  });
+
+  return { symbol: bestSymbol, type: bestType, conf: bestConf };
+}
+
+function executeTrade() {
+  let opp = getBestMarketOpportunity();
   
-  if (!acc.ready) {
-    $("scannerStatus").textContent = `Calibrating ${activeSymbol} (Score: ${acc.score})`;
+  if (!opp.symbol || opp.conf < 70) {
+    signalHoldCounter = 0;
+    lastHoldSymbol = null;
+    lastHoldType = null;
+    $("scannerStatus").textContent = "Scanning... (Waiting for EMA Trend + 70% Conf)";
     $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
     return;
   }
 
-  $("scannerStatus").textContent = `ACCUMULATOR SIGNAL CONFIRMED: ${activeSymbol} (Score: ${acc.score})`;
+  if (opp.symbol === lastHoldSymbol && opp.type === lastHoldType) {
+    signalHoldCounter++;
+  } else {
+    signalHoldCounter = 1;
+    lastHoldSymbol = opp.symbol;
+    lastHoldType = opp.type;
+  }
+
+  if (signalHoldCounter < 3) {
+    $("scannerStatus").textContent = `Spooling Signal (${signalHoldCounter}/3 Ticks): ${opp.symbol} (${opp.type === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
+    $("scannerStatus").className = "text-cyan-400 text-[10px] font-mono animate-pulse";
+    return; 
+  }
+
+  signalHoldCounter = 0;
+  let targetSymbol = opp.symbol;
+  let contractType = opp.type;
+
+  const mult = symbolMultiplierMap[targetSymbol] || 300;
+
+  $("scannerStatus").textContent = `CONFIRMED EMA SIGNAL: ${targetSymbol} (${contractType === 'MULTUP' ? 'UP' : 'DOWN'} @ ${opp.conf}%)`;
   $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
 
-  let growthRate = Number($("growthRate").value);
-  log(`🎯 REQUESTING ACCUMULATOR PROPOSAL: ${activeSymbol} | Growth: ${growthRate * 100}% | Stake: $${currentStake}`);
+  const stake = Number(Number($("stake").value || 2.00).toFixed(2));
+  const tpVal = Number($("tpAmount").value || 0.20);
+  const slVal = Number($("slAmount").value || 1.00);
 
-  state.pendingBuys = 1;
+  log(`🎯 REQUESTING PROPOSAL: ${contractType === 'MULTUP' ? 'UP' : 'DOWN'} (x${mult}) on ${targetSymbol} | TP: $${tpVal} | SL: $${slVal}`);
 
+  state.pendingBuys++;
+  
   let req = {
     proposal: 1,
-    amount: currentStake,
+    amount: stake,
     basis: "stake",
-    contract_type: "ACCU",
+    contract_type: contractType,
     currency: "USD",
-    growth_rate: growthRate,
-    underlying_symbol: activeSymbol
+    underlying_symbol: targetSymbol,
+    multiplier: mult,
+    limit_order: {
+      take_profit: tpVal,
+      stop_loss: slVal
+    }
   };
 
   ws.send(JSON.stringify(req));
@@ -600,10 +666,9 @@ function executeAccumulatorTrade() {
 
 function startTrading() {
   if (!ws) return;
-  currentStake = Number($("stake").value || 2.00);
   state.running = true;
-  log("Accumulator automation started.");
-  speak("Accumulator strategy started.");
+  log("EMA Multipliers Dual-Position automation started.");
+  speak("Automation started.");
 }
 
 function stopTrading() {
