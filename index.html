@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | Accumulator Terminal (CodePulse Strategy)</title>
+<title>TITAN AI | Accumulator Terminal (Smart Recovery & Optimized TP)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -109,7 +109,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 <header>
   <div class="logo">TITAN AI</div>
   <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    CODEPULSE ACCUMULATORS TERMINAL
+    CODEPULSE ACCUMULATORS TERMINAL (SMART RECOVERY)
   </div>
   <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
     ● DISCONNECTED
@@ -241,10 +241,10 @@ button:disabled { opacity: .4; cursor: not-allowed; }
           </select>
         </div>
         <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Martingale Recovery</label>
+          <label class="text-[10px] uppercase tracking-wider text-slate-400">Smart Recovery (Fib)</label>
           <select id="martingale">
-            <option value="On">On</option>
-            <option value="Off">Off</option>
+            <option value="On" selected>On (Fibonacci Step)</option>
+            <option value="Off">Off (Flat Stake)</option>
           </select>
         </div>
       </div>
@@ -256,7 +256,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
         </div>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-emerald-400">Auto Take Profit ($)</label>
-          <input id="tpAmount" type="number" value="0.20" step="0.05" class="border-emerald-500/50">
+          <input id="tpAmount" type="number" value="0.60" step="0.10" class="border-emerald-500/50">
         </div>
       </div>
 
@@ -277,7 +277,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
     <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Accumulator Growth Engine ready.</div>
+      <div>Terminal initialized. Smart Fibonacci Recovery Engine ready.</div>
     </div>
   </div>
 </main>
@@ -293,7 +293,8 @@ symbols.forEach(s => {
 });
 
 let activeSymbol = "R_50";
-let currentStake = 2.00;
+let fibIndex = 0;
+const fibSequence = [1, 1, 2, 3, 5, 8]; // Controlled Fibonacci multi-step scale
 
 let state = {
   balance: 0,
@@ -327,6 +328,13 @@ function speak(msg) {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
+}
+
+function getCurrentStake() {
+  let base = Number($("stake").value || 2.00);
+  if ($("martingale").value === "Off") return base;
+  let multiplier = fibSequence[Math.min(fibIndex, fibSequence.length - 1)];
+  return Number((base * multiplier).toFixed(2));
 }
 
 function evaluateAccumulatorFormula(sym) {
@@ -430,8 +438,8 @@ function connectWebSocket(wsUrl) {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("Authenticated WebSocket stream opened. Accumulator strategy active...");
-    $("scannerStatus").textContent = "Scanner Active (Accumulator Mode)";
+    log("Authenticated WebSocket stream opened. Smart Recovery active...");
+    $("scannerStatus").textContent = "Scanner Active (Smart Recovery)";
     
     symbols.forEach(sym => {
       ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
@@ -518,7 +526,7 @@ function connectWebSocket(wsUrl) {
         let pnl = Number(contract.profit);
         $("activePositionStatus").textContent = `ACCUMULATOR TICK RUN | PnL: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
         
-        let tpVal = Number($("tpAmount").value || 0.20);
+        let tpVal = Number($("tpAmount").value || 0.60);
         if (pnl >= tpVal && !contract.is_sold) {
           log(`🎯 Auto Take Profit Triggered (+$${pnl.toFixed(2)}). Selling...`);
           ws.send(JSON.stringify({ sell: contract.contract_id, price: 0 }));
@@ -532,17 +540,17 @@ function connectWebSocket(wsUrl) {
 
         if (p > 0) {
           state.wins++;
-          log(`🎯 WIN! Accumulator closed with +$${p.toFixed(2)} profit.`);
+          log(`🎯 WIN! Accumulator closed with +$${p.toFixed(2)} profit. Resetting Fibonacci step.`);
           speak("Win.");
-          currentStake = Number($("stake").value || 2.00);
+          fibIndex = 0; // Reset recovery sequence on win
         } else {
           state.losses++;
           log(`🛑 ACCUMULATOR KNOCKOUT! Loss -$${Math.abs(p).toFixed(2)}.`);
           speak("Loss.");
           
           if ($("martingale").value === "On") {
-            currentStake = Number((currentStake * 2.1).toFixed(2));
-            log(`⚡ Martingale applied. Next stake: $${currentStake}`);
+            fibIndex++;
+            log(`⚡ Fibonacci Recovery step up. Next multiplier factor: ${fibSequence[Math.min(fibIndex, fibSequence.length - 1)]}x`);
           }
         }
 
@@ -592,13 +600,15 @@ function executeAccumulatorTrade() {
   $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
 
   let growthRate = Number($("growthRate").value);
-  log(`🎯 REQUESTING ACCUMULATOR PROPOSAL: ${activeSymbol} | Growth: ${growthRate * 100}% | Stake: $${currentStake}`);
+  let stakeToUse = getCurrentStake();
+  
+  log(`🎯 REQUESTING ACCUMULATOR PROPOSAL: ${activeSymbol} | Growth: ${growthRate * 100}% | Stake: $${stakeToUse}`);
 
   state.pendingBuys = 1;
 
   let req = {
     proposal: 1,
-    amount: currentStake,
+    amount: stakeToUse,
     basis: "stake",
     contract_type: "ACCU",
     currency: "USD",
@@ -611,9 +621,9 @@ function executeAccumulatorTrade() {
 
 function startTrading() {
   if (!ws) return;
-  currentStake = Number($("stake").value || 2.00);
+  fibIndex = 0;
   state.running = true;
-  log("Accumulator automation started.");
+  log("Accumulator automation started with Smart Recovery.");
   speak("Accumulator strategy started.");
 }
 
