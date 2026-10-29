@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TITAN AI | Accumulator Terminal (Smart Recovery & Optimized TP)</title>
+<title>TITAN AI | Last Digits Bot Builder Platform</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root {
@@ -11,13 +11,10 @@
   --panel: #0f172a;
   --border: #1e293b;
   --text: #f8fafc;
-  --muted: #94a3b8;
   --green: #24e59a;
   --green-glow: rgba(36, 229, 154, 0.2);
   --red: #ff4757;
-  --red-glow: rgba(255, 71, 87, 0.3);
   --ice: #38bdf8;
-  --ice-glow: rgba(56, 189, 248, 0.3);
   --yellow: #facc15;
 }
 body {
@@ -29,22 +26,14 @@ body {
   padding-bottom: 40px;
 }
 header {
-  padding: 20px;
+  padding: 16px;
   text-align: center;
   border-bottom: 1px solid var(--border);
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
-  z-index: 10;
-}
-.logo {
-  font-size: 24px;
-  font-weight: 900;
-  letter-spacing: 3px;
-  background: linear-gradient(to right, #fff, var(--green));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  z-index: 20;
 }
 .card {
   background: linear-gradient(135deg, var(--panel), #0b0f19);
@@ -53,268 +42,259 @@ header {
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   margin-bottom: 16px;
-  position: relative;
-  overflow: hidden;
 }
 .metric-card {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 16px;
-}
-.price-box {
-  width: 100%;
-  height: 80px;
-  margin: 14px auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: rgba(56, 189, 248, 0.05);
-  border: 2px solid var(--ice);
-  border-radius: 20px;
-  box-shadow: 0 0 25px var(--ice-glow);
-  transition: all 0.3s ease;
-}
-.scanline {
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 50%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--green), var(--ice), transparent);
-  animation: scan 2.5s infinite linear;
-}
-@keyframes scan {
-  0% { left: -50%; }
-  100% { left: 100%; }
+  padding: 14px;
 }
 input, select {
-  width: 100%;
   background: #030712;
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 8px;
+  padding: 8px 10px;
   font-size: 13px;
-  margin-top: 4px;
   outline: none;
 }
 input:focus, select:focus { border-color: var(--green); }
-button:disabled { opacity: .4; cursor: not-allowed; }
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #334155; transition: .3s; border-radius: 24px;
+}
+.slider:before {
+  position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+  background-color: white; transition: .3s; border-radius: 50%;
+}
+input:checked + .slider { background-color: var(--green); }
+input:checked + .slider:before { transform: translateX(22px); }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">TITAN AI</div>
-  <div class="text-xs text-emerald-400 font-bold tracking-widest mt-1">
-    CODEPULSE ACCUMULATORS TERMINAL (SMART RECOVERY)
+<header class="flex flex-col sm:flex-row justify-between items-center max-w-5xl mx-auto">
+  <div class="flex items-center space-x-3">
+    <div class="text-xl font-black tracking-widest text-white">TITAN AI</div>
+    <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded">ELITE PRIME</span>
+    <span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded">OVERLORD PRO</span>
   </div>
-  <div id="connectionBadge" class="inline-block mt-2 border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
+  <div id="connectionBadge" class="mt-2 sm:mt-0 text-[10px] font-bold tracking-widest text-rose-400 border border-rose-500/30 bg-rose-500/10 px-3 py-1 rounded-full">
     ● DISCONNECTED
   </div>
 </header>
 
-<main class="max-w-4xl mx-auto px-4 mt-5">
+<main class="max-w-5xl mx-auto px-4 mt-4">
+
   <!-- CREDENTIALS CARD -->
   <div class="card">
-    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold">🔐 Deriv API Credentials & Connection</h2>
-    <div class="mb-3">
-      <label class="text-[10px] uppercase tracking-wider text-slate-400">Personal Access Token (PAT)</label>
-      <input id="apiToken" type="password" placeholder="Paste your token here">
+    <div class="flex justify-between items-center mb-2">
+      <h2 class="text-xs uppercase tracking-widest text-slate-400 font-bold">🔐 Deriv API Credentials</h2>
+      <button onclick="clearMemory()" class="text-xs text-rose-400 hover:underline">Clear Saved Token</button>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
-      <button onclick="connectDeriv()" id="connectBtn" class="w-full bg-[#24e59a] text-[#030712] font-extrabold py-3 rounded-xl text-xs tracking-wider shadow-lg shadow-emerald-500/20 hover:brightness-110 cursor-pointer">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+      <input id="apiToken" type="password" placeholder="Paste Deriv PAT Token" class="md:col-span-2">
+      <button onclick="connectDeriv()" id="connectBtn" class="bg-emerald-500 text-slate-950 font-black py-2 rounded-lg text-xs hover:brightness-110">
         CONNECT TO DERIV
-      </button>
-      <button onclick="clearMemory()" class="bg-rose-500/10 text-rose-500 border border-rose-500/30 font-bold py-3 rounded-xl text-xs hover:bg-rose-500/20 cursor-pointer">
-        CLEAR TOKEN
       </button>
     </div>
   </div>
 
-  <!-- METRICS GRID -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+  <!-- METRICS DISPLAY -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
     <div class="metric-card">
       <div class="text-[10px] uppercase text-slate-400">Balance</div>
-      <div class="text-2xl font-black text-emerald-400 mt-1" id="balance">$0.00</div>
+      <div class="text-xl font-black text-emerald-400" id="balance">$0.00</div>
     </div>
     <div class="metric-card">
       <div class="text-[10px] uppercase text-slate-400">Session P/L</div>
-      <div class="text-2xl font-black mt-1" id="profit">$0.00</div>
+      <div class="text-xl font-black" id="profit">$0.00</div>
     </div>
     <div class="metric-card">
       <div class="text-[10px] uppercase text-slate-400">Total Trades</div>
-      <div class="text-2xl font-black mt-1" id="runs">0</div>
+      <div class="text-xl font-black" id="runs">0</div>
     </div>
     <div class="metric-card">
       <div class="text-[10px] uppercase text-slate-400">Win Rate</div>
-      <div class="text-2xl font-black text-cyan-400 mt-1" id="winRate">0%</div>
+      <div class="text-xl font-black text-cyan-400" id="winRate">0%</div>
     </div>
   </div>
 
-  <!-- LIVE SCANNER MATRIX -->
+  <!-- TICK STREAM & LAST DIGIT VISUALIZER -->
   <div class="card">
-    <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-3 font-bold flex justify-between items-center">
-      <span>📡 Market Warm-up Monitor</span>
-      <span class="text-emerald-400 text-[10px] font-mono" id="scannerStatus">Scanner Idle</span>
-    </h2>
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse text-xs">
-        <thead>
-          <tr class="border-b border-slate-800 text-[10px] text-slate-400 uppercase">
-            <th class="p-2">Market</th>
-            <th class="p-2">Last Quote</th>
-            <th class="p-2">Calibration</th>
-            <th class="p-2">Range Score (0-99)</th>
-            <th class="p-2">Accumulator Status</th>
-          </tr>
-        </thead>
-        <tbody id="scannerTable" class="divide-y divide-slate-800/50 font-mono">
-          <!-- Populated dynamically -->
-        </tbody>
-      </table>
+    <div class="flex justify-between items-center mb-3">
+      <span class="text-xs font-bold uppercase text-slate-400">📊 Live Market Digits Stream</span>
+      <select id="marketSelect" onchange="activeSymbol = this.value" class="text-xs py-1">
+        <option value="R_10">Volatility 10 (1Hz)</option>
+        <option value="R_25">Volatility 25 (1Hz)</option>
+        <option value="R_50" selected>Volatility 50 (1Hz)</option>
+        <option value="R_75">Volatility 75 (1Hz)</option>
+        <option value="R_100">Volatility 100 (1Hz)</option>
+        <option value="1HZ10V">Volatility 10 (1s)</option>
+        <option value="1HZ100V">Volatility 100 (1s)</option>
+      </select>
     </div>
-  </div>
-
-  <!-- LIVE TICK STREAM & ENTRY PARAMETERS -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div class="card text-center flex flex-col justify-between">
-      <div class="scanline"></div>
+    <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
       <div>
-        <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📊 Active Accumulator Stream</h2>
-        <div class="text-[10px] uppercase text-slate-400" id="activeMarketLabel">Symbol: R_50</div>
-        
-        <div class="price-box" id="priceContainer">
-          <div class="text-2xl font-black text-cyan-400 font-mono" id="lastQuote">–</div>
-          <div class="text-[10px] text-slate-400 font-bold tracking-wider mt-1" id="activePositionStatus">No Active Positions</div>
-        </div>
-
-        <div class="text-xs text-slate-400 mb-4" id="marketInfo">Awaiting connection...</div>
+        <div class="text-[10px] uppercase text-slate-500 font-bold">Latest Quote</div>
+        <div class="text-2xl font-black text-cyan-400 font-mono" id="lastQuote">–</div>
       </div>
-
-      <div class="space-y-2 mt-4">
-        <button onclick="startTrading()" id="startBtn" class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider cursor-pointer disabled:opacity-40" disabled>
-          ▶ START ACCUMULATOR STRATEGY
-        </button>
-        <button onclick="stopTrading()" class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2 rounded-xl text-xs cursor-pointer">
-          ■ STOP AUTOMATION
-        </button>
-      </div>
-    </div>
-
-    <!-- ENTRY PARAMETERS & RISK CONTROLS -->
-    <div class="card">
-      <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">⚙️ Accumulator Strategy Settings</h2>
-      
-      <div class="grid grid-cols-2 gap-2 mb-3">
-        <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Target Market</label>
-          <select id="marketSelect" onchange="activeSymbol = this.value">
-            <option value="R_10">Volatility 10 (1Hz)</option>
-            <option value="R_25">Volatility 25 (1Hz)</option>
-            <option value="R_50" selected>Volatility 50 (1Hz)</option>
-            <option value="R_75">Volatility 75 (1Hz)</option>
-            <option value="R_100">Volatility 100 (1Hz)</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Strategy Mode</label>
-          <select id="strategyMode">
-            <option value="Conservative">Conservative</option>
-            <option value="Realistic">Realistic</option>
-            <option value="Formula" selected>Formula (IV)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2 mb-3">
-        <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Growth Rate</label>
-          <select id="growthRate">
-            <option value="0.01">1%</option>
-            <option value="0.02">2%</option>
-            <option value="0.03">3%</option>
-            <option value="0.04">4%</option>
-            <option value="0.05" selected>5%</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-[10px] uppercase tracking-wider text-slate-400">Smart Recovery (Fib)</label>
-          <select id="martingale">
-            <option value="On" selected>On (Fibonacci Step)</option>
-            <option value="Off">Off (Flat Stake)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2 mt-3">
-        <div>
-          <label class="text-[10px] uppercase tracking-wider text-emerald-400">Initial Stake ($)</label>
-          <input id="stake" type="number" value="2.00" step="0.50">
-        </div>
-        <div>
-          <label class="text-[10px] uppercase tracking-wider text-emerald-400">Auto Take Profit ($)</label>
-          <input id="tpAmount" type="number" value="0.60" step="0.10" class="border-emerald-500/50">
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2 mt-3">
-        <div>
-          <label class="text-[10px] uppercase tracking-wider text-emerald-400">Session Take Profit ($)</label>
-          <input id="tp" type="number" value="2.00" class="border-emerald-500/50">
-        </div>
-        <div>
-          <label class="text-[10px] uppercase tracking-wider text-rose-400">Session Stop Loss ($)</label>
-          <input id="sl" type="number" value="15.00" class="border-rose-500/50">
+      <div>
+        <div class="text-[10px] uppercase text-slate-500 font-bold text-right">Recent Digits</div>
+        <div id="digitStream" class="flex space-x-1 font-mono text-sm font-bold mt-1">
+          <span class="text-slate-600">–</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- SYSTEM LOG -->
+  <!-- STRATEGY BUILDER CONTAINER -->
+  <div class="card border-emerald-500/30">
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="text-xs uppercase font-extrabold text-emerald-400 tracking-wider">⚡ CONTRACT STRATEGY 1: Last Digits Over/Under</h3>
+      <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">CHECKS LAST DIGITS</span>
+    </div>
+
+    <!-- MAIN STRATEGY BUILDER FORM -->
+    <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 space-y-3">
+      <div class="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-300">
+        <span>IF THE LAST</span>
+        <input id="checkCount" type="number" value="3" min="1" max="10" class="w-16 text-center">
+        <span>DIGITS / MOVES ARE</span>
+        <select id="checkOperator" onchange="updateSummaryText()" class="w-28">
+          <option value="UNDER">&lt; (UNDER)</option>
+          <option value="OVER">&gt; (OVER)</option>
+          <option value="EQUAL">= (EQUAL)</option>
+        </select>
+        <input id="checkTargetDigit" type="number" value="4" min="0" max="9" class="w-16 text-center" onchange="updateSummaryText()">
+        <select id="modeType" class="w-24">
+          <option value="DIGITS">DIGITS</option>
+        </select>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-300 pt-2 border-t border-slate-800">
+        <span>THEN TRADE</span>
+        <select id="tradeType" onchange="updateSummaryText()" class="w-28 text-emerald-400 font-black">
+          <option value="OVER">OVER</option>
+          <option value="UNDER">UNDER</option>
+        </select>
+        <input id="tradePrediction" type="number" value="4" min="0" max="9" class="w-16 text-center" onchange="updateSummaryText()">
+        <span>FOR</span>
+        <input id="durationTicks" type="number" value="1" min="1" max="10" class="w-16 text-center">
+        <span>TICKS</span>
+      </div>
+
+      <div class="bg-slate-900/90 p-2.5 rounded-lg border border-slate-800 text-xs text-slate-400 italic" id="strategySummary">
+        If last 3 digits are &lt; 4, trade OVER 4 for 1 ticks.
+      </div>
+    </div>
+
+    <!-- RECOVERY MODE CONTAINER -->
+    <div class="mt-4 pt-4 border-t border-slate-800">
+      <div class="flex justify-between items-center mb-3">
+        <div>
+          <h4 class="text-xs uppercase font-extrabold text-cyan-400 tracking-wider">🔄 RECOVERY MODE</h4>
+          <p class="text-[10px] text-slate-400">This secondary contract strategy will be used immediately after a loss.</p>
+        </div>
+        <label class="switch">
+          <input id="recoveryToggle" type="checkbox" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+        <div>
+          <label class="text-[10px] uppercase text-slate-400 font-bold">RECOVERY CONTRACT</label>
+          <select id="recContract" class="w-full mt-1">
+            <option value="UNDER" selected>UNDER</option>
+            <option value="OVER">OVER</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] uppercase text-slate-400 font-bold">PREDICTION</label>
+          <input id="recPrediction" type="number" value="5" min="0" max="9" class="w-full mt-1">
+        </div>
+        <div>
+          <label class="text-[10px] uppercase text-slate-400 font-bold">STAKE SETTING</label>
+          <select id="recStakeSetting" class="w-full mt-1">
+            <option value="FIBONACCI">Returns after recovery (Fibonacci Step)</option>
+            <option value="FLAT">Flat Base Stake</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- BASE STAKE & TARGETS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 pt-3 border-t border-slate-800">
+      <div>
+        <label class="text-[10px] uppercase text-slate-400 font-bold">Initial Stake ($)</label>
+        <input id="baseStake" type="number" value="2.00" step="0.50" class="w-full font-bold">
+      </div>
+      <div>
+        <label class="text-[10px] uppercase text-slate-400 font-bold">Target Profit ($)</label>
+        <input id="targetProfit" type="number" value="5.00" step="1.00" class="w-full font-bold border-emerald-500/40">
+      </div>
+      <div>
+        <label class="text-[10px] uppercase text-slate-400 font-bold">Stop Loss ($)</label>
+        <input id="stopLoss" type="number" value="15.00" step="1.00" class="w-full font-bold border-rose-500/40">
+      </div>
+      <div class="flex items-end space-x-2">
+        <button onclick="startBot()" id="runBtn" class="w-full bg-emerald-500 text-slate-950 font-black py-2.5 rounded-lg text-xs hover:brightness-110 disabled:opacity-40" disabled>
+          ▶ RUN BOT
+        </button>
+        <button onclick="stopBot()" class="w-full bg-slate-800 text-rose-400 border border-rose-500/30 font-bold py-2.5 rounded-lg text-xs">
+          ■ STOP
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGS -->
   <div class="card">
     <h2 class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-bold">📜 System Execution Log</h2>
-    <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-44 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
-      <div>Terminal initialized. Smart Fibonacci Recovery Engine ready.</div>
+    <div id="log" class="bg-[#030712] border border-slate-800 rounded-xl p-3 h-40 overflow-y-auto font-mono text-[11px] text-slate-400 leading-relaxed">
+      <div>Bot Builder initialized. Ready to execute strategy rules.</div>
     </div>
   </div>
 </main>
 
 <script>
 let ws = null;
-let pingInterval = null;
-const symbols = ["R_10", "R_25", "R_50", "R_75", "R_100"];
-
-let marketData = {};
-symbols.forEach(s => {
-  marketData[s] = { quotes: [], lastQuote: "-" };
-});
-
 let activeSymbol = "R_50";
+let recentDigits = [];
+let isRunning = false;
+let isTradingInFlight = false;
+let isRecoveryActive = false;
+
 let fibIndex = 0;
-const fibSequence = [1, 1, 2, 3, 5, 8]; // Controlled Fibonacci multi-step scale
+const fibSequence = [1, 1, 2, 3, 5, 8, 13];
 
 let state = {
   balance: 0,
-  startingBalance: 0,
+  profit: 0,
   total: 0,
   wins: 0,
-  losses: 0,
-  running: false,
-  pendingBuys: 0,
-  profit: 0
+  losses: 0
 };
-
-let activeContract = null;
 
 const $ = id => document.getElementById(id);
 
 window.addEventListener('DOMContentLoaded', () => {
   const savedToken = localStorage.getItem('titan_deriv_token');
   if (savedToken) $("apiToken").value = savedToken;
-  renderScannerTable();
+  updateSummaryText();
+  
+  // Attach event listeners for summary updates
+  ['checkCount', 'checkOperator', 'checkTargetDigit', 'tradeType', 'tradePrediction', 'durationTicks'].forEach(id => {
+    $(id).addEventListener('input', updateSummaryText);
+  });
 });
 
 function log(msg) {
@@ -324,80 +304,30 @@ function log(msg) {
   while ($("log").children.length > 50) $("log").lastElementChild.remove();
 }
 
-function speak(msg) {
-  if (!("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
+function updateSummaryText() {
+  const count = $("checkCount").value;
+  const opSymbol = $("checkOperator").value === "UNDER" ? "<" : ($("checkOperator").value === "OVER" ? ">" : "=");
+  const target = $("checkTargetDigit").value;
+  const tradeT = $("tradeType").value;
+  const tradeP = $("tradePrediction").value;
+  const ticks = $("durationTicks").value;
+
+  $("strategySummary").textContent = `If last ${count} digits are ${opSymbol} ${target}, trade ${tradeT} ${tradeP} for ${ticks} ticks.`;
 }
 
 function getCurrentStake() {
-  let base = Number($("stake").value || 2.00);
-  if ($("martingale").value === "Off") return base;
-  let multiplier = fibSequence[Math.min(fibIndex, fibSequence.length - 1)];
-  return Number((base * multiplier).toFixed(2));
-}
-
-function evaluateAccumulatorFormula(sym) {
-  const quotes = marketData[sym].quotes.slice(-20);
-  if (quotes.length < 10) {
-    return { ready: false, score: 0, calib: `${quotes.length}/20` };
-  }
-
-  let last = quotes[quotes.length - 1];
-  let min = Math.min(...quotes);
-  let max = Math.max(...quotes);
-  let range = max - min;
-  
-  let score = range === 0 ? 50 : Math.round(((last - min) / range) * 99);
-  let mode = $("strategyMode").value;
-
-  let ready = false;
-  if (mode === "Conservative" && score >= 20 && score <= 80) ready = true;
-  else if (mode === "Realistic" && score >= 10 && score <= 90) ready = true;
-  else if (mode === "Formula" && (score <= 30 || score >= 70)) ready = true;
-
-  return { ready, score, calib: "20/20" };
-}
-
-function renderScannerTable() {
-  const tbody = $("scannerTable");
-  tbody.innerHTML = "";
-
-  symbols.forEach(sym => {
-    const data = marketData[sym];
-    const acc = evaluateAccumulatorFormula(sym);
-
-    const tr = document.createElement("tr");
-    tr.className = "hover:bg-slate-800/30 cursor-pointer";
-    tr.onclick = () => { 
-      activeSymbol = sym; 
-      $("marketSelect").value = sym;
-    };
-    tr.innerHTML = `
-      <td class="p-2 font-bold ${sym === activeSymbol ? 'text-emerald-400' : 'text-slate-300'}">${sym}</td>
-      <td class="p-2 text-slate-400 font-mono">${data.lastQuote}</td>
-      <td class="p-2 text-emerald-400 font-bold">${acc.calib}</td>
-      <td class="p-2 text-cyan-400 font-bold">${acc.score}</td>
-      <td class="p-2">
-        <span class="px-2 py-0.5 rounded text-[9px] font-bold ${acc.ready ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'}">
-          ${acc.ready ? 'ACCUMULATOR READY' : 'CALIBRATING'}
-        </span>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
+  let base = Number($("baseStake").value || 2.00);
+  if (!isRecoveryActive || $("recStakeSetting").value === "FLAT") return base;
+  let mult = fibSequence[Math.min(fibIndex, fibSequence.length - 1)];
+  return Number((base * mult).toFixed(2));
 }
 
 async function connectDeriv() {
   const token = $("apiToken").value.trim();
-  if (!token) {
-    alert("Please paste your Deriv API Token.");
-    return;
-  }
+  if (!token) return alert("Please enter your Deriv API Token.");
 
   localStorage.setItem('titan_deriv_token', token);
-  log("Requesting secure OTP connection via backend (/api/deriv-auth)...");
-  speak("Connecting to Deriv.");
+  log("Connecting via backend (/api/deriv-auth)...");
   $("connectBtn").textContent = "CONNECTING...";
 
   try {
@@ -408,131 +338,70 @@ async function connectDeriv() {
     });
 
     let data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.error || "Authentication failed");
+    if (!response.ok || !data.ok) throw new Error(data.error || "Auth Failed");
 
-    log(`Authorized account: ${data.account_id} (${data.account_type})`);
-    state.balance = data.balance;
-    state.startingBalance = data.balance;
+    log(`Authorized: ${data.account_id} (${data.currency} ${data.balance})`);
+    state.balance = Number(data.balance);
+    $("balance").textContent = "$" + state.balance.toFixed(2);
     
-    $("balance").textContent = "$" + Number(data.balance).toFixed(2);
     $("connectionBadge").textContent = "● CONNECTED & AUTHORIZED";
-    $("connectionBadge").style.color = "var(--green)";
+    $("connectionBadge").className = "text-[10px] font-bold tracking-widest text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 rounded-full";
     $("connectBtn").textContent = "CONNECTED";
-    $("startBtn").disabled = false;
-    speak("Authorized successfully.");
+    $("runBtn").disabled = false;
 
     connectWebSocket(data.ws_url);
-
   } catch (err) {
     log("Auth Error: " + err.message);
     alert("Connection Error: " + err.message);
     $("connectBtn").textContent = "CONNECT TO DERIV";
-    speak("Connection failed.");
   }
 }
 
 function connectWebSocket(wsUrl) {
-  if (ws) { try { ws.close(); } catch(e) {} }
-  if (pingInterval) clearInterval(pingInterval);
-
+  if (ws) try { ws.close(); } catch(e){}
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    log("Authenticated WebSocket stream opened. Smart Recovery active...");
-    $("scannerStatus").textContent = "Scanner Active (Smart Recovery)";
-    
-    symbols.forEach(sym => {
-      ws.send(JSON.stringify({ ticks: sym, subscribe: 1 }));
-    });
+    log("WebSocket Stream Connected. Subscribing to " + activeSymbol);
+    ws.send(JSON.stringify({ ticks: activeSymbol, subscribe: 1 }));
     ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
-
-    pingInterval = setInterval(() => {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ ping: 1 }));
-      }
-    }, 15000);
   };
 
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
 
-    if (data.error) {
-      log(`Deriv API Error: ${data.error.message} [${data.error.code}]`);
-      state.pendingBuys = 0;
-      return;
-    }
-
-    if (data.msg_type === "balance" && data.balance) {
+    if (data.msg_type === "balance") {
       state.balance = Number(data.balance.balance);
       $("balance").textContent = "$" + state.balance.toFixed(2);
     }
 
     if (data.msg_type === "tick" && data.tick) {
-      const sym = data.tick.symbol;
-      const quoteVal = Number(data.tick.quote);
       const quote = data.tick.quote.toString();
+      const lastDigit = parseInt(quote.slice(-1));
       
-      if (marketData[sym]) {
-        marketData[sym].lastQuote = quote;
-        marketData[sym].quotes.push(quoteVal);
-        if (marketData[sym].quotes.length > 50) marketData[sym].quotes.shift();
-      }
+      $("lastQuote").textContent = quote;
 
-      if (sym === activeSymbol) {
-        $("lastQuote").textContent = quote;
-        $("marketInfo").textContent = `Quote: ${quote} | Symbol: ${sym}`;
-        $("activeMarketLabel").textContent = `Symbol: ${sym}`;
-      }
+      recentDigits.push(lastDigit);
+      if (recentDigits.length > 15) recentDigits.shift();
 
-      renderScannerTable();
+      renderDigitStream();
 
-      if (state.running && !activeContract && state.pendingBuys === 0) {
-        executeAccumulatorTrade();
-      }
-    }
-
-    if (data.msg_type === "proposal") {
-      if (data.proposal && data.proposal.id) {
-        log(`Proposal acquired. Buying Accumulator Contract...`);
-        ws.send(JSON.stringify({
-          buy: data.proposal.id,
-          price: data.proposal.ask_price
-        }));
+      if (isRunning && !isTradingInFlight) {
+        checkStrategyAndExecute();
       }
     }
 
     if (data.msg_type === "buy" && data.buy) {
-      state.pendingBuys = 0;
-      let contractId = data.buy.contract_id;
-      activeContract = { contractId: contractId };
-
-      $("activePositionStatus").textContent = `ACCUMULATOR ACTIVE (ID: ${contractId})`;
-      $("activePositionStatus").className = "text-[10px] text-emerald-400 font-bold tracking-wider mt-1 animate-pulse";
-      
-      log(`✅ Accumulator Trade Opened! Contract ID: ${contractId}`);
-      speak("Accumulator position opened.");
-
+      log(`✅ Contract Purchased! ID: ${data.buy.contract_id}`);
       ws.send(JSON.stringify({
         proposal_open_contract: 1,
-        contract_id: contractId,
+        contract_id: data.buy.contract_id,
         subscribe: 1
       }));
     }
 
     if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
       let contract = data.proposal_open_contract;
-
-      if (activeContract && contract.profit !== undefined) {
-        let pnl = Number(contract.profit);
-        $("activePositionStatus").textContent = `ACCUMULATOR TICK RUN | PnL: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
-        
-        let tpVal = Number($("tpAmount").value || 0.60);
-        if (pnl >= tpVal && !contract.is_sold) {
-          log(`🎯 Auto Take Profit Triggered (+$${pnl.toFixed(2)}). Selling...`);
-          ws.send(JSON.stringify({ sell: contract.contract_id, price: 0 }));
-        }
-      }
-
       if (contract.is_sold || contract.status === "sold") {
         let p = Number(contract.profit || 0);
         state.profit += p;
@@ -540,103 +409,121 @@ function connectWebSocket(wsUrl) {
 
         if (p > 0) {
           state.wins++;
-          log(`🎯 WIN! Accumulator closed with +$${p.toFixed(2)} profit. Resetting Fibonacci step.`);
-          speak("Win.");
-          fibIndex = 0; // Reset recovery sequence on win
+          log(`🎯 WIN! Profit: +$${p.toFixed(2)}`);
+          fibIndex = 0;
+          isRecoveryActive = false;
         } else {
           state.losses++;
-          log(`🛑 ACCUMULATOR KNOCKOUT! Loss -$${Math.abs(p).toFixed(2)}.`);
-          speak("Loss.");
-          
-          if ($("martingale").value === "On") {
+          log(`🛑 LOSS! -$${Math.abs(p).toFixed(2)}`);
+          if ($("recoveryToggle").checked) {
+            isRecoveryActive = true;
             fibIndex++;
-            log(`⚡ Fibonacci Recovery step up. Next multiplier factor: ${fibSequence[Math.min(fibIndex, fibSequence.length - 1)]}x`);
+            log(`⚡ Switching to Recovery Strategy (Step ${fibIndex})`);
           }
         }
 
-        activeContract = null;
-        $("activePositionStatus").textContent = "No Active Positions";
-        $("activePositionStatus").className = "text-[10px] text-slate-400 font-bold tracking-wider mt-1";
-
+        isTradingInFlight = false;
         renderMetrics();
 
-        let tp = Number($("tp").value);
-        let sl = Number($("sl").value);
-
-        if (state.profit >= tp) {
-          state.running = false;
-          log(`🎯 Session Take Profit reached ($${state.profit.toFixed(2)}). Stopped.`);
-          speak("Take profit reached.");
-        } else if (state.profit <= -sl) {
-          state.running = false;
-          log(`🛑 Session Stop Loss hit ($${state.profit.toFixed(2)}). Stopped.`);
-          speak("Stop loss hit.");
+        // Check Target Profit / Stop Loss
+        if (state.profit >= Number($("targetProfit").value)) {
+          stopBot();
+          log(`🎯 Session Target Profit Reached (+$${state.profit.toFixed(2)})!`);
+        } else if (state.profit <= -Number($("stopLoss").value)) {
+          stopBot();
+          log(`🛑 Session Stop Loss Hit (-$${Math.abs(state.profit).toFixed(2)})!`);
         }
       }
     }
   };
-
-  ws.onclose = () => {
-    if (pingInterval) clearInterval(pingInterval);
-    log("WebSocket connection closed.");
-    $("connectionBadge").textContent = "● DISCONNECTED";
-    $("connectionBadge").style.color = "var(--red)";
-    $("connectBtn").textContent = "CONNECT TO DERIV";
-    $("startBtn").disabled = true;
-    speak("Connection closed.");
-  };
 }
 
-function executeAccumulatorTrade() {
-  let acc = evaluateAccumulatorFormula(activeSymbol);
-  
-  if (!acc.ready) {
-    $("scannerStatus").textContent = `Calibrating ${activeSymbol} (Score: ${acc.score})`;
-    $("scannerStatus").className = "text-yellow-400 text-[10px] font-mono animate-pulse";
-    return;
+function renderDigitStream() {
+  const container = $("digitStream");
+  container.innerHTML = "";
+  recentDigits.forEach(d => {
+    let span = document.createElement("span");
+    span.className = `px-1.5 py-0.5 rounded ${d >= 5 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-cyan-500/20 text-cyan-400'}`;
+    span.textContent = d;
+    container.appendChild(span);
+  });
+}
+
+function checkStrategyAndExecute() {
+  const count = parseInt($("checkCount").value);
+  if (recentDigits.length < count) return;
+
+  const slice = recentDigits.slice(-count);
+  const targetDigit = parseInt($("checkTargetDigit").value);
+  const operator = $("checkOperator").value;
+
+  let conditionMet = false;
+  if (operator === "UNDER") {
+    conditionMet = slice.every(d => d < targetDigit);
+  } else if (operator === "OVER") {
+    conditionMet = slice.every(d => d > targetDigit);
+  } else if (operator === "EQUAL") {
+    conditionMet = slice.every(d => d === targetDigit);
   }
 
-  $("scannerStatus").textContent = `ACCUMULATOR SIGNAL CONFIRMED: ${activeSymbol} (Score: ${acc.score})`;
-  $("scannerStatus").className = "text-emerald-400 text-[10px] font-mono font-bold";
+  if (conditionMet) {
+    executeTrade();
+  }
+}
 
-  let growthRate = Number($("growthRate").value);
-  let stakeToUse = getCurrentStake();
-  
-  log(`🎯 REQUESTING ACCUMULATOR PROPOSAL: ${activeSymbol} | Growth: ${growthRate * 100}% | Stake: $${stakeToUse}`);
+function executeTrade() {
+  isTradingInFlight = true;
 
-  state.pendingBuys = 1;
+  let contractType, barrier, duration;
+  let stake = getCurrentStake();
 
-  let req = {
-    proposal: 1,
-    amount: stakeToUse,
-    basis: "stake",
-    contract_type: "ACCU",
-    currency: "USD",
-    growth_rate: growthRate,
-    underlying_symbol: activeSymbol
+  if (isRecoveryActive && $("recoveryToggle").checked) {
+    contractType = $("recContract").value === "OVER" ? "DIGITOVER" : "DIGITUNDER";
+    barrier = $("recPrediction").value;
+    duration = 1;
+    log(`🔄 EXECUTING RECOVERY TRADE: ${contractType} ${barrier} | Stake: $${stake}`);
+  } else {
+    contractType = $("tradeType").value === "OVER" ? "DIGITOVER" : "DIGITUNDER";
+    barrier = $("tradePrediction").value;
+    duration = $("durationTicks").value;
+    log(`🎯 STRATEGY SIGNAL MATCHED: ${contractType} ${barrier} for ${duration} Ticks | Stake: $${stake}`);
+  }
+
+  const req = {
+    buy: 1,
+    price: stake,
+    parameters: {
+      amount: stake,
+      basis: "stake",
+      contract_type: contractType,
+      currency: "USD",
+      duration: parseInt(duration),
+      duration_unit: "t",
+      symbol: activeSymbol,
+      barrier: barrier.toString()
+    }
   };
 
   ws.send(JSON.stringify(req));
 }
 
-function startTrading() {
-  if (!ws) return;
+function startBot() {
+  if (!ws) return alert("Please connect to Deriv first.");
+  isRunning = true;
+  isRecoveryActive = false;
   fibIndex = 0;
-  state.running = true;
-  log("Accumulator automation started with Smart Recovery.");
-  speak("Accumulator strategy started.");
+  log("▶ Strategy Bot Started.");
 }
 
-function stopTrading() {
-  state.running = false;
-  state.pendingBuys = 0;
-  log("Automation stopped.");
-  speak("Automation stopped.");
+function stopBot() {
+  isRunning = false;
+  isTradingInFlight = false;
+  log("■ Strategy Bot Stopped.");
 }
 
 function renderMetrics() {
   $("profit").textContent = (state.profit < 0 ? "-$" : "$") + Math.abs(state.profit).toFixed(2);
-  $("profit").className = "text-2xl font-black mt-1 " + (state.profit >= 0 ? "text-emerald-400" : "text-rose-400");
+  $("profit").className = "text-xl font-black " + (state.profit >= 0 ? "text-emerald-400" : "text-rose-400");
   $("runs").textContent = state.total;
   $("winRate").textContent = state.total ? ((state.wins / state.total) * 100).toFixed(1) + "%" : "0%";
 }
@@ -644,8 +531,7 @@ function renderMetrics() {
 function clearMemory() {
   localStorage.removeItem('titan_deriv_token');
   $("apiToken").value = "";
-  log("Saved credentials wiped.");
-  speak("Credentials cleared.");
+  log("Saved token cleared.");
 }
 </script>
 </body>
